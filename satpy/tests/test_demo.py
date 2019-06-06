@@ -108,6 +108,35 @@ class TestDemo(unittest.TestCase):
         filenames = get_hurricane_florence_abi(num_frames=5)
         self.assertEqual(5 * 16, len(filenames))
 
+    @mock.patch('satpy.demo._google_cloud_platform.gcsfs')
+    def test_get_texas_fire_abi_meso(self, gcsfs_mod):
+        """Test data download function."""
+        from satpy.demo import get_texas_fire_abi_meso
+        gcsfs_mod.GCSFileSystem = mock.MagicMock()
+        gcsfs_inst = mock.MagicMock()
+        gcsfs_mod.GCSFileSystem.return_value = gcsfs_inst
+        # only return 5 results total
+        gcsfs_inst.glob.side_effect = _GlobHelper([5, 0])
+        # expected 16 files * 10 frames, got 16 * 5
+        self.assertRaises(AssertionError, get_texas_fire_abi_meso)
+        self.assertRaises(NotImplementedError, get_texas_fire_abi_meso, method='unknown')
+
+        gcsfs_inst.glob.side_effect = _GlobHelper([int(240 / 16), 0, 0, 0] * 16)
+        filenames = get_texas_fire_abi_meso()
+        self.assertEqual(10 * 16, len(filenames))
+
+        gcsfs_inst.glob.side_effect = _GlobHelper([int(240 / 16), 0, 0, 0] * 16)
+        filenames = get_texas_fire_abi_meso(channels=[2, 3, 4])
+        self.assertEqual(10 * 3, len(filenames))
+
+        gcsfs_inst.glob.side_effect = _GlobHelper([int(240 / 16), 0, 0, 0] * 16)
+        filenames = get_texas_fire_abi_meso(channels=[2, 3, 4], num_frames=5)
+        self.assertEqual(5 * 3, len(filenames))
+
+        gcsfs_inst.glob.side_effect = _GlobHelper([int(240 / 16), 0, 0, 0] * 16)
+        filenames = get_texas_fire_abi_meso(num_frames=5)
+        self.assertEqual(5 * 16, len(filenames))
+
 
 class TestGCPUtils(unittest.TestCase):
     """Test Google Cloud Platform utilities."""

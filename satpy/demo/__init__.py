@@ -152,3 +152,99 @@ def get_hurricane_florence_abi(base_dir='.', method=None, force=False,
     num_frames = int((actual_slice[1] - actual_slice[0]) / actual_slice[2])
     assert len(filenames) == len(channels) * num_frames, "Not all files could be downloaded"
     return filenames
+
+
+def get_texas_fire_abi_meso(base_dir='.', method=None, force=False,
+                       channels=range(1, 17), num_frames=10):
+    """Get GOES-16 ABI Meso data from 2018-05-11 20:00Z to 23:59Z.
+
+    This example data is used in the half-day tutorial for Satpy.
+    Although the tutorial has separate data download steps, this function
+    is included here as another method of downloading the data if the
+    original download methods do not work.
+    See https://github.com/pytroll/tutorial-satpy-half-day for details.
+
+    Args:
+        base_dir (str): Base directory for downloaded files.
+        method (str): Force download method for the data if not already cached.
+            Allowed options are: 'gcsfs'. Default of ``None`` will
+            choose the best method based on environment settings.
+        force (bool): Force re-download of data regardless of its existence on
+            the local system. Warning: May delete non-demo files stored in
+            download directory.
+        channels (list): Channels to include in download. Defaults to all
+            16 channels.
+        num_frames (int or slice): Number of frames to download. Maximum
+            240 frames. Default 10 frames.
+
+    Size per frame (all channels): ~15MB
+
+    Total size (default 10 frames, all channels): ~124MB
+
+    Total size (240 frames, all channels): ~3.1GB
+
+    """
+    if method is None:
+        method = 'gcsfs'
+    if method not in ['gcsfs']:
+        raise NotImplementedError("Demo data download method '{}' not "
+                                  "implemented yet.".format(method))
+    if isinstance(num_frames, (int, float)):
+        frame_slice = slice(0, num_frames)
+    else:
+        frame_slice = num_frames
+
+    from ._google_cloud_platform import get_bucket_files
+
+    patterns = []
+    for channel in channels:
+        patterns += [(
+            'gs://gcp-public-data-goes-16/ABI-L1b-RadM/2018/131/20/*RadM1*C{:02d}*s201813120*.nc'.format(channel),
+            'gs://gcp-public-data-goes-16/ABI-L1b-RadM/2018/131/21/*RadM1*C{:02d}*s201813121*.nc'.format(channel),
+            'gs://gcp-public-data-goes-16/ABI-L1b-RadM/2018/131/22/*RadM1*C{:02d}*s201813122*.nc'.format(channel),
+            'gs://gcp-public-data-goes-16/ABI-L1b-RadM/2018/131/23/*RadM1*C{:02d}*s201813123*.nc'.format(channel),
+        )]
+    subdir = os.path.join(base_dir, 'abi_l1b', '20180511_texas_fire_abi_l1b_meso')
+    _makedirs(subdir, exist_ok=True)
+    filenames = get_bucket_files(patterns, subdir, force=force, pattern_slice=frame_slice)
+
+    actual_slice = frame_slice.indices(240)  # 240 max frames
+    num_frames = int((actual_slice[1] - actual_slice[0]) / actual_slice[2])
+    assert len(filenames) == len(channels) * num_frames, "Not all files could be downloaded"
+    return filenames
+
+
+def get_texas_fire_abi_conus(base_dir='.', method=None, force=False):
+    """Get GOES-16 ABI (CONUS sector) data from 2018-05-11 21:32Z.
+
+    This example data is used in the half-day tutorial for Satpy.
+    Although the tutorial has separate data download steps, this function
+    is included here as another method of downloading the data if the
+    original download methods do not work.
+    See https://github.com/pytroll/tutorial-satpy-half-day for details.
+
+    Args:
+        base_dir (str): Base directory for downloaded files.
+        method (str): Force download method for the data if not already cached.
+            Allowed options are: 'gcsfs'. Default of ``None`` will
+            choose the best method based on environment settings.
+        force (bool): Force re-download of data regardless of its existence on
+            the local system. Warning: May delete non-demo files stored in
+            download directory.
+
+    Total size: ~110MB
+
+    """
+    if method is None:
+        method = 'gcsfs'
+    if method not in ['gcsfs']:
+        raise NotImplementedError("Demo data download method '{}' not "
+                                  "implemented yet.".format(method))
+
+    from ._google_cloud_platform import get_bucket_files
+    patterns = ['gs://gcp-public-data-goes-16/ABI-L1b-RadC/2018/131/21/*2132*.nc']
+    subdir = os.path.join(base_dir, 'abi_l1b', '20180511_texas_fire_abi_l1b_conus')
+    _makedirs(subdir, exist_ok=True)
+    filenames = get_bucket_files(patterns, subdir, force=force)
+    assert len(filenames) == 16, "Not all files could be downloaded"
+    return filenames

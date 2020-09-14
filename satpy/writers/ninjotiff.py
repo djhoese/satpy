@@ -112,11 +112,9 @@ def convert_units(dataset, in_unit, out_unit):
 class NinjoTIFFWriter(ImageWriter):
     """Writer for NinjoTiff files."""
 
-    def __init__(self, tags=None, **kwargs):
+    def __init__(self, config_dict, tags=None, **kwargs):
         """Inititalize the writer."""
-        ImageWriter.__init__(
-            self, default_config_filename="writers/ninjotiff.yaml", **kwargs
-        )
+        super(NinjoTIFFWriter, self).__init__(config_dict, **kwargs)
 
         self.tags = self.info.get("tags", None) if tags is None else tags
         if self.tags is None:

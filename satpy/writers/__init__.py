@@ -37,20 +37,19 @@ except ImportError:
 from satpy.config import (config_search_paths, glob_config,
                           get_environ_config_dir, recursive_dict_update)
 from satpy import CHUNK_SIZE
-from satpy.plugin_base import Plugin
 from satpy.resample import get_area_def
 
 from trollsift import parser
 
 from trollimage.xrimage import XRImage
 
-LOG = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def read_writer_config(config_files, loader=UnsafeLoader):
     """Read the writer `config_files` and return the info extracted."""
     conf = {}
-    LOG.debug('Reading %s', str(config_files))
+    logger.debug('Reading %s', str(config_files))
     for config_file in config_files:
         with open(config_file) as fd:
             conf.update(yaml.load(fd.read(), Loader=loader))
@@ -83,20 +82,14 @@ def load_writer_configs(writer_configs, ppp_config_dir,
 
 def load_writer(writer, ppp_config_dir=None, **writer_kwargs):
     """Find and load writer `writer` in the available configuration files."""
-    if ppp_config_dir is None:
-        ppp_config_dir = get_environ_config_dir()
-
-    config_fn = writer + ".yaml" if "." not in writer else writer
-    config_files = config_search_paths(
-        os.path.join("writers", config_fn), ppp_config_dir)
-    writer_kwargs.setdefault("config_files", config_files)
-    if not writer_kwargs['config_files']:
+    config_files = list(configs_for_writer(writer, ppp_config_dir))[0]
+    if not config_files:
         raise ValueError("Unknown writer '{}'".format(writer))
 
     try:
-        return load_writer_configs(writer_kwargs['config_files'],
-                                   ppp_config_dir=ppp_config_dir,
-                                   **writer_kwargs)
+        # FIXME: This doesn't work because of `load_writer_configs` above
+        #  and needing to split init kwargs and save kwargs
+        return Writer.from_config_files(*config_files, **writer_kwargs)
     except ValueError:
         raise ValueError("Writer '{}' does not exist or could not be "
                          "loaded".format(writer))
@@ -130,7 +123,7 @@ def configs_for_writer(writer=None, ppp_config_dir=None):
             os.path.join("writers", config_basename), *search_paths)
 
         if not writer_configs:
-            LOG.warning("No writer configs found for '%s'", writer)
+            logger.warning("No writer configs found for '%s'", writer)
             continue
 
         yield writer_configs
@@ -151,10 +144,10 @@ def available_writers(as_dict=False):
     writers = []
     for writer_configs in configs_for_writer():
         try:
-            writer_info = read_writer_config(writer_configs)
+            writer_info = load_yaml_configs(writer_configs)
         except (KeyError, IOError, yaml.YAMLError):
-            LOG.warning("Could not import writer config from: %s", writer_configs)
-            LOG.debug("Error loading YAML", exc_info=True)
+            logger.warning("Could not import writer config from: %s", writer_configs)
+            logger.debug("Error loading YAML", exc_info=True)
             continue
         writers.append(writer_info if as_dict else writer_info['name'])
     return writers
@@ -235,7 +228,7 @@ def add_overlay(orig_img, area, coast_dir, color=None, width=None, resolution=No
     from pycoast import ContourWriterAGG
     if isinstance(area, str):
         area = get_area_def(area)
-    LOG.info("Add coastlines and political borders to image.")
+    logger.info("Add coastlines and political borders to image.")
 
     old_args = [color, width, resolution, grid, level_coast, level_borders]
     if any(arg is not None for arg in old_args):
@@ -287,7 +280,7 @@ def add_text(orig, dc, img, text):
     See documentation of :doc:`pydecorate:index` for more info.
 
     """
-    LOG.info("Add text to image.")
+    logger.info("Add text to image.")
 
     dc.add_text(**text)
 
@@ -308,7 +301,7 @@ def add_logo(orig, dc, img, logo):
     See documentation of :doc:`pydecorate:index` for more info.
 
     """
-    LOG.info("Add logo to image.")
+    logger.info("Add logo to image.")
 
     dc.add_logo(**logo)
 
@@ -329,7 +322,7 @@ def add_scale(orig, dc, img, scale):
     See documentation of :doc:`pydecorate:index` for more info.
 
     """
-    LOG.info("Add scale to image.")
+    logger.info("Add scale to image.")
 
     dc.add_scale(**scale)
 
@@ -374,7 +367,7 @@ def add_decorate(orig, fill_value=None, **decorate):
     align is a special keyword telling where in the image to start adding features, top_bottom is either top or bottom
     and left_right is either left or right.
     """
-    LOG.info("Decorate image.")
+    logger.info("Decorate image.")
 
     # Need to create this here to possible keep the alignment
     # when adding text and/or logo with pydecorate
@@ -458,7 +451,7 @@ def get_enhanced_image(dataset, ppp_config_dir=None, enhance=None, enhancement_c
     img = to_image(dataset)
 
     if enhancer is None or enhancer.enhancement_tree is None:
-        LOG.debug("No enhancement being applied to dataset")
+        logger.debug("No enhancement being applied to dataset")
     else:
         if dataset.attrs.get("sensor", None):
             enhancer.add_sensor_enhancements(dataset.attrs["sensor"])
@@ -558,16 +551,57 @@ def compute_writer_results(results):
                 target.close()
 
 
-class Writer(Plugin):
+def _verify_writer_info_assign_config_files(config, config_files):
+    try:
+        writer_info = config['writer']
+    except KeyError:
+        raise KeyError(
+            "Malformed config file {}: missing writer 'writer'".format(
+                config_files))
+    else:
+        writer_info['config_files'] = config_files
+
+
+def load_yaml_configs(*config_files, loader=UnsafeLoader):
+    """Merge a series of YAML writer configuration files.
+
+    Args:
+        *config_files (str): One or more pathnames
+            to YAML-based writer configuration files that will be merged
+            to create a single configuration.
+        loader: Yaml loader object to load the YAML with. Defaults to
+            `UnsafeLoader`.
+
+    Returns: dict
+        Dictionary representing the entire YAML configuration with the
+        addition of `config['writer']['config_files']` (the list of
+        YAML pathnames that were merged).
+
+    """
+    config = {}
+    logger.debug('Reading %s', str(config_files))
+    for config_file in config_files:
+        with open(config_file, 'r', encoding='utf-8') as fd:
+            config = recursive_dict_update(config, yaml.load(fd, Loader=loader))
+    _verify_writer_info_assign_config_files(config, config_files)
+    return config
+
+
+class Writer:
     """Base Writer class for all other writers.
 
     A minimal writer subclass should implement the `save_dataset` method.
     """
 
-    def __init__(self, name=None, filename=None, base_dir=None, **kwargs):
+    def __init__(self, config_dict, name=None, filename=None, base_dir=None, **kwargs):
         """Initialize the writer object.
 
         Args:
+            config_dict (dict): dictionary of configuration parameters. this
+                typically comes from parsing a yaml configuration file by
+                using the :meth:`writer.from_config_files` class method.
+                a typical structure is
+                `{'writer': { ... writer metadata ... }}`.
             name (str): A name for this writer for log and error messages.
                 If this writer is configured in a YAML file its name should
                 match the name of the YAML file. Writer names may also appear
@@ -590,7 +624,7 @@ class Writer(Plugin):
 
         """
         # Load the config
-        Plugin.__init__(self, **kwargs)
+        self.config = config_dict
         self.info = self.config.get('writer', {})
 
         if 'file_pattern' in self.info:
@@ -610,6 +644,14 @@ class Writer(Plugin):
             raise ValueError("Writer 'name' not provided")
 
         self.filename_parser = self.create_filename_parser(base_dir)
+
+    @classmethod
+    def from_config_files(cls, *config_files, **writer_kwargs):
+        """Create a reader instance from one or more YAML configuration files."""
+        config_dict = load_yaml_configs(*config_files)
+        # pass config_dict as keyword argument for best chance of backwards
+        # compatibility with old writers
+        return config_dict['writer']['writer'](config_dict=config_dict, **writer_kwargs)
 
     @classmethod
     def separate_init_kwargs(cls, kwargs):
@@ -658,7 +700,7 @@ class Writer(Plugin):
         output_filename = self.filename_parser.compose(kwargs)
         dirname = os.path.dirname(output_filename)
         if dirname and not os.path.isdir(dirname):
-            LOG.info("Creating output directory: {}".format(dirname))
+            logger.info("Creating output directory: {}".format(dirname))
             os.makedirs(dirname)
         return output_filename
 
@@ -697,7 +739,7 @@ class Writer(Plugin):
             results.append(self.save_dataset(ds, compute=False, **kwargs))
 
         if compute:
-            LOG.info("Computing and writing results...")
+            logger.info("Computing and writing results...")
             return compute_writer_results([results])
 
         targets, sources, delayeds = split_results([results])
@@ -747,10 +789,15 @@ class Writer(Plugin):
 class ImageWriter(Writer):
     """Base writer for image file formats."""
 
-    def __init__(self, name=None, filename=None, base_dir=None, enhance=None, enhancement_config=None, **kwargs):
+    def __init__(self, config_dict, name=None, filename=None, base_dir=None, enhance=None, enhancement_config=None, **kwargs):
         """Initialize image writer object.
 
         Args:
+            config_dict (dict): dictionary of configuration parameters. this
+                typically comes from parsing a yaml configuration file by
+                using the :meth:`writer.from_config_files` class method.
+                a typical structure is
+                `{'writer': { ... writer metadata ... }}`.
             name (str): A name for this writer for log and error messages.
                 If this writer is configured in a YAML file its name should
                 match the name of the YAML file. Writer names may also appear
@@ -788,7 +835,7 @@ class ImageWriter(Writer):
             instead.
 
         """
-        super(ImageWriter, self).__init__(name, filename, base_dir, **kwargs)
+        super(ImageWriter, self).__init__(config_dict, name, filename, base_dir, **kwargs)
         if enhancement_config is not None:
             warnings.warn("'enhancement_config' has been deprecated. Pass an instance of the "
                           "'Enhancer' class to the 'enhance' keyword argument instead.", DeprecationWarning)
@@ -800,7 +847,7 @@ class ImageWriter(Writer):
             self.enhancer = False
         elif enhance is None or enhance is True:
             # default enhancement
-            self.enhancer = Enhancer(ppp_config_dir=self.ppp_config_dir, enhancement_config_file=enhancement_config)
+            self.enhancer = Enhancer(enhancement_config_file=enhancement_config)
         else:
             # custom enhancer
             self.enhancer = enhance
@@ -911,8 +958,8 @@ class DecisionTree(object):
                                          attrs[1:], kwargs)
         except TypeError:
             # we don't handle multiple values (for example sensor) atm.
-            LOG.debug("Strange stuff happening in decision tree for %s: %s",
-                      attrs[0], kwargs[attrs[0]])
+            logger.debug("Strange stuff happening in decision tree for %s: %s",
+                         attrs[0], kwargs[attrs[0]])
 
         if match is None and self.any_key in curr_level:
             # if we couldn't find it using the attribute then continue with
@@ -926,8 +973,8 @@ class DecisionTree(object):
         try:
             match = self._find_match(self.tree, self.attrs, kwargs)
         except (KeyError, IndexError, ValueError):
-            LOG.debug("Match exception:", exc_info=True)
-            LOG.error("Error when finding matching decision section")
+            logger.debug("Match exception:", exc_info=True)
+            logger.error("Error when finding matching decision section")
 
         if match is None:
             # only possible if no default section was provided
@@ -963,13 +1010,13 @@ class EnhancementDecisionTree(DecisionTree):
                     enhancement_section = enhancement_config.get(
                         self.prefix, {})
                     if not enhancement_section:
-                        LOG.debug("Config '{}' has no '{}' section or it is empty".format(config_file, self.prefix))
+                        logger.debug("Config '{}' has no '{}' section or it is empty".format(config_file, self.prefix))
                         continue
                     conf = recursive_dict_update(conf, enhancement_section)
             elif isinstance(config_file, dict):
                 conf = recursive_dict_update(conf, config_file)
             else:
-                LOG.debug("Loading enhancement config string")
+                logger.debug("Loading enhancement config string")
                 d = yaml.load(config_file, Loader=UnsafeLoader)
                 if not isinstance(d, dict):
                     raise ValueError(
@@ -1048,8 +1095,8 @@ class Enhancer(object):
         """Apply the enhancements."""
         enh_kwargs = self.enhancement_tree.find_match(**info)
 
-        LOG.debug("Enhancement configuration options: %s" %
-                  (str(enh_kwargs['operations']), ))
+        logger.debug("Enhancement configuration options: %s" %
+                     (str(enh_kwargs['operations']), ))
         for operation in enh_kwargs['operations']:
             fun = operation['method']
             args = operation.get('args', [])

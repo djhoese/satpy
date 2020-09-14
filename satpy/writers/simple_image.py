@@ -26,11 +26,7 @@ LOG = logging.getLogger(__name__)
 
 
 class PillowWriter(ImageWriter):
-    def __init__(self, **kwargs):
-        ImageWriter.__init__(
-            self,
-            default_config_filename="writers/simple_image.yaml",
-            **kwargs)
+    """Writer for saving Pillow-supported formats like PNG and JPEG."""
 
     def save_image(self, img, filename=None, compute=True, **kwargs):
         """Save Image object to a given ``filename``.

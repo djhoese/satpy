@@ -335,12 +335,12 @@ class TestYAMLFiles(unittest.TestCase):
         IgnoreLoader.add_multi_constructor('', IgnoreLoader._ignore_all_tags)
 
         from satpy.config import glob_config
-        from satpy.writers import read_writer_config
+        from satpy.writers import load_yaml_configs
         for writer_config in glob_config('writers/*.yaml'):
             writer_fn = os.path.basename(writer_config)
             writer_fn_name = os.path.splitext(writer_fn)[0]
-            writer_info = read_writer_config([writer_config],
-                                             loader=IgnoreLoader)
+            writer_info = load_yaml_configs([writer_config],
+                                            loader=IgnoreLoader)
             self.assertEqual(writer_fn_name, writer_info['name'],
                              "Writer YAML filename doesn't match writer "
                              "name in the YAML file.")

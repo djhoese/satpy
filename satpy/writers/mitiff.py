@@ -37,9 +37,9 @@ KELVIN_TO_CELSIUS = -273.15
 class MITIFFWriter(ImageWriter):
     """Writer to produce MITIFF image files."""
 
-    def __init__(self, name=None, tags=None, **kwargs):
+    def __init__(self, config_dict, name=None, tags=None, **kwargs):
         """Initialize reader with tag and other configuration information."""
-        ImageWriter.__init__(self, name=name, default_config_filename="writers/mitiff.yaml", **kwargs)
+        ImageWriter.__init__(self, config_dict, name=name, **kwargs)
         self.tags = self.info.get("tags", None) if tags is None else tags
         if self.tags is None:
             self.tags = {}

@@ -71,9 +71,9 @@ class GeoTIFFWriter(ImageWriter):
                     "pixeltype",
                     "copy_src_overviews",)
 
-    def __init__(self, dtype=None, tags=None, **kwargs):
+    def __init__(self, config_dict, dtype=None, tags=None, **kwargs):
         """Init the writer."""
-        super(GeoTIFFWriter, self).__init__(default_config_filename="writers/geotiff.yaml", **kwargs)
+        super(GeoTIFFWriter, self).__init__(config_dict, **kwargs)
         self.dtype = self.info.get("dtype") if dtype is None else dtype
         self.tags = self.info.get("tags", None) if tags is None else tags
         if self.tags is None:

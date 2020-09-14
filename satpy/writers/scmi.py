@@ -973,9 +973,9 @@ class SCMIWriter(Writer):
 
     """
 
-    def __init__(self, compress=False, fix_awips=False, **kwargs):
+    def __init__(self, config_dict, compress=False, fix_awips=False, **kwargs):
         """Initialize writer and decision trees."""
-        super(SCMIWriter, self).__init__(default_config_filename="writers/scmi.yaml", **kwargs)
+        super(SCMIWriter, self).__init__(config_dict, **kwargs)
         self.keep_intermediate = False
         self.overwrite_existing = True
         self.scmi_sectors = self.config['sectors']

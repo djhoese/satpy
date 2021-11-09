@@ -118,14 +118,14 @@ class NativeMSGFileHandler(BaseFileHandler):
     @property
     def start_time(self):
         """Read the repeat cycle start time from metadata."""
-        return self.header['15_DATA_HEADER']['ImageAcquisition'][
-            'PlannedAcquisitionTime']['TrueRepeatCycleStart']
+        return self.trailer['15TRAILER']['ImageProductionStats'][
+            'ActualScanningSummary']['ForwardScanStart']
 
     @property
     def end_time(self):
         """Read the repeat cycle end time from metadata."""
-        return self.header['15_DATA_HEADER']['ImageAcquisition'][
-            'PlannedAcquisitionTime']['PlannedRepeatCycleEnd']
+        return self.trailer['15TRAILER']['ImageProductionStats'][
+            'ActualScanningSummary']['ForwardScanEnd']
 
     @staticmethod
     def _calculate_area_extent(center_point, north, east, south, west,

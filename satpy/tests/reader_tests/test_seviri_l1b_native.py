@@ -643,7 +643,7 @@ class TestNativeMSGArea(unittest.TestCase):
                     'ActualScanningSummary': {
                         'ReducedScan': is_rapid_scan,
                         'ForwardScanStart': datetime(2020, 5, 10, 15, 0, 8),
-                        'ForwardScanEnd':  datetime(2020, 5, 10, 15, 12 ,35)
+                        'ForwardScanEnd':  datetime(2020, 5, 10, 15, 12, 35)
                     }
                 }
             }

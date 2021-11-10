@@ -116,14 +116,26 @@ class NativeMSGFileHandler(BaseFileHandler):
             return istream.read(36) == ascii_startswith
 
     @property
+    def start_nominal_time(self):
+        """Read the repeat cycle nominal start time from metadata."""
+        return self.header['15_DATA_HEADER']['ImageAcquisition'][
+            'PlannedAcquisitionTime']['TrueRepeatCycleStart']
+
+    @property
+    def end_nominal_time(self):
+        """Read the repeat cycle nominal end time from metadata."""
+        return self.header['15_DATA_HEADER']['ImageAcquisition'][
+            'PlannedAcquisitionTime']['PlannedRepeatCycleEnd']
+
+    @property
     def start_time(self):
-        """Read the repeat cycle start time from metadata."""
+        """Read the repeat cycle sensing start time from metadata."""
         return self.trailer['15TRAILER']['ImageProductionStats'][
             'ActualScanningSummary']['ForwardScanStart']
 
     @property
     def end_time(self):
-        """Read the repeat cycle end time from metadata."""
+        """Read the repeat cycle sensing end time from metadata."""
         return self.trailer['15TRAILER']['ImageProductionStats'][
             'ActualScanningSummary']['ForwardScanEnd']
 

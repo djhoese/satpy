@@ -636,6 +636,10 @@ class HRITMSGFileHandler(HRITFileHandler):
             'projection_altitude': self.mda['projection_parameters']['h']}
         res.attrs['orbital_parameters'].update(self.mda['orbital_parameters'])
         res.attrs['georef_offset_corrected'] = self.mda['offset_corrected']
+        res.attrs['nominal_start_time'] = self.prologue[
+                     'ImageAcquisition']['PlannedAcquisitionTime']['TrueRepeatCycleStart']
+        res.attrs['nominal_end_time'] = self.prologue['ImageAcquisition'][
+            'PlannedAcquisitionTime']['PlannedRepeatCycleEnd']
         if self.include_raw_metadata:
             res.attrs['raw_metadata'] = self._get_raw_mda()
 

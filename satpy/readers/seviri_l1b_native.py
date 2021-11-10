@@ -116,16 +116,15 @@ class NativeMSGFileHandler(BaseFileHandler):
             return istream.read(36) == ascii_startswith
 
     @property
-    def start_nominal_time(self):
+    def nominal_start_time(self):
         """Read the repeat cycle nominal start time from metadata."""
         return self.header['15_DATA_HEADER']['ImageAcquisition'][
             'PlannedAcquisitionTime']['TrueRepeatCycleStart']
 
     @property
-    def end_nominal_time(self):
+    def nominal_end_time(self):
         """Read the repeat cycle nominal end time from metadata."""
-        return self.header['15_DATA_HEADER']['ImageAcquisition'][
-            'PlannedAcquisitionTime']['PlannedRepeatCycleEnd']
+        return
 
     @property
     def start_time(self):
@@ -579,6 +578,11 @@ class NativeMSGFileHandler(BaseFileHandler):
         dataset.attrs['standard_name'] = dataset_info['standard_name']
         dataset.attrs['platform_name'] = self.mda['platform_name']
         dataset.attrs['sensor'] = 'seviri'
+        dataset.attrs['nominal_start_time'] = self.header['15_DATA_HEADER'][
+                     'ImageAcquisition']['PlannedAcquisitionTime']['TrueRepeatCycleStart']
+        dataset.attrs['nominal_end_time'] = self.header['15_DATA_HEADER']['ImageAcquisition'][
+            'PlannedAcquisitionTime']['PlannedRepeatCycleEnd']
+
         dataset.attrs['georef_offset_corrected'] = self.mda[
             'offset_corrected']
         orbital_parameters = {

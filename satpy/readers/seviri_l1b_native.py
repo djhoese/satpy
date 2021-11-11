@@ -124,6 +124,8 @@ class NativeMSGFileHandler(BaseFileHandler):
     @property
     def nominal_end_time(self):
         """Read the repeat cycle nominal end time from metadata."""
+        return self.header['15_DATA_HEADER']['ImageAcquisition'][
+            'PlannedAcquisitionTime']['PlannedRepeatCycleEnd']
         return
 
     @property
@@ -578,10 +580,8 @@ class NativeMSGFileHandler(BaseFileHandler):
         dataset.attrs['standard_name'] = dataset_info['standard_name']
         dataset.attrs['platform_name'] = self.mda['platform_name']
         dataset.attrs['sensor'] = 'seviri'
-        dataset.attrs['nominal_start_time'] = self.header['15_DATA_HEADER'][
-                     'ImageAcquisition']['PlannedAcquisitionTime']['TrueRepeatCycleStart']
-        dataset.attrs['nominal_end_time'] = self.header['15_DATA_HEADER']['ImageAcquisition'][
-            'PlannedAcquisitionTime']['PlannedRepeatCycleEnd']
+        dataset.attrs['nominal_start_time'] = self.nominal_start_time
+        dataset.attrs['nominal_end_time'] = self.nominal_end_time
 
         dataset.attrs['georef_offset_corrected'] = self.mda[
             'offset_corrected']

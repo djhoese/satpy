@@ -417,6 +417,18 @@ class HRITMSGFileHandler(HRITFileHandler):
         return self.epilogue['ImageProductionStats'][
             'ActualScanningSummary']['ForwardScanEnd']
 
+    @property
+    def nominal_start_time(self):
+        """Get the start time."""
+        return self.prologue['ImageAcquisition'][
+            'PlannedAcquisitionTime']['TrueRepeatCycleStart']
+
+    @property
+    def nominal_end_time(self):
+        """Get the end time."""
+        return self.prologue['ImageAcquisition'][
+            'PlannedAcquisitionTime']['PlannedRepeatCycleEnd']
+
     def _get_area_extent(self, pdict):
         """Get the area extent of the file.
 
@@ -636,10 +648,8 @@ class HRITMSGFileHandler(HRITFileHandler):
             'projection_altitude': self.mda['projection_parameters']['h']}
         res.attrs['orbital_parameters'].update(self.mda['orbital_parameters'])
         res.attrs['georef_offset_corrected'] = self.mda['offset_corrected']
-        res.attrs['nominal_start_time'] = self.prologue[
-                     'ImageAcquisition']['PlannedAcquisitionTime']['TrueRepeatCycleStart']
-        res.attrs['nominal_end_time'] = self.prologue['ImageAcquisition'][
-            'PlannedAcquisitionTime']['PlannedRepeatCycleEnd']
+        res.attrs['nominal_start_time'] = self.nominal_start_time
+        res.attrs['nominal_end_time'] = self.nominal_end_time
         if self.include_raw_metadata:
             res.attrs['raw_metadata'] = self._get_raw_mda()
 

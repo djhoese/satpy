@@ -706,7 +706,7 @@ class TestNativeMSGArea(unittest.TestCase):
             self.prepare_area_defs(TEST_AREA_EXTENT_EARTHMODEL1_VISIR_FULLDISK, gridorigin=1)
 
     def test_earthmodel0_visir_fulldisk(self):
-        # Check exception is raised if we pass a bad earth model
+        """Check exception is raised if we pass a bad earth model."""
         with pytest.raises(NotImplementedError):
             self.prepare_area_defs(TEST_AREA_EXTENT_EARTHMODEL0_VISIR_FULLDISK)
 

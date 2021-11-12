@@ -76,6 +76,23 @@ TEST_AREA_EXTENT_EARTHMODEL1_VISIR_FULLDISK = {
     }
 }
 
+TEST_AREA_EXTENT_EARTHMODEL0_VISIR_FULLDISK = {
+    'earth_model': 0,
+    'dataset_id': make_dataid(name='VIS006', resolution=3000),
+    'is_full_disk': True,
+    'is_rapid_scan': 0,
+    'fill_disk': False,
+    'expected_area_def': {
+        'Area ID': 'msg_seviri_fes_3km',
+        'Projection': {'a': '6378169000', 'b': '6356583800', 'h': '35785831',
+                       'lon_0': '0', 'no_defs': 'None', 'proj': 'geos',
+                       'type': 'crs', 'units': 'm', 'x_0': '0', 'y_0': '0'},
+        'Number of columns': 3712,
+        'Number of rows': 3712,
+        'Area extent': (5568748.2758, 5568748.2758, -5568748.2758, -5568748.2758)
+    }
+}
+
 TEST_AREA_EXTENT_EARTHMODEL1_VISIR_RAPIDSCAN = {
     'earth_model': 1,
     'dataset_id': make_dataid(name='VIS006', resolution=3000),
@@ -533,7 +550,7 @@ class TestNativeMSGArea(unittest.TestCase):
     """
 
     @staticmethod
-    def create_test_header(earth_model, dataset_id, is_full_disk, is_rapid_scan):
+    def create_test_header(earth_model, dataset_id, is_full_disk, is_rapid_scan, gridorigin=2):
         """Create mocked NativeMSGFileHandler.
 
         Contains sufficient attributes for NativeMSGFileHandler.get_area_extent to be able to execute.
@@ -584,7 +601,7 @@ class TestNativeMSGArea(unittest.TestCase):
                     reference_grid: {
                         'ColumnDirGridStep': column_dir_grid_step,
                         'LineDirGridStep': line_dir_grid_step,
-                        'GridOrigin': 2,  # south-east corner
+                        'GridOrigin': gridorigin,  # south-east corner
                     },
                     'ProjectionDescription': {
                         'LongitudeOfSSP': ssp_lon
@@ -643,7 +660,7 @@ class TestNativeMSGArea(unittest.TestCase):
                     'ActualScanningSummary': {
                         'ReducedScan': is_rapid_scan,
                         'ForwardScanStart': datetime(2020, 5, 10, 15, 0, 8),
-                        'ForwardScanEnd':  datetime(2020, 5, 10, 15, 12, 35)
+                        'ForwardScanEnd': datetime(2020, 5, 10, 15, 12, 35)
                     }
                 }
             }
@@ -651,14 +668,14 @@ class TestNativeMSGArea(unittest.TestCase):
 
         return trailer
 
-    def prepare_area_defs(self, test_dict):
+    def prepare_area_defs(self, test_dict, gridorigin=2):
         """Prepare calculated and expected area definitions for equal checking."""
         earth_model = test_dict['earth_model']
         dataset_id = test_dict['dataset_id']
         is_full_disk = test_dict['is_full_disk']
         is_rapid_scan = test_dict['is_rapid_scan']
         fill_disk = test_dict['fill_disk']
-        header = self.create_test_header(earth_model, dataset_id, is_full_disk, is_rapid_scan)
+        header = self.create_test_header(earth_model, dataset_id, is_full_disk, is_rapid_scan, gridorigin)
         trailer = self.create_test_trailer(is_rapid_scan)
         expected_area_def = test_dict['expected_area_def']
 
@@ -681,6 +698,17 @@ class TestNativeMSGArea(unittest.TestCase):
             calc_area_def = fh.get_area_def(dataset_id)
 
         return (calc_area_def, expected_area_def)
+
+    # Test bad grid origin
+    def test_gridorigin(self):
+        """Test the grid origin raises an error if not 2."""
+        with pytest.raises(NotImplementedError):
+            self.prepare_area_defs(TEST_AREA_EXTENT_EARTHMODEL1_VISIR_FULLDISK, gridorigin=1)
+
+    def test_earthmodel0_visir_fulldisk(self):
+        # Check exception is raised if we pass a bad earth model
+        with pytest.raises(NotImplementedError):
+            self.prepare_area_defs(TEST_AREA_EXTENT_EARTHMODEL0_VISIR_FULLDISK)
 
     # Earth model 1 tests
     def test_earthmodel1_visir_fulldisk(self):

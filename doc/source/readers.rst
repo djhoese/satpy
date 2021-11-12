@@ -140,10 +140,10 @@ The datasets held by a scene also provide vital metadata such as dataset name, u
 time etc. The following attributes are standardized across all readers:
 
 * ``name``, and other identifying metadata keys: See :doc:`dev_guide/satpy_internals`.
-* ``start_time``: Earliest time covered by the dataset, depending on the data this may be the
-actual data start time or the planned scanning start time.
+* ``start_time``: Earliest time covered by the dataset, depending on the data this may be the actual
+  data start time or the planned scanning start time.
 * ``end_time``: Latest time covered by the dataset, depending on the data this may be the actual
-data end time or the planned scanning end time.
+  data end time or the planned scanning end time.
 * ``nominal_start_time``: For geostationary sensors, the time at which the scan was scheduled to start.
 * ``nominal_end_time``: For geostationary sensors, the time at which the scan was scheduled to finish.
 * ``area``: :class:`~pyresample.geometry.AreaDefinition` or

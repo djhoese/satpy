@@ -126,7 +126,6 @@ class NativeMSGFileHandler(BaseFileHandler):
         """Read the repeat cycle nominal end time from metadata."""
         return self.header['15_DATA_HEADER']['ImageAcquisition'][
             'PlannedAcquisitionTime']['PlannedRepeatCycleEnd']
-        return
 
     @property
     def start_time(self):

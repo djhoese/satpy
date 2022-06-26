@@ -934,8 +934,10 @@ class RatioSharpenedRGB(GenericCompositor):
             high_res = None
             low_res_idx = 0
 
+        from ._ratio_sharpening import ratio_sharpened_rgb
+        print(r.data.dtype, g.data.dtype, b.data.dtype, high_res.data.dtype)
         rgb = da.map_blocks(
-            _ratio_sharpened_rgb,
+            ratio_sharpened_rgb,
             r.data, g.data, b.data,
             high_res.data if high_res is not None else high_res,
             low_resolution_index=low_res_idx,

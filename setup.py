@@ -18,9 +18,12 @@
 """Setup file for satpy."""
 
 import os.path
+import sys
 from glob import glob
 
-from setuptools import find_packages, setup
+import numpy as np
+from Cython.Build import cythonize
+from setuptools import Extension, find_packages, setup
 
 try:
     # HACK: https://github.com/pypa/setuptools_scm/issues/190#issuecomment-351181286
@@ -87,6 +90,24 @@ all_extras = []
 for extra_deps in extras_require.values():
     all_extras.extend(extra_deps)
 extras_require['all'] = list(set(all_extras))
+
+
+if sys.platform.startswith("win"):
+    extra_compile_args = []
+else:
+    extra_compile_args = ["-O3"]
+
+EXTENSIONS = [
+    Extension(
+        'satpy.composites._ratio_sharpening',
+        sources=['satpy/composites/_ratio_sharpening.pyx'],
+        extra_compile_args=extra_compile_args,
+        include_dirs=[np.get_include()],
+    ),
+]
+cython_directives = {
+    "language_level": "3",
+}
 
 
 def _config_data_files(base_dirs, extensions=(".cfg", )):
@@ -158,4 +179,5 @@ setup(name=NAME,
       python_requires='>=3.8',
       extras_require=extras_require,
       entry_points=entry_points,
+      ext_modules=cythonize(EXTENSIONS, compiler_directives=cython_directives),
       )

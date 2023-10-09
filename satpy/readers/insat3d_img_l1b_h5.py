@@ -14,18 +14,20 @@ with import_error_helper("xarray-datatree"):
 
 from satpy.readers.file_handlers import BaseFileHandler
 
-LUT_SUFFIXES = {"vis": ("RADIANCE", "ALBEDO"),
-                "swir": ("RADIANCE",),
-                "mir": ("RADIANCE", "TEMP"),
-                "tir1": ("RADIANCE", "TEMP"),
-                "tir2": ("RADIANCE", "TEMP"),
-                "wv": ("RADIANCE", "TEMP"),
-                }
+LUT_SUFFIXES = {
+    "vis": ("RADIANCE", "ALBEDO"),
+    "swir": ("RADIANCE",),
+    "mir": ("RADIANCE", "TEMP"),
+    "tir1": ("RADIANCE", "TEMP"),
+    "tir2": ("RADIANCE", "TEMP"),
+    "wv": ("RADIANCE", "TEMP"),
+}
 
-CHANNELS_BY_RESOLUTION = {1000: ["vis", "swir"],
-                          4000: ["mir", "tir1", "tir2"],
-                          8000: ["wv"],
-                          }
+CHANNELS_BY_RESOLUTION = {
+    1000: ["vis", "swir"],
+    4000: ["mir", "tir1", "tir2"],
+    8000: ["wv"],
+}
 
 
 def apply_lut(data, lut):
@@ -120,13 +122,13 @@ class Insat3DIMGL1BH5FileHandler(BaseFileHandler):
     @property
     def start_time(self):
         """Get the start time."""
-        start_time = datetime.strptime(self.datatree.attrs['Acquisition_Start_Time'], '%d-%b-%YT%H:%M:%S')
+        start_time = datetime.strptime(self.datatree.attrs["Acquisition_Start_Time"], "%d-%b-%YT%H:%M:%S")
         return start_time
 
     @property
     def end_time(self):
         """Get the end time."""
-        end_time = datetime.strptime(self.datatree.attrs['Acquisition_End_Time'], '%d-%b-%YT%H:%M:%S')
+        end_time = datetime.strptime(self.datatree.attrs["Acquisition_End_Time"], "%d-%b-%YT%H:%M:%S")
         return end_time
 
     @cached_property
@@ -154,11 +156,13 @@ class Insat3DIMGL1BH5FileHandler(BaseFileHandler):
 
         darr = ds["IMG_" + ds_id["name"] + calibration]
 
-        nlat, nlon = ds.attrs['Nominal_Central_Point_Coordinates(degrees)_Latitude_Longitude']
-        darr.attrs["orbital_parameters"] = dict(satellite_nominal_longitude=float(nlon),
-                                                satellite_nominal_latitude=float(nlat),
-                                                satellite_nominal_altitude=float(ds.attrs["Nominal_Altitude(km)"]),
-                                                satellite_actual_altitude=float(ds.attrs["Observed_Altitude(km)"]))
+        nlat, nlon = ds.attrs["Nominal_Central_Point_Coordinates(degrees)_Latitude_Longitude"]
+        darr.attrs["orbital_parameters"] = dict(
+            satellite_nominal_longitude=float(nlon),
+            satellite_nominal_latitude=float(nlat),
+            satellite_nominal_altitude=float(ds.attrs["Nominal_Altitude(km)"]),
+            satellite_actual_altitude=float(ds.attrs["Observed_Altitude(km)"]),
+        )
         darr.attrs["platform_name"] = "insat-3d"
         darr.attrs["sensor"] = "imager"
         darr = darr.squeeze()
@@ -168,14 +172,15 @@ class Insat3DIMGL1BH5FileHandler(BaseFileHandler):
     def get_area_def(self, ds_id):
         """Get the area definition."""
         from satpy.readers._geos_area import get_area_definition, get_area_extent
+
         darr = self.get_dataset(ds_id, None)
         shape = darr.shape
         lines = shape[-2]
         cols = shape[-1]
 
         fov = self.datatree.attrs["Field_of_View(degrees)"]
-        cfac = 2 ** 16 / (fov / cols)
-        lfac = 2 ** 16 / (fov / lines)
+        cfac = 2**16 / (fov / cols)
+        lfac = 2**16 / (fov / lines)
 
         h = self.datatree.attrs["Observed_Altitude(km)"] * 1000
         # WGS 84
@@ -183,20 +188,20 @@ class Insat3DIMGL1BH5FileHandler(BaseFileHandler):
         b = 6356752.314245
 
         pdict = {
-            'cfac': cfac,
-            'lfac': lfac,
-            'coff': cols / 2,
-            'loff': lines / 2,
-            'ncols': cols,
-            'nlines': lines,
-            'scandir': 'N2S',
-            'a': a,
-            'b': b,
-            'h': h,
-            'ssp_lon': 82.0,
-            'a_name': "insat3d82",
-            'a_desc': "insat3d82",
-            'p_id': 'geosmsg'
+            "cfac": cfac,
+            "lfac": lfac,
+            "coff": cols / 2,
+            "loff": lines / 2,
+            "ncols": cols,
+            "nlines": lines,
+            "scandir": "N2S",
+            "a": a,
+            "b": b,
+            "h": h,
+            "ssp_lon": 82.0,
+            "a_name": "insat3d82",
+            "a_desc": "insat3d82",
+            "p_id": "geosmsg",
         }
         area_extent = get_area_extent(pdict)
         adef = get_area_definition(pdict, area_extent)

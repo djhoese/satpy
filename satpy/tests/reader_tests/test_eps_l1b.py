@@ -35,13 +35,17 @@ from satpy.tests.utils import make_dataid
 # The following fixtures are not defined in this file, but are used and injected by Pytest:
 # - caplog
 
-grh_dtype = np.dtype([("record_class", "|i1"),
-                      ("INSTRUMENT_GROUP", "|i1"),
-                      ("RECORD_SUBCLASS", "|i1"),
-                      ("RECORD_SUBCLASS_VERSION", "|i1"),
-                      ("RECORD_SIZE", ">u4"),
-                      ("RECORD_START_TIME", "S6"),
-                      ("RECORD_STOP_TIME", "S6")])
+grh_dtype = np.dtype(
+    [
+        ("record_class", "|i1"),
+        ("INSTRUMENT_GROUP", "|i1"),
+        ("RECORD_SUBCLASS", "|i1"),
+        ("RECORD_SUBCLASS_VERSION", "|i1"),
+        ("RECORD_SIZE", ">u4"),
+        ("RECORD_START_TIME", "S6"),
+        ("RECORD_STOP_TIME", "S6"),
+    ]
+)
 
 
 def create_sections(structure):
@@ -57,9 +61,9 @@ def create_sections(structure):
         item_size = the_dtype.itemsize + grh_dtype.itemsize
         the_dtype = np.dtype(grh_dtype.descr + the_dtype.descr)
         item = np.zeros(count, the_dtype)
-        item['record_class'] = eps.record_class.index(rec_class)
-        item['RECORD_SUBCLASS'] = sub_class
-        item['RECORD_SIZE'] = item_size
+        item["record_class"] = eps.record_class.index(rec_class)
+        item["RECORD_SUBCLASS"] = sub_class
+        item["RECORD_SIZE"] = item_size
 
         sections[(rec_class, sub_class)] = item
     return sections
@@ -69,11 +73,22 @@ class BaseTestCaseEPSL1B(TestCase):
     """Base class for EPS l1b test case."""
 
     def _create_structure(self):
-        structure = [(1, ('mphr', 0)), (1, ('sphr', 0)), (11, ('ipr', 0)),
-                     (1, ('geadr', 1)), (1, ('geadr', 2)), (1, ('geadr', 3)),
-                     (1, ('geadr', 4)), (1, ('geadr', 5)), (1, ('geadr', 6)),
-                     (1, ('geadr', 7)), (1, ('giadr', 1)), (1, ('giadr', 2)),
-                     (1, ('veadr', 1)), (self.scan_lines, ('mdr', 2))]
+        structure = [
+            (1, ("mphr", 0)),
+            (1, ("sphr", 0)),
+            (11, ("ipr", 0)),
+            (1, ("geadr", 1)),
+            (1, ("geadr", 2)),
+            (1, ("geadr", 3)),
+            (1, ("geadr", 4)),
+            (1, ("geadr", 5)),
+            (1, ("geadr", 6)),
+            (1, ("geadr", 7)),
+            (1, ("giadr", 1)),
+            (1, ("giadr", 2)),
+            (1, ("veadr", 1)),
+            (self.scan_lines, ("mdr", 2)),
+        ]
         sections = create_sections(structure)
         return sections
 
@@ -88,15 +103,15 @@ class TestEPSL1B(BaseTestCaseEPSL1B):
         self.earth_views = 2048
 
         sections = self._create_structure()
-        sections[('mphr', 0)]['TOTAL_MDR'] = (b'TOTAL_MDR                     =   ' +
-                                              bytes(str(self.scan_lines), encoding='ascii') +
-                                              b'\n')
-        sections[('mphr', 0)]['SPACECRAFT_ID'] = b'SPACECRAFT_ID                 = M03\n'
-        sections[('mphr', 0)]['INSTRUMENT_ID'] = b'INSTRUMENT_ID                 = AVHR\n'
-        sections[('sphr', 0)]['EARTH_VIEWS_PER_SCANLINE'] = (b'EARTH_VIEWS_PER_SCANLINE      =  ' +
-                                                             bytes(str(self.earth_views), encoding='ascii') +
-                                                             b'\n')
-        sections[('sphr', 0)]['NAV_SAMPLE_RATE'] = b'NAV_SAMPLE_RATE               =  20\n'
+        sections[("mphr", 0)]["TOTAL_MDR"] = (
+            b"TOTAL_MDR                     =   " + bytes(str(self.scan_lines), encoding="ascii") + b"\n"
+        )
+        sections[("mphr", 0)]["SPACECRAFT_ID"] = b"SPACECRAFT_ID                 = M03\n"
+        sections[("mphr", 0)]["INSTRUMENT_ID"] = b"INSTRUMENT_ID                 = AVHR\n"
+        sections[("sphr", 0)]["EARTH_VIEWS_PER_SCANLINE"] = (
+            b"EARTH_VIEWS_PER_SCANLINE      =  " + bytes(str(self.earth_views), encoding="ascii") + b"\n"
+        )
+        sections[("sphr", 0)]["NAV_SAMPLE_RATE"] = b"NAV_SAMPLE_RATE               =  20\n"
 
         _fd, fname = mkstemp()
         fd = open(_fd)
@@ -105,8 +120,7 @@ class TestEPSL1B(BaseTestCaseEPSL1B):
         for _, arr in sections.items():
             arr.tofile(fd)
         fd.close()
-        self.fh = eps.EPSAVHRRFile(self.filename, {'start_time': 'now',
-                                                   'end_time': 'later'}, {})
+        self.fh = eps.EPSAVHRRFile(self.filename, {"start_time": "now", "end_time": "later"}, {})
 
     def test_read_all(self):
         """Test initialization."""
@@ -116,43 +130,43 @@ class TestEPSL1B(BaseTestCaseEPSL1B):
 
     def test_dataset(self):
         """Test getting a dataset."""
-        did = make_dataid(name='1', calibration='reflectance')
+        did = make_dataid(name="1", calibration="reflectance")
         res = self.fh.get_dataset(did, {})
         assert isinstance(res, xr.DataArray)
-        assert res.attrs['platform_name'] == 'Metop-C'
-        assert res.attrs['sensor'] == 'avhrr-3'
-        assert res.attrs['name'] == '1'
-        assert res.attrs['calibration'] == 'reflectance'
-        assert res.attrs['units'] == '%'
+        assert res.attrs["platform_name"] == "Metop-C"
+        assert res.attrs["sensor"] == "avhrr-3"
+        assert res.attrs["name"] == "1"
+        assert res.attrs["calibration"] == "reflectance"
+        assert res.attrs["units"] == "%"
 
-        did = make_dataid(name='4', calibration='brightness_temperature')
+        did = make_dataid(name="4", calibration="brightness_temperature")
         res = self.fh.get_dataset(did, {})
         assert isinstance(res, xr.DataArray)
-        assert res.attrs['platform_name'] == 'Metop-C'
-        assert res.attrs['sensor'] == 'avhrr-3'
-        assert res.attrs['name'] == '4'
-        assert res.attrs['calibration'] == 'brightness_temperature'
-        assert res.attrs['units'] == 'K'
+        assert res.attrs["platform_name"] == "Metop-C"
+        assert res.attrs["sensor"] == "avhrr-3"
+        assert res.attrs["name"] == "4"
+        assert res.attrs["calibration"] == "brightness_temperature"
+        assert res.attrs["units"] == "K"
 
     def test_navigation(self):
         """Test the navigation."""
-        did = make_dataid(name='longitude')
+        did = make_dataid(name="longitude")
         res = self.fh.get_dataset(did, {})
         assert isinstance(res, xr.DataArray)
-        assert res.attrs['platform_name'] == 'Metop-C'
-        assert res.attrs['sensor'] == 'avhrr-3'
-        assert res.attrs['name'] == 'longitude'
+        assert res.attrs["platform_name"] == "Metop-C"
+        assert res.attrs["sensor"] == "avhrr-3"
+        assert res.attrs["name"] == "longitude"
 
     def test_angles(self):
         """Test the navigation."""
-        did = make_dataid(name='solar_zenith_angle')
+        did = make_dataid(name="solar_zenith_angle")
         res = self.fh.get_dataset(did, {})
         assert isinstance(res, xr.DataArray)
-        assert res.attrs['platform_name'] == 'Metop-C'
-        assert res.attrs['sensor'] == 'avhrr-3'
-        assert res.attrs['name'] == 'solar_zenith_angle'
+        assert res.attrs["platform_name"] == "Metop-C"
+        assert res.attrs["sensor"] == "avhrr-3"
+        assert res.attrs["name"] == "solar_zenith_angle"
 
-    @mock.patch('satpy.readers.eps_l1b.EPSAVHRRFile.__getitem__')
+    @mock.patch("satpy.readers.eps_l1b.EPSAVHRRFile.__getitem__")
     def test_get_full_angles_twice(self, mock__getitem__):
         """Test get full angles twice."""
         geotiemock = mock.Mock()
@@ -160,17 +174,18 @@ class TestEPSL1B(BaseTestCaseEPSL1B):
         metop20kmto1km.side_effect = lambda x, y: (x.copy(), y.copy())
 
         def mock_getitem(key):
-            data = {"ANGULAR_RELATIONS_FIRST": np.zeros((7, 4)),
-                    "ANGULAR_RELATIONS": np.zeros((7, 103, 4)),
-                    "ANGULAR_RELATIONS_LAST": np.zeros((7, 4)),
-                    "NAV_SAMPLE_RATE": 20}
+            data = {
+                "ANGULAR_RELATIONS_FIRST": np.zeros((7, 4)),
+                "ANGULAR_RELATIONS": np.zeros((7, 103, 4)),
+                "ANGULAR_RELATIONS_LAST": np.zeros((7, 4)),
+                "NAV_SAMPLE_RATE": 20,
+            }
             return data[key]
+
         mock__getitem__.side_effect = mock_getitem
 
         avhrr_reader = satpy.readers.eps_l1b.EPSAVHRRFile(
-            filename="foo",
-            filename_info={"start_time": "foo", "end_time": "bar"},
-            filetype_info={"foo": "bar"}
+            filename="foo", filename_info={"start_time": "foo", "end_time": "bar"}, filetype_info={"foo": "bar"}
         )
         avhrr_reader.scanlines = 7
         avhrr_reader.pixels = 2048
@@ -200,15 +215,15 @@ class TestWrongScanlinesEPSL1B(BaseTestCaseEPSL1B):
         self.earth_views = 2048
 
         sections = self._create_structure()
-        sections[('mphr', 0)]['TOTAL_MDR'] = (b'TOTAL_MDR                     =   ' +
-                                              bytes(str(self.scan_lines - 2), encoding='ascii') +
-                                              b'\n')
-        sections[('mphr', 0)]['SPACECRAFT_ID'] = b'SPACECRAFT_ID                 = M03\n'
-        sections[('mphr', 0)]['INSTRUMENT_ID'] = b'INSTRUMENT_ID                 = AVHR\n'
-        sections[('sphr', 0)]['EARTH_VIEWS_PER_SCANLINE'] = (b'EARTH_VIEWS_PER_SCANLINE      =  ' +
-                                                             bytes(str(self.earth_views), encoding='ascii') +
-                                                             b'\n')
-        sections[('sphr', 0)]['NAV_SAMPLE_RATE'] = b'NAV_SAMPLE_RATE               =  20\n'
+        sections[("mphr", 0)]["TOTAL_MDR"] = (
+            b"TOTAL_MDR                     =   " + bytes(str(self.scan_lines - 2), encoding="ascii") + b"\n"
+        )
+        sections[("mphr", 0)]["SPACECRAFT_ID"] = b"SPACECRAFT_ID                 = M03\n"
+        sections[("mphr", 0)]["INSTRUMENT_ID"] = b"INSTRUMENT_ID                 = AVHR\n"
+        sections[("sphr", 0)]["EARTH_VIEWS_PER_SCANLINE"] = (
+            b"EARTH_VIEWS_PER_SCANLINE      =  " + bytes(str(self.earth_views), encoding="ascii") + b"\n"
+        )
+        sections[("sphr", 0)]["NAV_SAMPLE_RATE"] = b"NAV_SAMPLE_RATE               =  20\n"
         _fd, fname = mkstemp()
         fd = open(_fd)
 
@@ -216,8 +231,7 @@ class TestWrongScanlinesEPSL1B(BaseTestCaseEPSL1B):
         for _, arr in sections.items():
             arr.tofile(fd)
         fd.close()
-        self.fh = eps.EPSAVHRRFile(self.filename, {'start_time': 'now',
-                                                   'end_time': 'later'}, {})
+        self.fh = eps.EPSAVHRRFile(self.filename, {"start_time": "now", "end_time": "later"}, {})
 
     def test_read_all_return_right_number_of_scan_lines(self):
         """Test scanline assignment."""
@@ -228,7 +242,7 @@ class TestWrongScanlinesEPSL1B(BaseTestCaseEPSL1B):
         """Test scanline assignment."""
         self.fh._read_all()
         assert "scanlines" in self._caplog.records[0].message
-        assert self._caplog.records[0].levelname == 'WARNING'
+        assert self._caplog.records[0].levelname == "WARNING"
 
     def test_read_all_assigns_int_scan_lines(self):
         """Test scanline assignment."""
@@ -261,17 +275,17 @@ class TestWrongSamplingEPSL1B(BaseTestCaseEPSL1B):
         self.earth_views = 2048
         self.sample_rate = 23
         sections = self._create_structure()
-        sections[('mphr', 0)]['TOTAL_MDR'] = (b'TOTAL_MDR                     =   ' +
-                                              bytes(str(self.scan_lines), encoding='ascii') +
-                                              b'\n')
-        sections[('mphr', 0)]['SPACECRAFT_ID'] = b'SPACECRAFT_ID                 = M03\n'
-        sections[('mphr', 0)]['INSTRUMENT_ID'] = b'INSTRUMENT_ID                 = AVHR\n'
-        sections[('sphr', 0)]['EARTH_VIEWS_PER_SCANLINE'] = (b'EARTH_VIEWS_PER_SCANLINE      =  ' +
-                                                             bytes(str(self.earth_views), encoding='ascii') +
-                                                             b'\n')
-        sections[('sphr', 0)]['NAV_SAMPLE_RATE'] = (b'NAV_SAMPLE_RATE               =  ' +
-                                                    bytes(str(self.sample_rate), encoding='ascii') +
-                                                    b'\n')
+        sections[("mphr", 0)]["TOTAL_MDR"] = (
+            b"TOTAL_MDR                     =   " + bytes(str(self.scan_lines), encoding="ascii") + b"\n"
+        )
+        sections[("mphr", 0)]["SPACECRAFT_ID"] = b"SPACECRAFT_ID                 = M03\n"
+        sections[("mphr", 0)]["INSTRUMENT_ID"] = b"INSTRUMENT_ID                 = AVHR\n"
+        sections[("sphr", 0)]["EARTH_VIEWS_PER_SCANLINE"] = (
+            b"EARTH_VIEWS_PER_SCANLINE      =  " + bytes(str(self.earth_views), encoding="ascii") + b"\n"
+        )
+        sections[("sphr", 0)]["NAV_SAMPLE_RATE"] = (
+            b"NAV_SAMPLE_RATE               =  " + bytes(str(self.sample_rate), encoding="ascii") + b"\n"
+        )
         _fd, fname = mkstemp()
         fd = open(_fd)
 
@@ -279,8 +293,7 @@ class TestWrongSamplingEPSL1B(BaseTestCaseEPSL1B):
         for _, arr in sections.items():
             arr.tofile(fd)
         fd.close()
-        self.fh = eps.EPSAVHRRFile(self.filename, {'start_time': 'now',
-                                                   'end_time': 'later'}, {})
+        self.fh = eps.EPSAVHRRFile(self.filename, {"start_time": "now", "end_time": "later"}, {})
 
     def test_get_dataset_fails_because_of_wrong_sample_rate(self):
         """Test that lons fail to be interpolate."""

@@ -36,16 +36,18 @@ def _get_dataarrays_from_identifiers(scn, identifiers):
     return dataarrays
 
 
-def to_xarray(scn,
-              datasets=None,  # DataID
-              header_attrs=None,
-              exclude_attrs=None,
-              flatten_attrs=False,
-              pretty=True,
-              include_lonlats=True,
-              epoch=None,
-              include_orig_name=True,
-              numeric_name_prefix='CHANNEL_'):
+def to_xarray(
+    scn,
+    datasets=None,  # DataID
+    header_attrs=None,
+    exclude_attrs=None,
+    flatten_attrs=False,
+    pretty=True,
+    include_lonlats=True,
+    epoch=None,
+    include_orig_name=True,
+    numeric_name_prefix="CHANNEL_",
+):
     """Merge all xr.DataArray(s) of a satpy.Scene to a CF-compliant xarray object.
 
     If all Scene DataArrays are on the same area, it returns an xr.Dataset.
@@ -105,16 +107,18 @@ def to_xarray(scn,
         return xr.Dataset()
 
     # Collect xr.Dataset for each group
-    grouped_datasets, header_attrs = collect_cf_datasets(list_dataarrays=list_dataarrays,
-                                                         header_attrs=header_attrs,
-                                                         exclude_attrs=exclude_attrs,
-                                                         flatten_attrs=flatten_attrs,
-                                                         pretty=pretty,
-                                                         include_lonlats=include_lonlats,
-                                                         epoch=epoch,
-                                                         include_orig_name=include_orig_name,
-                                                         numeric_name_prefix=numeric_name_prefix,
-                                                         groups=None)
+    grouped_datasets, header_attrs = collect_cf_datasets(
+        list_dataarrays=list_dataarrays,
+        header_attrs=header_attrs,
+        exclude_attrs=exclude_attrs,
+        flatten_attrs=flatten_attrs,
+        pretty=pretty,
+        include_lonlats=include_lonlats,
+        epoch=epoch,
+        include_orig_name=include_orig_name,
+        numeric_name_prefix=numeric_name_prefix,
+        groups=None,
+    )
     if len(grouped_datasets) == 1:
         ds = grouped_datasets[None]
         return ds

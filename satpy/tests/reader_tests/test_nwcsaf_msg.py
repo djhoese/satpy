@@ -27,11 +27,11 @@ import numpy as np
 from satpy.tests.reader_tests.utils import fill_h5
 
 CTYPE_TEST_ARRAY = (np.random.rand(1856, 3712) * 255).astype(np.uint8)
-CTYPE_TEST_FRAME = (np.arange(100).reshape(10, 10) / 100. * 20).astype(np.uint8)
+CTYPE_TEST_FRAME = (np.arange(100).reshape(10, 10) / 100.0 * 20).astype(np.uint8)
 CTYPE_TEST_ARRAY[1000:1010, 1000:1010] = CTYPE_TEST_FRAME
 
 CTTH_HEIGHT_TEST_ARRAY = (np.random.rand(1856, 3712) * 255).astype(np.uint8)
-_CTTH_HEIGHT_TEST_FRAME = (np.arange(100).reshape(10, 10) / 100. * 80).astype(np.uint8)
+_CTTH_HEIGHT_TEST_FRAME = (np.arange(100).reshape(10, 10) / 100.0 * 80).astype(np.uint8)
 CTTH_HEIGHT_TEST_ARRAY[1000:1010, 1000:1010] = _CTTH_HEIGHT_TEST_FRAME
 
 CTTH_HEIGHT_TEST_FRAME_RES = _CTTH_HEIGHT_TEST_FRAME.astype(np.float32) * 200 - 2000
@@ -39,7 +39,7 @@ CTTH_HEIGHT_TEST_FRAME_RES[0, 0:10] = np.nan
 CTTH_HEIGHT_TEST_FRAME_RES[1, 0:3] = np.nan
 
 CTTH_PRESSURE_TEST_ARRAY = (np.random.rand(1856, 3712) * 255).astype(np.uint8)
-_CTTH_PRESSURE_TEST_FRAME = (np.arange(100).reshape(10, 10) / 100. * 54).astype(np.uint8)
+_CTTH_PRESSURE_TEST_FRAME = (np.arange(100).reshape(10, 10) / 100.0 * 54).astype(np.uint8)
 CTTH_PRESSURE_TEST_ARRAY[1000:1010, 1000:1010] = _CTTH_PRESSURE_TEST_FRAME
 
 CTTH_PRESSURE_TEST_FRAME_RES = _CTTH_PRESSURE_TEST_FRAME.astype(np.float32) * 25 - 250
@@ -47,7 +47,7 @@ CTTH_PRESSURE_TEST_FRAME_RES[0, 0:10] = np.nan
 CTTH_PRESSURE_TEST_FRAME_RES[1, 0:9] = np.nan
 
 CTTH_TEMPERATURE_TEST_ARRAY = (np.random.rand(1856, 3712) * 255).astype(np.uint8)
-_CTTH_TEMPERATURE_TEST_FRAME = (np.arange(100).reshape(10, 10) / 100. * 140).astype(np.uint8)
+_CTTH_TEMPERATURE_TEST_FRAME = (np.arange(100).reshape(10, 10) / 100.0 * 140).astype(np.uint8)
 _CTTH_TEMPERATURE_TEST_FRAME[8, 5] = 255
 CTTH_TEMPERATURE_TEST_ARRAY[1000:1010, 1000:1010] = _CTTH_TEMPERATURE_TEST_FRAME
 
@@ -95,9 +95,7 @@ fake_ct = {
             "PAL_COLORMODEL": b"RGB",
             "PAL_TYPE": b"DIRECTINDEX",
         },
-        "value": np.array(
-            [[100, 100, 100], [255, 100, 0], [0, 80, 215], [95, 60, 30]], dtype=np.uint8
-        ),
+        "value": np.array([[100, 100, 100], [255, 100, 0], [0, 80, 215], [95, 60, 30]], dtype=np.uint8),
     },
     "CT": {
         "attrs": {
@@ -113,7 +111,7 @@ fake_ct = {
             "PRODUCT": b"CT__",
             "SCALING_FACTOR": 1.0,
         },
-        "value": (CTYPE_TEST_ARRAY),
+        "value": CTYPE_TEST_ARRAY,
     },
     "CT_PHASE": {
         "attrs": {
@@ -338,7 +336,7 @@ fake_ctth = {
             "PRODUCT": b"CTTH",
             "SCALING_FACTOR": 200.0,
         },
-        "value": (CTTH_HEIGHT_TEST_ARRAY),
+        "value": CTTH_HEIGHT_TEST_ARRAY,
     },
     "CTTH_PRESS": {
         "attrs": {
@@ -354,7 +352,7 @@ fake_ctth = {
             "PRODUCT": b"CTTH",
             "SCALING_FACTOR": 25.0,
         },
-        "value": (CTTH_PRESSURE_TEST_ARRAY),
+        "value": CTTH_PRESSURE_TEST_ARRAY,
     },
     "CTTH_QUALITY": {
         "attrs": {
@@ -385,7 +383,7 @@ fake_ctth = {
             "PRODUCT": b"CTTH",
             "SCALING_FACTOR": 1.0,
         },
-        "value": (CTTH_TEMPERATURE_TEST_ARRAY),
+        "value": CTTH_TEMPERATURE_TEST_ARRAY,
     },
     "attrs": {
         "CFAC": 13642337,
@@ -428,12 +426,22 @@ PROJ = {
 }
 
 AREA_DEF_DICT = {
-    "proj_dict": {'proj': 'geos', 'lon_0': 0, 'h': 35785831, 'x_0': 0, 'y_0': 0,
-                  'a': 6378169, 'b': 6356583.8, 'units': 'm', 'no_defs': None, 'type': 'crs'},
-    "area_id": 'MSG-N',
+    "proj_dict": {
+        "proj": "geos",
+        "lon_0": 0,
+        "h": 35785831,
+        "x_0": 0,
+        "y_0": 0,
+        "a": 6378169,
+        "b": 6356583.8,
+        "units": "m",
+        "no_defs": None,
+        "type": "crs",
+    },
+    "area_id": "MSG-N",
     "x_size": 3712,
     "y_size": 1856,
-    "area_extent": (-5570248.2825, 1501.0099, 5567247.8793, 5570247.8784)
+    "area_extent": (-5570248.2825, 1501.0099, 5567247.8793, 5570247.8784),
 }
 
 
@@ -481,20 +489,20 @@ class TestH5NWCSAF(unittest.TestCase):
 
         area_def = test.get_area_def(dsid)
 
-        aext_res = AREA_DEF_DICT['area_extent']
+        aext_res = AREA_DEF_DICT["area_extent"]
         for i in range(4):
             self.assertAlmostEqual(area_def.area_extent[i], aext_res[i], 4)
 
-        proj_dict = AREA_DEF_DICT['proj_dict']
-        self.assertEqual(proj_dict['proj'], area_def.proj_dict['proj'])
+        proj_dict = AREA_DEF_DICT["proj_dict"]
+        self.assertEqual(proj_dict["proj"], area_def.proj_dict["proj"])
         # Not all elements passed on Appveyor, so skip testing every single element of the proj-dict:
         # for key in proj_dict:
         #    self.assertEqual(proj_dict[key], area_def.proj_dict[key])
 
-        self.assertEqual(AREA_DEF_DICT['x_size'], area_def.width)
-        self.assertEqual(AREA_DEF_DICT['y_size'], area_def.height)
+        self.assertEqual(AREA_DEF_DICT["x_size"], area_def.width)
+        self.assertEqual(AREA_DEF_DICT["y_size"], area_def.height)
 
-        self.assertEqual(AREA_DEF_DICT['area_id'], area_def.area_id)
+        self.assertEqual(AREA_DEF_DICT["area_id"], area_def.area_id)
 
     def test_get_dataset(self):
         """Retrieve datasets from a NWCSAF msgv2013 hdf5 file."""

@@ -21,10 +21,12 @@
 def pytest_configure(config):
     """Set test configuration."""
     from satpy import aux_download
+
     aux_download.RUNNING_TESTS = True
 
 
 def pytest_unconfigure(config):
     """Undo previous configurations."""
     from satpy import aux_download
+
     aux_download.RUNNING_TESTS = False

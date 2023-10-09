@@ -80,33 +80,34 @@ def _dictify(r):
 
 def _get_calibration_name(calibration):
     """Get the proper calibration name."""
-    calibration_name = getattr(calibration, "name", calibration) or 'gamma'
-    if calibration_name == 'sigma_nought':
-        calibration_name = 'sigmaNought'
-    elif calibration_name == 'beta_nought':
-        calibration_name = 'betaNought'
+    calibration_name = getattr(calibration, "name", calibration) or "gamma"
+    if calibration_name == "sigma_nought":
+        calibration_name = "sigmaNought"
+    elif calibration_name == "beta_nought":
+        calibration_name = "betaNought"
     return calibration_name
 
 
 class SAFEXML(BaseFileHandler):
     """XML file reader for the SAFE format."""
 
-    def __init__(self, filename, filename_info, filetype_info,
-                 header_file=None):
+    def __init__(self, filename, filename_info, filetype_info, header_file=None):
         """Init the xml filehandler."""
         super(SAFEXML, self).__init__(filename, filename_info, filetype_info)
 
-        self._start_time = filename_info['start_time']
-        self._end_time = filename_info['end_time']
-        self._polarization = filename_info['polarization']
+        self._start_time = filename_info["start_time"]
+        self._end_time = filename_info["end_time"]
+        self._polarization = filename_info["polarization"]
         self.root = ET.parse(self.filename)
         self.hdr = {}
         if header_file is not None:
             self.hdr = header_file.get_metadata()
         else:
             self.hdr = self.get_metadata()
-        self._image_shape = (self.hdr['product']['imageAnnotation']['imageInformation']['numberOfLines'],
-                             self.hdr['product']['imageAnnotation']['imageInformation']['numberOfSamples'])
+        self._image_shape = (
+            self.hdr["product"]["imageAnnotation"]["imageInformation"]["numberOfLines"],
+            self.hdr["product"]["imageAnnotation"]["imageInformation"]["numberOfSamples"],
+        )
 
     def get_metadata(self):
         """Convert the xml metadata to dict."""
@@ -126,13 +127,10 @@ class SAFEXML(BaseFileHandler):
 class SAFEXMLAnnotation(SAFEXML):
     """XML file reader for the SAFE format, Annotation file."""
 
-    def __init__(self, filename, filename_info, filetype_info,
-                 header_file=None):
+    def __init__(self, filename, filename_info, filetype_info, header_file=None):
         """Init the XML annotation reader."""
         super().__init__(filename, filename_info, filetype_info, header_file)
-        self.get_incidence_angle = functools.lru_cache(maxsize=10)(
-            self._get_incidence_angle_uncached
-        )
+        self.get_incidence_angle = functools.lru_cache(maxsize=10)(self._get_incidence_angle_uncached)
 
     def get_dataset(self, key, info, chunks=None):
         """Load a dataset."""
@@ -151,13 +149,10 @@ class SAFEXMLAnnotation(SAFEXML):
 class SAFEXMLCalibration(SAFEXML):
     """XML file reader for the SAFE format, Calibration file."""
 
-    def __init__(self, filename, filename_info, filetype_info,
-                 header_file=None):
+    def __init__(self, filename, filename_info, filetype_info, header_file=None):
         """Init the XML calibration reader."""
         super().__init__(filename, filename_info, filetype_info, header_file)
-        self.get_calibration = functools.lru_cache(maxsize=10)(
-            self._get_calibration_uncached
-        )
+        self.get_calibration = functools.lru_cache(maxsize=10)(self._get_calibration_uncached)
 
     def get_dataset(self, key, info, chunks=None):
         """Load a dataset."""
@@ -169,7 +164,7 @@ class SAFEXMLCalibration(SAFEXML):
 
     def get_calibration_constant(self):
         """Load the calibration constant."""
-        return float(self.root.find('.//absoluteCalibrationConstant').text)
+        return float(self.root.find(".//absoluteCalibrationConstant").text)
 
     def _get_calibration_uncached(self, calibration, chunks=None):
         """Get the calibration array."""
@@ -186,15 +181,12 @@ class SAFEXMLCalibration(SAFEXML):
 class SAFEXMLNoise(SAFEXML):
     """XML file reader for the SAFE format, Noise file."""
 
-    def __init__(self, filename, filename_info, filetype_info,
-                 header_file=None):
+    def __init__(self, filename, filename_info, filetype_info, header_file=None):
         """Init the xml filehandler."""
         super().__init__(filename, filename_info, filetype_info, header_file)
 
         self.azimuth_noise_reader = AzimuthNoiseReader(self.root, self._image_shape)
-        self.get_noise_correction = functools.lru_cache(maxsize=10)(
-            self._get_noise_correction_uncached
-        )
+        self.get_noise_correction = functools.lru_cache(maxsize=10)(self._get_noise_correction_uncached)
 
     def get_dataset(self, key, info, chunks=None):
         """Load a dataset."""
@@ -280,9 +272,11 @@ class AzimuthNoiseReader:
         # relying mostly on dask arrays.
         slices = self._create_dask_slices_from_blocks(chunks)
         populated_array = da.vstack(slices).rechunk(chunks)
-        populated_array = xr.DataArray(populated_array, dims=['y', 'x'],
-                                       coords={'x': np.arange(self._image_shape[1]),
-                                               'y': np.arange(self._image_shape[0])})
+        populated_array = xr.DataArray(
+            populated_array,
+            dims=["y", "x"],
+            coords={"x": np.arange(self._image_shape[1]), "y": np.arange(self._image_shape[0])},
+        )
         return populated_array
 
     def _create_dask_slices_from_blocks(self, chunks):
@@ -306,7 +300,7 @@ class AzimuthNoiseReader:
     def _get_array_pieces_for_current_line(self, current_line):
         """Get the array pieces that cover the current line."""
         current_blocks = self._find_blocks_covering_line(current_line)
-        current_blocks.sort(key=(lambda x: x.coords['x'][0]))
+        current_blocks.sort(key=(lambda x: x.coords["x"][0]))
         next_line = self._get_next_start_line(current_blocks, current_line)
         current_y = np.arange(current_line, next_line)
         pieces = [arr.sel(y=current_y) for arr in current_blocks]
@@ -316,12 +310,12 @@ class AzimuthNoiseReader:
         """Find the blocks covering a given line."""
         current_blocks = []
         for block in self.blocks:
-            if block.coords['y'][0] <= current_line <= block.coords['y'][-1]:
+            if block.coords["y"][0] <= current_line <= block.coords["y"][-1]:
                 current_blocks.append(block)
         return current_blocks
 
     def _get_next_start_line(self, current_blocks, current_line):
-        next_line = min((arr.coords['y'][-1] for arr in current_blocks)) + 1
+        next_line = min((arr.coords["y"][-1] for arr in current_blocks)) + 1
         blocks_starting_soon = [block for block in self.blocks if current_line < block.coords["y"][0] < next_line]
         if blocks_starting_soon:
             next_start_line = min((arr.coords["y"][0] for arr in blocks_starting_soon))
@@ -330,25 +324,25 @@ class AzimuthNoiseReader:
 
     def _get_padded_dask_pieces(self, pieces, chunks):
         """Get the padded pieces of a slice."""
-        pieces = sorted(pieces, key=(lambda x: x.coords['x'][0]))
+        pieces = sorted(pieces, key=(lambda x: x.coords["x"][0]))
         dask_pieces = []
         previous_x_end = -1
         piece = pieces[0]
-        next_x_start = piece.coords['x'][0].item()
-        y_shape = len(piece.coords['y'])
+        next_x_start = piece.coords["x"][0].item()
+        y_shape = len(piece.coords["y"])
 
-        x_shape = (next_x_start - previous_x_end - 1)
+        x_shape = next_x_start - previous_x_end - 1
         self._fill_dask_pieces(dask_pieces, (y_shape, x_shape), chunks)
 
         for i, piece in enumerate(pieces):
             dask_pieces.append(piece.data)
-            previous_x_end = piece.coords['x'][-1].item()
+            previous_x_end = piece.coords["x"][-1].item()
             try:
-                next_x_start = pieces[i + 1].coords['x'][0].item()
+                next_x_start = pieces[i + 1].coords["x"][0].item()
             except IndexError:
                 next_x_start = self._image_shape[1]
 
-            x_shape = (next_x_start - previous_x_end - 1)
+            x_shape = next_x_start - previous_x_end - 1
             self._fill_dask_pieces(dask_pieces, (y_shape, x_shape), chunks)
 
         return dask_pieces
@@ -402,38 +396,36 @@ class _AzimuthBlock:
         x_coord = np.arange(self.first_pixel, self.last_pixel + 1)
         y_coord = np.arange(self.first_line, self.last_line + 1)
 
-        new_arr = (da.ones((len(y_coord), len(x_coord)), chunks=chunks) *
-                   np.interp(y_coord, self.lines, data)[:, np.newaxis])
-        new_arr = xr.DataArray(new_arr,
-                               dims=['y', 'x'],
-                               coords={'x': x_coord,
-                                       'y': y_coord})
+        new_arr = (
+            da.ones((len(y_coord), len(x_coord)), chunks=chunks) * np.interp(y_coord, self.lines, data)[:, np.newaxis]
+        )
+        new_arr = xr.DataArray(new_arr, dims=["y", "x"], coords={"x": x_coord, "y": y_coord})
         return new_arr
 
     @property
     def first_pixel(self):
-        return int(self.element.find('firstRangeSample').text)
+        return int(self.element.find("firstRangeSample").text)
 
     @property
     def last_pixel(self):
-        return int(self.element.find('lastRangeSample').text)
+        return int(self.element.find("lastRangeSample").text)
 
     @property
     def first_line(self):
-        return int(self.element.find('firstAzimuthLine').text)
+        return int(self.element.find("firstAzimuthLine").text)
 
     @property
     def last_line(self):
-        return int(self.element.find('lastAzimuthLine').text)
+        return int(self.element.find("lastAzimuthLine").text)
 
     @property
     def lines(self):
-        lines = self.element.find('line').text.split()
+        lines = self.element.find("line").text.split()
         return np.array(lines).astype(int)
 
     @property
     def lut(self):
-        lut = self.element.find('noiseAzimuthLut').text.split()
+        lut = self.element.find("noiseAzimuthLut").text.split()
         return np.array(lut).astype(float)
 
 
@@ -458,11 +450,10 @@ class XMLArray:
         x = []
         data = []
         for elt in elements:
-            new_x = elt.find('pixel').text.split()
-            y += [int(elt.find('line').text)] * len(new_x)
+            new_x = elt.find("pixel").text.split()
+            y += [int(elt.find("line").text)] * len(new_x)
             x += [int(val) for val in new_x]
-            data += [float(val)
-                     for val in elt.find(self.element_tag).text.split()]
+            data += [float(val) for val in elt.find(self.element_tag).text.split()]
 
         return np.asarray(data), (x, y)
 
@@ -479,8 +470,7 @@ class XMLArray:
         return interpolate_xarray_linear(xpoints, ypoints, self.data, shape, chunks=chunks)
 
 
-def interpolate_xarray(xpoints, ypoints, values, shape,
-                       blocksize=CHUNK_SIZE):
+def interpolate_xarray(xpoints, ypoints, values, shape, blocksize=CHUNK_SIZE):
     """Interpolate, generating a dask array."""
     from scipy.interpolate import RectBivariateSpline
 
@@ -488,7 +478,7 @@ def interpolate_xarray(xpoints, ypoints, values, shape,
     hchunks = range(0, shape[1], blocksize)
 
     token = tokenize(blocksize, xpoints, ypoints, values, shape)
-    name = 'interpolate-' + token
+    name = "interpolate-" + token
 
     spline = RectBivariateSpline(xpoints, ypoints, values.T)
 
@@ -496,18 +486,19 @@ def interpolate_xarray(xpoints, ypoints, values, shape,
         """Interpolator function."""
         return spline(xnew, ynew).T
 
-    dskx = {(name, i, j): (interpolate_slice,
-                           slice(vcs, min(vcs + blocksize, shape[0])),
-                           slice(hcs, min(hcs + blocksize, shape[1])),
-                           interpolator)
-            for i, vcs in enumerate(vchunks)
-            for j, hcs in enumerate(hchunks)
-            }
+    dskx = {
+        (name, i, j): (
+            interpolate_slice,
+            slice(vcs, min(vcs + blocksize, shape[0])),
+            slice(hcs, min(hcs + blocksize, shape[1])),
+            interpolator,
+        )
+        for i, vcs in enumerate(vchunks)
+        for j, hcs in enumerate(hchunks)
+    }
 
-    res = da.Array(dskx, name, shape=list(shape),
-                   chunks=(blocksize, blocksize),
-                   dtype=values.dtype)
-    return DataArray(res, dims=('y', 'x'))
+    res = da.Array(dskx, name, shape=list(shape), chunks=(blocksize, blocksize), dtype=values.dtype)
+    return DataArray(res, dims=("y", "x"))
 
 
 def intp(grid_x, grid_y, interpolator):
@@ -524,19 +515,17 @@ def interpolate_xarray_linear(xpoints, ypoints, values, shape, chunks=CHUNK_SIZE
     else:
         vchunks, hchunks = chunks, chunks
 
-    points = _ndim_coords_from_arrays(np.vstack((np.asarray(ypoints),
-                                                 np.asarray(xpoints))).T)
+    points = _ndim_coords_from_arrays(np.vstack((np.asarray(ypoints), np.asarray(xpoints))).T)
 
     interpolator = LinearNDInterpolator(points, values)
 
-    grid_x, grid_y = da.meshgrid(da.arange(shape[1], chunks=hchunks),
-                                 da.arange(shape[0], chunks=vchunks))
+    grid_x, grid_y = da.meshgrid(da.arange(shape[1], chunks=hchunks), da.arange(shape[0], chunks=vchunks))
 
     # workaround for non-thread-safe first call of the interpolator:
     interpolator((0, 0))
     res = da.map_blocks(intp, grid_x, grid_y, interpolator=interpolator)
 
-    return DataArray(res, dims=('y', 'x'))
+    return DataArray(res, dims=("y", "x"))
 
 
 class SAFEGRD(BaseFileHandler):
@@ -549,62 +538,59 @@ class SAFEGRD(BaseFileHandler):
 
     def __init__(self, filename, filename_info, filetype_info, calfh, noisefh, annotationfh):
         """Init the grd filehandler."""
-        super(SAFEGRD, self).__init__(filename, filename_info,
-                                      filetype_info)
+        super(SAFEGRD, self).__init__(filename, filename_info, filetype_info)
 
-        self._start_time = filename_info['start_time']
-        self._end_time = filename_info['end_time']
+        self._start_time = filename_info["start_time"]
+        self._end_time = filename_info["end_time"]
 
-        self._polarization = filename_info['polarization']
+        self._polarization = filename_info["polarization"]
 
-        self._mission_id = filename_info['mission_id']
+        self._mission_id = filename_info["mission_id"]
 
         self.calibration = calfh
         self.noise = noisefh
         self.annotation = annotationfh
         self.read_lock = Lock()
 
-        self.filehandle = rasterio.open(self.filename, 'r', sharing=False)
-        self.get_lonlatalts = functools.lru_cache(maxsize=2)(
-            self._get_lonlatalts_uncached
-        )
+        self.filehandle = rasterio.open(self.filename, "r", sharing=False)
+        self.get_lonlatalts = functools.lru_cache(maxsize=2)(self._get_lonlatalts_uncached)
 
     def get_dataset(self, key, info):
         """Load a dataset."""
         if self._polarization != key["polarization"]:
             return
 
-        logger.debug('Reading %s.', key['name'])
+        logger.debug("Reading %s.", key["name"])
 
-        if key['name'] in ['longitude', 'latitude', 'altitude']:
-            logger.debug('Constructing coordinate arrays.')
+        if key["name"] in ["longitude", "latitude", "altitude"]:
+            logger.debug("Constructing coordinate arrays.")
             arrays = dict()
-            arrays['longitude'], arrays['latitude'], arrays['altitude'] = self.get_lonlatalts()
+            arrays["longitude"], arrays["latitude"], arrays["altitude"] = self.get_lonlatalts()
 
-            data = arrays[key['name']]
+            data = arrays[key["name"]]
             data.attrs.update(info)
 
         else:
-            data = xr.open_dataset(self.filename, engine="rasterio",
-                                   chunks={"band": 1, "y": CHUNK_SIZE, "x": CHUNK_SIZE})["band_data"].squeeze()
-            data = data.assign_coords(x=np.arange(len(data.coords['x'])),
-                                      y=np.arange(len(data.coords['y'])))
+            data = xr.open_dataset(
+                self.filename, engine="rasterio", chunks={"band": 1, "y": CHUNK_SIZE, "x": CHUNK_SIZE}
+            )["band_data"].squeeze()
+            data = data.assign_coords(x=np.arange(len(data.coords["x"])), y=np.arange(len(data.coords["y"])))
             data = self._calibrate_and_denoise(data, key)
             data.attrs.update(info)
-            data.attrs.update({'platform_name': self._mission_id})
+            data.attrs.update({"platform_name": self._mission_id})
 
-            data = self._change_quantity(data, key['quantity'])
+            data = self._change_quantity(data, key["quantity"])
 
         return data
 
     @staticmethod
     def _change_quantity(data, quantity):
         """Change quantity to dB if needed."""
-        if quantity == 'dB':
+        if quantity == "dB":
             data.data = 10 * np.log10(data.data)
-            data.attrs['units'] = 'dB'
+            data.attrs["units"] = "dB"
         else:
-            data.attrs['units'] = '1'
+            data.attrs["units"] = "1"
 
         return data
 
@@ -627,18 +613,18 @@ class SAFEGRD(BaseFileHandler):
 
     def _denoise(self, dn, chunks):
         """Denoise the data."""
-        logger.debug('Reading noise data.')
+        logger.debug("Reading noise data.")
         noise = self.noise.get_noise_correction(chunks=chunks).fillna(0)
         dn = dn - noise
         return dn
 
     def _calibrate(self, dn, chunks, key):
         """Calibrate the data."""
-        logger.debug('Reading calibration data.')
-        cal = self.calibration.get_calibration(key['calibration'], chunks=chunks)
+        logger.debug("Reading calibration data.")
+        cal = self.calibration.get_calibration(key["calibration"], chunks=chunks)
         cal_constant = self.calibration.get_calibration_constant()
-        logger.debug('Calibrating.')
-        data = ((dn + cal_constant) / (cal ** 2)).clip(min=0)
+        logger.debug("Calibrating.")
+        data = ((dn + cal_constant) / (cal**2)).clip(min=0)
         return data
 
     def _get_lonlatalts_uncached(self):
@@ -661,12 +647,12 @@ class SAFEGRD(BaseFileHandler):
         latitudes = interpolate_xarray(xpoints, ypoints, gcp_lats, band.shape)
         altitudes = interpolate_xarray(xpoints, ypoints, gcp_alts, band.shape)
 
-        longitudes.attrs['gcps'] = gcps
-        longitudes.attrs['crs'] = crs
-        latitudes.attrs['gcps'] = gcps
-        latitudes.attrs['crs'] = crs
-        altitudes.attrs['gcps'] = gcps
-        altitudes.attrs['crs'] = crs
+        longitudes.attrs["gcps"] = gcps
+        longitudes.attrs["crs"] = crs
+        latitudes.attrs["gcps"] = gcps
+        latitudes.attrs["crs"] = crs
+        altitudes.attrs["gcps"] = gcps
+        altitudes.attrs["crs"] = crs
 
         return longitudes, latitudes, altitudes
 

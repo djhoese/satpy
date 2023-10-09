@@ -35,8 +35,7 @@ class ReflectanceCorrector(ModifierBase, DataDownloadMixin):
     Uses a python rewrite of the C CREFL code written for VIIRS and MODIS.
     """
 
-    def __init__(self, *args, dem_filename=None, dem_sds="averaged elevation",
-                 url=None, known_hash=None, **kwargs):
+    def __init__(self, *args, dem_filename=None, dem_sds="averaged elevation", url=None, known_hash=None, **kwargs):
         """Initialize the compositor with values from the user or from the configuration file.
 
         If `dem_filename` can't be found or opened then correction is done
@@ -54,10 +53,9 @@ class ReflectanceCorrector(ModifierBase, DataDownloadMixin):
         """
         if dem_filename is not None:
             warnings.warn(
-                "'dem_filename' for 'ReflectanceCorrector' is "
-                "deprecated. Use 'url' instead.",
+                "'dem_filename' for 'ReflectanceCorrector' is deprecated. Use 'url' instead.",
                 DeprecationWarning,
-                stacklevel=2
+                stacklevel=2,
             )
 
         super(ReflectanceCorrector, self).__init__(*args, **kwargs)
@@ -69,9 +67,7 @@ class ReflectanceCorrector(ModifierBase, DataDownloadMixin):
     def _get_registered_dem_cache_key(self):
         if not self.url:
             return
-        reg_files = self.register_data_files([{
-            'url': self.url, 'known_hash': self.known_hash}
-        ])
+        reg_files = self.register_data_files([{"url": self.url, "known_hash": self.known_hash}])
         return reg_files[0]
 
     def __call__(self, datasets, optional_datasets, **info):
@@ -86,19 +82,20 @@ class ReflectanceCorrector(ModifierBase, DataDownloadMixin):
 
     def _call_crefl(self, refl_data, angles):
         from satpy.modifiers._crefl_utils import run_crefl
+
         avg_elevation = self._get_average_elevation()
-        results = run_crefl(refl_data,
-                            *angles,
-                            avg_elevation=avg_elevation,
-                            )
+        results = run_crefl(
+            refl_data,
+            *angles,
+            avg_elevation=avg_elevation,
+        )
         return results
 
     def _get_average_elevation(self):
         if self.dem_cache_key is None:
             return
 
-        LOG.debug("Loading CREFL averaged elevation information from: %s",
-                  self.dem_cache_key)
+        LOG.debug("Loading CREFL averaged elevation information from: %s", self.dem_cache_key)
         local_filename = retrieve(self.dem_cache_key)
         avg_elevation = self._read_var_from_hdf4_file(local_filename, self.dem_sds).astype(np.float64)
         if isinstance(avg_elevation, np.ma.MaskedArray):
@@ -125,6 +122,7 @@ class ReflectanceCorrector(ModifierBase, DataDownloadMixin):
     @staticmethod
     def _read_var_from_hdf4_file_pyhdf(local_filename, var_name):
         from pyhdf.SD import SD, SDC
+
         f = SD(local_filename, SDC.READ)
         var = f.select(var_name)
         data = var[:]
@@ -134,6 +132,7 @@ class ReflectanceCorrector(ModifierBase, DataDownloadMixin):
     @staticmethod
     def _read_fill_value_from_hdf4(var, dtype):
         from pyhdf.error import HDF4Error
+
         try:
             return var.getfillvalue()
         except HDF4Error:
@@ -145,9 +144,8 @@ class ReflectanceCorrector(ModifierBase, DataDownloadMixin):
             vis = self.match_data_arrays(datasets)[0]
             return vis, get_angles(vis)
         if len(all_datasets) == 5:
-            vis, *angles = self.match_data_arrays(
-                datasets + optional_datasets)
+            vis, *angles = self.match_data_arrays(datasets + optional_datasets)
             return vis, angles
-        raise ValueError("Not sure how to handle provided dependencies. "
-                         "Either all 4 angles must be provided or none of "
-                         "of them.")
+        raise ValueError(
+            "Not sure how to handle provided dependencies. Either all 4 angles must be provided or none of of them."
+        )

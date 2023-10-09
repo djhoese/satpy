@@ -82,8 +82,8 @@ MAXSOLZ = 86.5
 MAXAIRMASS = 18
 SCALEHEIGHT = 8000
 FILL_INT16 = 32767
-TAUSTEP4SPHALB_ABI = .0003
-TAUSTEP4SPHALB = .0001
+TAUSTEP4SPHALB_ABI = 0.0003
+TAUSTEP4SPHALB = 0.0001
 
 MAXNUMSPHALBVALUES = 4000  # with no aerosol taur <= 0.4 in all bands everywhere
 REFLMIN = -0.01
@@ -147,14 +147,14 @@ class _Coefficients:
 
 
 class _ABICoefficients(_Coefficients):
-    RG_FUDGE = .55  # This number is what Ralph says "looks good" for ABI/AHI
+    RG_FUDGE = 0.55  # This number is what Ralph says "looks good" for ABI/AHI
     LUTS = [
         # aH2O
         np.array([2.4111e-003, 7.8454e-003 * RG_FUDGE, 7.9258e-3, 9.3392e-003, 2.53e-2]),
         # aO2 (bH2O for other instruments)
         np.array([1.2360e-003, 3.7296e-003, 177.7161e-006, 10.4899e-003, 1.63e-2]),
         # aO3
-        np.array([4.2869e-003, 25.6509e-003 * RG_FUDGE, 802.4319e-006, 0.0000e+000, 2e-5]),
+        np.array([4.2869e-003, 25.6509e-003 * RG_FUDGE, 802.4319e-006, 0.0000e000, 2e-5]),
         # taur0
         np.array([184.7200e-003, 52.3490e-003, 15.8450e-003, 1.3074e-003, 311.2900e-006]),
     ]
@@ -173,7 +173,7 @@ class _ABICoefficients(_Coefficients):
             WavelengthRange(1.580, 1.610, 1.640): 3,  # C05
             "C05": 3,
             WavelengthRange(2.225, 2.250, 2.275): 4,  # C06
-            "C06": 4
+            "C06": 4,
         },
     }
 
@@ -182,17 +182,89 @@ class _VIIRSCoefficients(_Coefficients):
     # Values from crefl 1.7.1
     LUTS = [
         # aH2O
-        np.array([0.000406601, 0.0015933, 0, 1.78644e-05, 0.00296457, 0.000617252, 0.000996563, 0.00222253, 0.00094005,
-                  0.000563288, 0, 0, 0, 0, 0, 0]),
+        np.array(
+            [
+                0.000406601,
+                0.0015933,
+                0,
+                1.78644e-05,
+                0.00296457,
+                0.000617252,
+                0.000996563,
+                0.00222253,
+                0.00094005,
+                0.000563288,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ]
+        ),
         # bH2O
-        np.array([0.812659, 0.832931, 1., 0.8677850, 0.806816, 0.944958, 0.78812, 0.791204, 0.900564, 0.942907, 0, 0,
-                  0, 0, 0, 0]),
+        np.array(
+            [
+                0.812659,
+                0.832931,
+                1.0,
+                0.8677850,
+                0.806816,
+                0.944958,
+                0.78812,
+                0.791204,
+                0.900564,
+                0.942907,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ]
+        ),
         # aO3
-        np.array([0.0433461, 0.0, 0.0178299, 0.0853012, 0, 0, 0, 0.0813531, 0, 0, 0.0663, 0.0836, 0.0485, 0.0395,
-                  0.0119, 0.00263]),
+        np.array(
+            [
+                0.0433461,
+                0.0,
+                0.0178299,
+                0.0853012,
+                0,
+                0,
+                0,
+                0.0813531,
+                0,
+                0,
+                0.0663,
+                0.0836,
+                0.0485,
+                0.0395,
+                0.0119,
+                0.00263,
+            ]
+        ),
         # taur0
-        np.array([0.04350, 0.01582, 0.16176, 0.09740, 0.00369, 0.00132, 0.00033, 0.05373, 0.01561, 0.00129, 0.1131,
-                  0.0994, 0.0446, 0.0416, 0.0286, 0.0155]),
+        np.array(
+            [
+                0.04350,
+                0.01582,
+                0.16176,
+                0.09740,
+                0.00369,
+                0.00132,
+                0.00033,
+                0.05373,
+                0.01561,
+                0.00129,
+                0.1131,
+                0.0994,
+                0.0446,
+                0.0416,
+                0.0286,
+                0.0155,
+            ]
+        ),
     ]
     # resolution -> wavelength -> coefficient index
     # resolution -> band name -> coefficient index
@@ -232,11 +304,47 @@ class _MODISCoefficients(_Coefficients):
         # bH2O
         np.array([0.820175, 0.725159, 0, 0, 0.865732, 0.966947, 0.745342, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
         # aO3
-        np.array([0.0715289, 0, 0.00743232, 0.089691, 0, 0, 0, 0.001, 0.00383, 0.0225, 0.0663,
-                  0.0836, 0.0485, 0.0395, 0.0119, 0.00263]),
+        np.array(
+            [
+                0.0715289,
+                0,
+                0.00743232,
+                0.089691,
+                0,
+                0,
+                0,
+                0.001,
+                0.00383,
+                0.0225,
+                0.0663,
+                0.0836,
+                0.0485,
+                0.0395,
+                0.0119,
+                0.00263,
+            ]
+        ),
         # taur0
-        np.array([0.05100, 0.01631, 0.19325, 0.09536, 0.00366, 0.00123, 0.00043, 0.3139, 0.2375, 0.1596, 0.1131,
-                  0.0994, 0.0446, 0.0416, 0.0286, 0.0155]),
+        np.array(
+            [
+                0.05100,
+                0.01631,
+                0.19325,
+                0.09536,
+                0.00366,
+                0.00123,
+                0.00043,
+                0.3139,
+                0.2375,
+                0.1596,
+                0.1131,
+                0.0994,
+                0.0446,
+                0.0416,
+                0.0286,
+                0.0155,
+            ]
+        ),
     ]
     # Map of pixel resolutions -> wavelength -> coefficient index
     # Map of pixel resolutions -> band name -> coefficient index
@@ -262,13 +370,14 @@ class _MODISCoefficients(_Coefficients):
     COEFF_INDEX_MAP[250] = COEFF_INDEX_MAP[1000]
 
 
-def run_crefl(refl,
-              sensor_azimuth,
-              sensor_zenith,
-              solar_azimuth,
-              solar_zenith,
-              avg_elevation=None,
-              ):
+def run_crefl(
+    refl,
+    sensor_azimuth,
+    sensor_zenith,
+    solar_azimuth,
+    solar_zenith,
+    avg_elevation=None,
+):
     """Run main crefl algorithm.
 
     All input parameters are per-pixel values meaning they are the same size
@@ -282,7 +391,7 @@ def run_crefl(refl,
     :param avg_elevation: average elevation (usually pre-calculated and stored in CMGDEM.hdf)
 
     """
-    runner_cls = _runner_class_for_sensor(refl.attrs['sensor'])
+    runner_cls = _runner_class_for_sensor(refl.attrs["sensor"])
     runner = runner_cls(refl)
     corr_refl = runner(sensor_azimuth, sensor_zenith, solar_azimuth, solar_zenith, avg_elevation)
     return corr_refl
@@ -323,12 +432,13 @@ class _CREFLRunner:
         if avg_elevation is None:
             LOG.debug("No average elevation information provided in CREFL")
             # height = np.zeros(lon.shape, dtype=np.float64)
-            height = 0.
+            height = 0.0
         else:
             LOG.debug("Using average elevation information provided to CREFL")
-            lon, lat = self._refl.attrs['area'].get_lonlats(chunks=self._refl.chunks)
-            height = da.map_blocks(_space_mask_height, lon, lat, avg_elevation,
-                                   chunks=lon.chunks, dtype=avg_elevation.dtype)
+            lon, lat = self._refl.attrs["area"].get_lonlats(chunks=self._refl.chunks)
+            height = da.map_blocks(
+                _space_mask_height, lon, lat, avg_elevation, chunks=lon.chunks, dtype=avg_elevation.dtype
+            )
         return height
 
 
@@ -339,20 +449,37 @@ class _ABICREFLRunner(_CREFLRunner):
 
     def _run_crefl(self, mus, muv, phi, solar_zenith, sensor_zenith, height, coeffs):
         LOG.debug("Using ABI CREFL algorithm")
-        return da.map_blocks(_run_crefl_abi, self._refl.data, mus.data, muv.data, phi.data,
-                             solar_zenith.data, sensor_zenith.data, height, *coeffs,
-                             meta=np.ndarray((), dtype=self._refl.dtype),
-                             chunks=self._refl.chunks, dtype=self._refl.dtype,
-                             )
+        return da.map_blocks(
+            _run_crefl_abi,
+            self._refl.data,
+            mus.data,
+            muv.data,
+            phi.data,
+            solar_zenith.data,
+            sensor_zenith.data,
+            height,
+            *coeffs,
+            meta=np.ndarray((), dtype=self._refl.dtype),
+            chunks=self._refl.chunks,
+            dtype=self._refl.dtype,
+        )
 
 
 class _VIIRSMODISCREFLRunner(_CREFLRunner):
     def _run_crefl(self, mus, muv, phi, solar_zenith, sensor_zenith, height, coeffs):
-        return da.map_blocks(_run_crefl, self._refl.data, mus.data, muv.data, phi.data,
-                             height, self._refl.attrs.get("sensor"), *coeffs,
-                             meta=np.ndarray((), dtype=self._refl.dtype),
-                             chunks=self._refl.chunks, dtype=self._refl.dtype,
-                             )
+        return da.map_blocks(
+            _run_crefl,
+            self._refl.data,
+            mus.data,
+            muv.data,
+            phi.data,
+            height,
+            self._refl.attrs.get("sensor"),
+            *coeffs,
+            meta=np.ndarray((), dtype=self._refl.dtype),
+            chunks=self._refl.chunks,
+            dtype=self._refl.dtype,
+        )
 
 
 class _VIIRSCREFLRunner(_VIIRSMODISCREFLRunner):
@@ -390,8 +517,8 @@ def _runner_class_for_sensor(sensor_name: str) -> Type[_CREFLRunner]:
 
 
 def _space_mask_height(lon, lat, avg_elevation):
-    row = ((90.0 - lat) * avg_elevation.shape[0] / 180.0)
-    col = ((lon + 180.0) * avg_elevation.shape[1] / 360.0)
+    row = (90.0 - lat) * avg_elevation.shape[0] / 180.0
+    col = (lon + 180.0) * avg_elevation.shape[1] / 360.0
     np.clip(row, 0, avg_elevation.shape[0] - 1, out=row)
     np.clip(col, 0, avg_elevation.shape[1] - 1, out=col)
     row = row.astype(np.int32)
@@ -415,8 +542,7 @@ def _run_crefl(refl, mus, muv, phi, height, sensor_name, *coeffs):
     return _correct_refl(refl, tOG, rhoray, TtotraytH2O, sphalb)
 
 
-def _run_crefl_abi(refl, mus, muv, phi, solar_zenith, sensor_zenith, height,
-                   *coeffs):
+def _run_crefl_abi(refl, mus, muv, phi, solar_zenith, sensor_zenith, height, *coeffs):
     a_O3 = [268.45, 0.5, 115.42, -3.2922]
     a_H2O = [0.0311, 0.1, 92.471, -1.3814]
     a_O2 = [0.4567, 0.007, 96.4884, -1.6970]
@@ -424,19 +550,20 @@ def _run_crefl_abi(refl, mus, muv, phi, solar_zenith, sensor_zenith, height,
     G_H2O = _G_calc(solar_zenith, a_H2O) + _G_calc(sensor_zenith, a_H2O)
     G_O2 = _G_calc(solar_zenith, a_O2) + _G_calc(sensor_zenith, a_O2)
     # Note: bh2o values are actually ao2 values for abi
-    atm_vars = _ABIAtmosphereVariables(G_O3, G_H2O, G_O2,
-                                       mus, muv, phi, height, *coeffs)
+    atm_vars = _ABIAtmosphereVariables(G_O3, G_H2O, G_O2, mus, muv, phi, height, *coeffs)
     sphalb, rhoray, TtotraytH2O, tOG = atm_vars()
     return _correct_refl(refl, tOG, rhoray, TtotraytH2O, sphalb)
 
 
 def _G_calc(zenith, a_coeff):
-    return (np.cos(np.deg2rad(zenith))+(a_coeff[0]*(zenith**a_coeff[1])*(a_coeff[2]-zenith)**a_coeff[3]))**-1
+    return (
+        np.cos(np.deg2rad(zenith)) + (a_coeff[0] * (zenith ** a_coeff[1]) * (a_coeff[2] - zenith) ** a_coeff[3])
+    ) ** -1
 
 
 def _correct_refl(refl, tOG, rhoray, TtotraytH2O, sphalb):
     corr_refl = (refl / tOG - rhoray) / TtotraytH2O
-    corr_refl /= (1.0 + corr_refl * sphalb)
+    corr_refl /= 1.0 + corr_refl * sphalb
     return corr_refl.clip(REFLMIN, REFLMAX)
 
 
@@ -453,16 +580,13 @@ class _AtmosphereVariables:
         self._taustep4sphalb = TAUSTEP4SPHALB
 
     def __call__(self):
-        tau_step = np.linspace(
-            self._taustep4sphalb,
-            MAXNUMSPHALBVALUES * self._taustep4sphalb,
-            MAXNUMSPHALBVALUES)
+        tau_step = np.linspace(self._taustep4sphalb, MAXNUMSPHALBVALUES * self._taustep4sphalb, MAXNUMSPHALBVALUES)
         sphalb0 = _csalbr(tau_step)
         taur = self._tau * np.exp(-self._height / SCALEHEIGHT)
         rhoray, trdown, trup = _chand(self._phi, self._muv, self._mus, taur)
         sphalb = sphalb0[(taur / self._taustep4sphalb + 0.5).astype(np.int32)]
-        Ttotrayu = ((2 / 3. + self._muv) + (2 / 3. - self._muv) * trup) / (4 / 3. + taur)
-        Ttotrayd = ((2 / 3. + self._mus) + (2 / 3. - self._mus) * trdown) / (4 / 3. + taur)
+        Ttotrayu = ((2 / 3.0 + self._muv) + (2 / 3.0 - self._muv) * trup) / (4 / 3.0 + taur)
+        Ttotrayd = ((2 / 3.0 + self._mus) + (2 / 3.0 - self._mus) * trdown) / (4 / 3.0 + taur)
 
         tH2O = self._get_th2o()
         TtotraytH2O = Ttotrayu * Ttotrayd * tH2O
@@ -536,8 +660,7 @@ class _MODISAtmosphereVariables(_VIIRSAtmosphereVariables):
 
 def _csalbr(tau):
     # Previously 3 functions csalbr fintexp1, fintexp3
-    a = [-.57721566, 0.99999193, -0.24991055, 0.05519968, -0.00976004,
-         0.00107857]
+    a = [-0.57721566, 0.99999193, -0.24991055, 0.05519968, -0.00976004, 0.00107857]
     # xx = a[0] + a[1] * tau + a[2] * tau**2 + a[3] * tau**3 + a[4] * tau**4 + a[5] * tau**5
     # xx = np.polyval(a[::-1], tau)
 
@@ -549,8 +672,7 @@ def _csalbr(tau):
     fintexp1 = np.polyval(a[::-1], tau) - np.log(tau)
     fintexp3 = (np.exp(-tau) * (1.0 - tau) + tau**2 * fintexp1) / 2.0
 
-    return (3.0 * tau - fintexp3 *
-            (4.0 + 2.0 * tau) + 2.0 * np.exp(-tau)) / (4.0 + 3.0 * tau)
+    return (3.0 * tau - fintexp3 * (4.0 + 2.0 * tau) + 2.0 * np.exp(-tau)) / (4.0 + 3.0 * tau)
 
 
 def _chand(phi, muv, mus, taur):
@@ -568,9 +690,18 @@ def _chand(phi, muv, mus, taur):
     xbeta2 = 0.5
     #         float pl[5];
     #         double fs01, fs02, fs0, fs1, fs2;
-    as0 = [0.33243832, 0.16285370, -0.30924818, -0.10324388, 0.11493334,
-           -6.777104e-02, 1.577425e-03, -1.240906e-02, 3.241678e-02,
-           -3.503695e-02]
+    as0 = [
+        0.33243832,
+        0.16285370,
+        -0.30924818,
+        -0.10324388,
+        0.11493334,
+        -6.777104e-02,
+        1.577425e-03,
+        -1.240906e-02,
+        3.241678e-02,
+        -3.503695e-02,
+    ]
     as1 = [0.19666292, -5.439061e-02]
     as2 = [0.14545937, -2.910845e-02]
     #         float phios, xcos1, xcos2, xcos3;
@@ -579,8 +710,7 @@ def _chand(phi, muv, mus, taur):
     #         int i, ib;
 
     xph1 = 1.0 + (3.0 * mus * mus - 1.0) * (3.0 * muv * muv - 1.0) * xfd / 8.0
-    xph2 = -xfd * xbeta2 * 1.5 * mus * muv * np.sqrt(
-        1.0 - mus * mus) * np.sqrt(1.0 - muv * muv)
+    xph2 = -xfd * xbeta2 * 1.5 * mus * muv * np.sqrt(1.0 - mus * mus) * np.sqrt(1.0 - muv * muv)
     xph3 = xfd * xbeta2 * 0.375 * (1.0 - mus * mus) * (1.0 - muv * muv)
 
     # pl[0] = 1.0
@@ -589,10 +719,20 @@ def _chand(phi, muv, mus, taur):
     # pl[3] = mus * mus + muv * muv
     # pl[4] = mus * mus * muv * muv
 
-    fs01 = as0[0] + (mus + muv) * as0[1] + (mus * muv) * as0[2] + (
-            mus * mus + muv * muv) * as0[3] + (mus * mus * muv * muv) * as0[4]
-    fs02 = as0[5] + (mus + muv) * as0[6] + (mus * muv) * as0[7] + (
-            mus * mus + muv * muv) * as0[8] + (mus * mus * muv * muv) * as0[9]
+    fs01 = (
+        as0[0]
+        + (mus + muv) * as0[1]
+        + (mus * muv) * as0[2]
+        + (mus * mus + muv * muv) * as0[3]
+        + (mus * mus * muv * muv) * as0[4]
+    )
+    fs02 = (
+        as0[5]
+        + (mus + muv) * as0[6]
+        + (mus * muv) * as0[7]
+        + (mus * mus + muv * muv) * as0[8]
+        + (mus * mus * muv * muv) * as0[9]
+    )
     #         for (i = 0; i < 5; i++) {
     #                 fs01 += (double) (pl[i] * as0[i]);
     #                 fs02 += (double) (pl[i] * as0[5 + i]);

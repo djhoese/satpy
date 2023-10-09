@@ -868,6 +868,7 @@ class TestMTDXML:
     def setup_method(self):
         """Set up the test case."""
         from satpy.readers.msi_safe import SAFEMSIMDXML, SAFEMSITileMDXML
+
         filename_info = dict(observation_time=None, dtile_number=None, fmission_id="S2A")
         self.xml_tile_fh = SAFEMSITileMDXML(BytesIO(mtd_tile_xml), filename_info, mock.MagicMock())
         self.old_xml_fh = SAFEMSIMDXML(StringIO(mtd_l1c_old_xml), filename_info, mock.MagicMock())
@@ -877,85 +878,129 @@ class TestMTDXML:
         """Test reading the satellite zenith array."""
         info = dict(xml_tag="Viewing_Incidence_Angles_Grids", xml_item="Zenith")
 
-        expected_data = np.array([[11.7128, 11.18397802, 10.27667671, 9.35384969, 8.42850504,
-                                   7.55445611, 6.65475545, 5.66517232, 4.75893757, 4.04976844],
-                                  [11.88606009, 10.9799713, 10.07083278, 9.14571825, 8.22607131,
-                                   7.35181457, 6.44647222, 5.46144173, 4.56625547, 3.86638233],
-                                  [11.6823579, 10.7763071, 9.86302106, 8.93879112, 8.04005637,
-                                   7.15028077, 6.21461062, 5.25780953, 4.39876601, 3.68620793],
-                                  [11.06724679, 10.35723901, 9.63958896, 8.73072512, 7.83680864,
-                                   6.94792574, 5.9889201, 5.05445872, 4.26089708, 3.50984272],
-                                  [6.28411038, 6.28411038, 6.28411038, 6.28411038, 6.28411038,
-                                   5.99769643, 5.62586167, 4.85165966, 4.13238314, 3.33781401],
-                                  [3.7708, 3.7708, 3.7708, 3.7708, 3.7708,
-                                   3.7708, 3.7708, 3.7708, 3.7708, 3.24140837],
-                                  [3.7708, 3.7708, 3.7708, 3.7708, 3.7708,
-                                   3.7708, 3.7708, 3.7708, 3.7708, 3.24140837],
-                                  [3.7708, 3.7708, 3.7708, 3.7708, 3.7708,
-                                   3.7708, 3.7708, 3.7708, 3.7708, 3.24140837],
-                                  [3.7708, 3.7708, 3.7708, 3.7708, 3.7708,
-                                   3.7708, 3.7708, 3.7708, 3.7708, 3.24140837],
-                                  [3.7708, 3.7708, 3.7708, 3.7708, 3.7708,
-                                   3.7708, 3.7708, 3.7708, 3.7708, 3.24140837]])
-        res = self.xml_tile_fh.get_dataset(make_dataid(name="satellite_zenith_angle",
-                                                       resolution=60),
-                                           info)[::200, ::200]
+        expected_data = np.array(
+            [
+                [
+                    11.7128,
+                    11.18397802,
+                    10.27667671,
+                    9.35384969,
+                    8.42850504,
+                    7.55445611,
+                    6.65475545,
+                    5.66517232,
+                    4.75893757,
+                    4.04976844,
+                ],
+                [
+                    11.88606009,
+                    10.9799713,
+                    10.07083278,
+                    9.14571825,
+                    8.22607131,
+                    7.35181457,
+                    6.44647222,
+                    5.46144173,
+                    4.56625547,
+                    3.86638233,
+                ],
+                [
+                    11.6823579,
+                    10.7763071,
+                    9.86302106,
+                    8.93879112,
+                    8.04005637,
+                    7.15028077,
+                    6.21461062,
+                    5.25780953,
+                    4.39876601,
+                    3.68620793,
+                ],
+                [
+                    11.06724679,
+                    10.35723901,
+                    9.63958896,
+                    8.73072512,
+                    7.83680864,
+                    6.94792574,
+                    5.9889201,
+                    5.05445872,
+                    4.26089708,
+                    3.50984272,
+                ],
+                [
+                    6.28411038,
+                    6.28411038,
+                    6.28411038,
+                    6.28411038,
+                    6.28411038,
+                    5.99769643,
+                    5.62586167,
+                    4.85165966,
+                    4.13238314,
+                    3.33781401,
+                ],
+                [3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.24140837],
+                [3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.24140837],
+                [3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.24140837],
+                [3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.24140837],
+                [3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.7708, 3.24140837],
+            ]
+        )
+        res = self.xml_tile_fh.get_dataset(make_dataid(name="satellite_zenith_angle", resolution=60), info)[
+            ::200, ::200
+        ]
         np.testing.assert_allclose(res, expected_data)
 
     def test_old_xml_calibration(self):
         """Test the calibration of older data formats (no offset)."""
-        fake_data = xr.DataArray([[[0, 1, 2, 3],
-                                   [4, 1000, 65534, 65535]]],
-                                 dims=["band", "x", "y"])
+        fake_data = xr.DataArray([[[0, 1, 2, 3], [4, 1000, 65534, 65535]]], dims=["band", "x", "y"])
         result = self.old_xml_fh.calibrate_to_reflectances(fake_data, "B01")
-        np.testing.assert_allclose(result, [[[np.nan, 0.01, 0.02, 0.03],
-                                             [0.04, 10, 655.34, np.inf]]])
+        np.testing.assert_allclose(result, [[[np.nan, 0.01, 0.02, 0.03], [0.04, 10, 655.34, np.inf]]])
 
     def test_xml_calibration(self):
         """Test the calibration with radiometric offset."""
-        fake_data = xr.DataArray([[[0, 1, 2, 3],
-                                   [4, 1000, 65534, 65535]]],
-                                 dims=["band", "x", "y"])
+        fake_data = xr.DataArray([[[0, 1, 2, 3], [4, 1000, 65534, 65535]]], dims=["band", "x", "y"])
         result = self.xml_fh.calibrate_to_reflectances(fake_data, "B01")
-        np.testing.assert_allclose(result, [[[np.nan, 0.01 - 10, 0.02 - 10, 0.03 - 10],
-                                             [0.04 - 10, 0, 655.34 - 10, np.inf]]])
+        np.testing.assert_allclose(
+            result, [[[np.nan, 0.01 - 10, 0.02 - 10, 0.03 - 10], [0.04 - 10, 0, 655.34 - 10, np.inf]]]
+        )
 
     def test_xml_calibration_unmasked_saturated(self):
         """Test the calibration with radiometric offset but unmasked saturated pixels."""
         from satpy.readers.msi_safe import SAFEMSIMDXML
+
         filename_info = dict(observation_time=None, dtile_number=None, fmission_id="S2A")
         self.xml_fh = SAFEMSIMDXML(StringIO(mtd_l1c_xml), filename_info, mock.MagicMock(), mask_saturated=False)
 
-        fake_data = xr.DataArray([[[0, 1, 2, 3],
-                                   [4, 1000, 65534, 65535]]],
-                                 dims=["band", "x", "y"])
+        fake_data = xr.DataArray([[[0, 1, 2, 3], [4, 1000, 65534, 65535]]], dims=["band", "x", "y"])
         result = self.xml_fh.calibrate_to_reflectances(fake_data, "B01")
-        np.testing.assert_allclose(result, [[[np.nan, 0.01 - 10, 0.02 - 10, 0.03 - 10],
-                                             [0.04 - 10, 0, 655.34 - 10, 655.35 - 10]]])
+        np.testing.assert_allclose(
+            result, [[[np.nan, 0.01 - 10, 0.02 - 10, 0.03 - 10], [0.04 - 10, 0, 655.34 - 10, 655.35 - 10]]]
+        )
 
     def test_xml_calibration_with_different_offset(self):
         """Test the calibration with a different offset."""
-        fake_data = xr.DataArray([[[0, 1, 2, 3],
-                                   [4, 1000, 65534, 65535]]],
-                                 dims=["band", "x", "y"])
+        fake_data = xr.DataArray([[[0, 1, 2, 3], [4, 1000, 65534, 65535]]], dims=["band", "x", "y"])
         result = self.xml_fh.calibrate_to_reflectances(fake_data, "B10")
-        np.testing.assert_allclose(result, [[[np.nan, 0.01 - 20, 0.02 - 20, 0.03 - 20],
-                                             [0.04 - 20, -10, 655.34 - 20, np.inf]]])
+        np.testing.assert_allclose(
+            result, [[[np.nan, 0.01 - 20, 0.02 - 20, 0.03 - 20], [0.04 - 20, -10, 655.34 - 20, np.inf]]]
+        )
 
     def test_xml_calibration_to_radiance(self):
         """Test the calibration with a different offset."""
-        fake_data = xr.DataArray([[[0, 1, 2, 3],
-                                   [4, 1000, 65534, 65535]]],
-                                 dims=["band", "x", "y"])
+        fake_data = xr.DataArray([[[0, 1, 2, 3], [4, 1000, 65534, 65535]]], dims=["band", "x", "y"])
         result = self.xml_fh.calibrate_to_radiances(fake_data, "B01")
-        expected = np.array([[[np.nan, -251.584265, -251.332429, -251.080593],
-                              [-250.828757, 0., 16251.99095, np.inf]]])
+        expected = np.array(
+            [[[np.nan, -251.584265, -251.332429, -251.080593], [-250.828757, 0.0, 16251.99095, np.inf]]]
+        )
         np.testing.assert_allclose(result, expected)
 
     def test_xml_navigation(self):
         """Test the navigation."""
         from pyproj import CRS
-        crs = CRS('EPSG:32616')
+
+        crs = CRS("EPSG:32616")
 
         dsid = make_dataid(name="B01", resolution=60)
         result = self.xml_tile_fh.get_area_def(dsid)
@@ -971,21 +1016,26 @@ class TestSAFEMSIL1C:
     def setup_method(self):
         """Set up the test."""
         from satpy.readers.msi_safe import SAFEMSITileMDXML
+
         self.filename_info = dict(observation_time=None, fmission_id="S2A", band_name="B01", dtile_number=None)
         self.fake_data = xr.Dataset({"band_data": xr.DataArray([[[0, 1], [65534, 65535]]], dims=["band", "x", "y"])})
-        self.tile_mda = mock.create_autospec(SAFEMSITileMDXML)(BytesIO(mtd_tile_xml),
-                                                               self.filename_info, mock.MagicMock())
+        self.tile_mda = mock.create_autospec(SAFEMSITileMDXML)(
+            BytesIO(mtd_tile_xml), self.filename_info, mock.MagicMock()
+        )
 
-    @pytest.mark.parametrize("mask_saturated,calibration,expected",
-                             [(True, "reflectance", [[np.nan, 0.01 - 10], [645.34, np.inf]]),
-                              (False, "reflectance", [[np.nan, 0.01 - 10], [645.34, 645.35]]),
-                              (True, "radiance", [[np.nan, -251.58426503], [16251.99095011, np.inf]])])
+    @pytest.mark.parametrize(
+        "mask_saturated,calibration,expected",
+        [
+            (True, "reflectance", [[np.nan, 0.01 - 10], [645.34, np.inf]]),
+            (False, "reflectance", [[np.nan, 0.01 - 10], [645.34, 645.35]]),
+            (True, "radiance", [[np.nan, -251.58426503], [16251.99095011, np.inf]]),
+        ],
+    )
     def test_calibration_and_masking(self, mask_saturated, calibration, expected):
         """Test that saturated is masked with inf when requested and that calibration is performed."""
         from satpy.readers.msi_safe import SAFEMSIL1C, SAFEMSIMDXML
 
-        mda = SAFEMSIMDXML(StringIO(mtd_l1c_xml), self.filename_info, mock.MagicMock(),
-                           mask_saturated=mask_saturated)
+        mda = SAFEMSIMDXML(StringIO(mtd_l1c_xml), self.filename_info, mock.MagicMock(), mask_saturated=mask_saturated)
         self.jp2_fh = SAFEMSIL1C("somefile", self.filename_info, mock.MagicMock(), mda, self.tile_mda)
 
         with mock.patch("xarray.open_dataset", return_value=self.fake_data):

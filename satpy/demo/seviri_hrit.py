@@ -76,12 +76,20 @@ def _generate_filenames(pattern, channel, segments):
 
 def _create_full_set():
     """Create the full set dictionary."""
-    subset = {"HRV": range(1, 25),
-              "EPI": None,
-              "PRO": None}
-    channels = ["IR_016", "IR_039", "IR_087", "IR_097", "IR_108", "IR_120", "IR_134",
-                "VIS006", "VIS008",
-                "WV_062", "WV_073"]
+    subset = {"HRV": range(1, 25), "EPI": None, "PRO": None}
+    channels = [
+        "IR_016",
+        "IR_039",
+        "IR_087",
+        "IR_097",
+        "IR_108",
+        "IR_120",
+        "IR_134",
+        "VIS006",
+        "VIS008",
+        "WV_062",
+        "WV_073",
+    ]
     for channel in channels:
         subset[channel] = range(1, 9)
     return subset

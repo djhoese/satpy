@@ -157,26 +157,29 @@ class TestGetSatPos:
             (("nadir_", "satellite_actual_", "satellite_nominal_", "projection_"), "projection", (1.3, 2.3, 3.2)),
             (("satellite_nominal_", "projection_"), "actual", (1.2, 2.2, 3.1)),
             (("projection_",), "projection", (1.3, 2.3, 3.2)),
-        ]
+        ],
     )
     def test_get_satpos(self, included_prefixes, preference, expected_result):
         """Test getting the satellite position."""
         all_orb_params = {
-            'nadir_longitude': 1,
-            'satellite_actual_longitude': 1.1,
-            'satellite_nominal_longitude': 1.2,
-            'projection_longitude': 1.3,
-            'nadir_latitude': 2,
-            'satellite_actual_latitude': 2.1,
-            'satellite_nominal_latitude': 2.2,
-            'projection_latitude': 2.3,
-            'satellite_actual_altitude': 3,
-            'satellite_nominal_altitude': 3.1,
-            'projection_altitude': 3.2
+            "nadir_longitude": 1,
+            "satellite_actual_longitude": 1.1,
+            "satellite_nominal_longitude": 1.2,
+            "projection_longitude": 1.3,
+            "nadir_latitude": 2,
+            "satellite_actual_latitude": 2.1,
+            "satellite_nominal_latitude": 2.2,
+            "projection_latitude": 2.3,
+            "satellite_actual_altitude": 3,
+            "satellite_nominal_altitude": 3.1,
+            "projection_altitude": 3.2,
         }
-        orb_params = {key: value for key, value in all_orb_params.items() if
-                      any(in_prefix in key for in_prefix in included_prefixes)}
-        data_arr = xr.DataArray((), attrs={'orbital_parameters': orb_params})
+        orb_params = {
+            key: value
+            for key, value in all_orb_params.items()
+            if any(in_prefix in key for in_prefix in included_prefixes)
+        }
+        data_arr = xr.DataArray((), attrs={"orbital_parameters": orb_params})
 
         with warnings.catch_warnings(record=True) as caught_warnings:
             lon, lat, alt = get_satpos(data_arr, preference=preference)
@@ -189,12 +192,7 @@ class TestGetSatPos:
         assert (lon, lat, alt) == expected_result
 
     @pytest.mark.parametrize(
-        "attrs",
-        (
-                {},
-                {'orbital_parameters': {'projection_longitude': 1}},
-                {'satellite_altitude': 1}
-        )
+        "attrs", ({}, {"orbital_parameters": {"projection_longitude": 1}}, {"satellite_altitude": 1})
     )
     def test_get_satpos_fails_with_informative_error(self, attrs):
         """Test that get_satpos raises an informative error message."""
@@ -211,13 +209,15 @@ class TestGetSatPos:
             attrs={
                 "platform_name": "Meteosat-42",
                 "sensor": "irives",
-                "start_time": datetime.datetime(2031, 11, 20, 19, 18, 17)
-            })
+                "start_time": datetime.datetime(2031, 11, 20, 19, 18, 17),
+            },
+        )
         with mock.patch("pyorbital.tlefile.read") as plr:
             plr.return_value = pyorbital.tlefile.Tle(
                 "Meteosat-42",
                 line1="1 40732U 15034A   22011.84285506  .00000004  00000+0  00000+0 0  9995",
-                line2="2 40732   0.2533 325.0106 0000976 118.8734 330.4058  1.00272123 23817")
+                line2="2 40732   0.2533 325.0106 0000976 118.8734 330.4058  1.00272123 23817",
+            )
             with caplog.at_level(logging.WARNING):
                 (lon, lat, alt) = get_satpos(data_arr, use_tle=True)
             assert "Orbital parameters missing from metadata" in caplog.text
@@ -238,30 +238,27 @@ def test_make_fake_scene():
     from satpy.tests.utils import make_fake_scene
 
     assert make_fake_scene({}).keys() == []
-    sc = make_fake_scene({
-        "six": np.arange(25).reshape(5, 5)
-    })
+    sc = make_fake_scene({"six": np.arange(25).reshape(5, 5)})
     assert len(sc.keys()) == 1
-    assert sc.keys().pop()['name'] == "six"
+    assert sc.keys().pop()["name"] == "six"
     assert sc["six"].attrs["area"].shape == (5, 5)
-    sc = make_fake_scene({
-        "seven": np.arange(3 * 7).reshape(3, 7),
-        "eight": np.arange(3 * 8).reshape(3, 8)
-    },
+    sc = make_fake_scene(
+        {"seven": np.arange(3 * 7).reshape(3, 7), "eight": np.arange(3 * 8).reshape(3, 8)},
         daskify=True,
         area=False,
-        common_attrs={"repetency": "fourteen hundred per centimetre"})
+        common_attrs={"repetency": "fourteen hundred per centimetre"},
+    )
     assert "area" not in sc["seven"].attrs.keys()
-    assert (sc["seven"].attrs["repetency"] == sc["eight"].attrs["repetency"] ==
-            "fourteen hundred per centimetre")
+    assert sc["seven"].attrs["repetency"] == sc["eight"].attrs["repetency"] == "fourteen hundred per centimetre"
     assert isinstance(sc["seven"].data, da.Array)
-    sc = make_fake_scene({
-        "nine": xr.DataArray(
-            np.arange(2 * 9).reshape(2, 9),
-            dims=("y", "x"),
-            attrs={"please": "preserve", "answer": 42})
-    },
-        common_attrs={"bad words": "semprini bahnhof veerooster winterbanden"})
+    sc = make_fake_scene(
+        {
+            "nine": xr.DataArray(
+                np.arange(2 * 9).reshape(2, 9), dims=("y", "x"), attrs={"please": "preserve", "answer": 42}
+            )
+        },
+        common_attrs={"bad words": "semprini bahnhof veerooster winterbanden"},
+    )
     assert sc["nine"].attrs.keys() >= {"please", "answer", "bad words", "area"}
 
 
@@ -271,20 +268,21 @@ class TestCheckSatpy(unittest.TestCase):
     def test_basic_check_satpy(self):
         """Test 'check_satpy' basic functionality."""
         from satpy.utils import check_satpy
+
         check_satpy()
 
     def test_specific_check_satpy(self):
         """Test 'check_satpy' with specific features provided."""
         from satpy.utils import check_satpy
-        with mock.patch('satpy.utils.print') as print_mock:
-            check_satpy(readers=['viirs_sdr'], extras=('cartopy', '__fake'))
+
+        with mock.patch("satpy.utils.print") as print_mock:
+            check_satpy(readers=["viirs_sdr"], extras=("cartopy", "__fake"))
             checked_fake = False
             for call in print_mock.mock_calls:
-                if len(call[1]) > 0 and '__fake' in call[1][0]:
-                    self.assertNotIn('ok', call[1][1])
+                if len(call[1]) > 0 and "__fake" in call[1][0]:
+                    self.assertNotIn("ok", call[1][1])
                     checked_fake = True
-            self.assertTrue(checked_fake, "Did not find __fake module "
-                                          "mentioned in checks")
+            self.assertTrue(checked_fake, "Did not find __fake module mentioned in checks")
 
 
 def test_debug_on(caplog):
@@ -294,11 +292,7 @@ def test_debug_on(caplog):
     def depwarn():
         logger = logging.getLogger("satpy.silly")
         logger.debug("But now it's just got SILLY.")
-        warnings.warn(
-            "Stop that! It's SILLY.",
-            DeprecationWarning,
-            stacklevel=2
-        )
+        warnings.warn("Stop that! It's SILLY.", DeprecationWarning, stacklevel=2)
 
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     debug_on(False)
@@ -324,6 +318,7 @@ def test_debug_on(caplog):
 def test_logging_on_and_off(caplog):
     """Test that switching logging on and off works."""
     from satpy.utils import logging_off, logging_on
+
     logger = logging.getLogger("satpy.silly")
     logging_on()
     with caplog.at_level(logging.WARNING):
@@ -341,28 +336,29 @@ def test_logging_on_and_off(caplog):
     ("shapes", "chunks", "dims", "exp_unified"),
     [
         (
-                ((3, 5, 5), (5, 5)),
-                (-1, -1),
-                (("bands", "y", "x"), ("y", "x")),
-                True,
+            ((3, 5, 5), (5, 5)),
+            (-1, -1),
+            (("bands", "y", "x"), ("y", "x")),
+            True,
         ),
         (
-                ((3, 5, 5), (5, 5)),
-                (-1, 2),
-                (("bands", "y", "x"), ("y", "x")),
-                True,
+            ((3, 5, 5), (5, 5)),
+            (-1, 2),
+            (("bands", "y", "x"), ("y", "x")),
+            True,
         ),
         (
-                ((4, 5, 5), (3, 5, 5)),
-                (-1, -1),
-                (("bands", "y", "x"), ("bands", "y", "x")),
-                False,
+            ((4, 5, 5), (3, 5, 5)),
+            (-1, -1),
+            (("bands", "y", "x"), ("bands", "y", "x")),
+            False,
         ),
     ],
 )
 def test_unify_chunks(shapes, chunks, dims, exp_unified):
     """Test unify_chunks utility function."""
     from satpy.utils import unify_chunks
+
     inputs = list(_data_arrays_from_params(shapes, chunks, dims))
     results = unify_chunks(*inputs)
     if exp_unified:
@@ -371,10 +367,9 @@ def test_unify_chunks(shapes, chunks, dims, exp_unified):
         _verify_unchanged_chunks(results, inputs)
 
 
-def _data_arrays_from_params(shapes: list[tuple[int, ...]],
-                             chunks: list[tuple[int, ...]],
-                             dims: list[tuple[int, ...]]
-                             ) -> typing.Generator[xr.DataArray, None, None]:
+def _data_arrays_from_params(
+    shapes: list[tuple[int, ...]], chunks: list[tuple[int, ...]], dims: list[tuple[int, ...]]
+) -> typing.Generator[xr.DataArray, None, None]:
     for shape, chunk, dim in zip(shapes, chunks, dims):
         yield xr.DataArray(da.ones(shape, chunks=chunk), dims=dim)
 
@@ -387,8 +382,7 @@ def _verify_unified(data_arrays: list[xr.DataArray]) -> None:
             assert exp_chunks == chunk_size
 
 
-def _verify_unchanged_chunks(data_arrays: list[xr.DataArray],
-                             orig_arrays: list[xr.DataArray]) -> None:
+def _verify_unchanged_chunks(data_arrays: list[xr.DataArray], orig_arrays: list[xr.DataArray]) -> None:
     for data_arr, orig_arr in zip(data_arrays, orig_arrays):
         assert data_arr.chunks == orig_arr.chunks
 
@@ -398,6 +392,7 @@ def test_chunk_size_limit():
     from unittest.mock import patch
 
     from satpy.utils import get_chunk_size_limit
+
     with patch("satpy.utils._get_pytroll_chunk_size") as ptc:
         ptc.return_value = 10
         assert get_chunk_size_limit(np.int32) == 400
@@ -409,6 +404,7 @@ def test_chunk_size_limit_from_dask_config():
     import dask.config
 
     from satpy.utils import get_chunk_size_limit
+
     with dask.config.set({"array.chunk-size": "1KiB"}):
         assert get_chunk_size_limit(np.uint8) == 1024
 
@@ -416,6 +412,7 @@ def test_chunk_size_limit_from_dask_config():
 def test_get_legacy_chunk_size():
     """Test getting the legacy chunk size."""
     import dask.config
+
     assert get_legacy_chunk_size() == 4096
     with dask.config.set({"array.chunk-size": "32MiB"}):
         assert get_legacy_chunk_size() == 2048
@@ -431,15 +428,15 @@ def test_get_legacy_chunk_size():
         # 250m swath
         (("auto", -1), (1000 * 4, 3200 * 4), (40, 40), (1, 1), np.float32, (160 * 4, -1)),
         # 1km area (ABI chunk 226):
-        (("auto", "auto"), (21696 // 2, 21696 // 2), (226*4, 226*4), (2, 2), np.float32, (1356, 1356)),
+        (("auto", "auto"), (21696 // 2, 21696 // 2), (226 * 4, 226 * 4), (2, 2), np.float32, (1356, 1356)),
         # 1km area (64-bit)
-        (("auto", "auto"), (21696 // 2, 21696 // 2), (226*4, 226*4), (2, 2), np.float64, (904, 904)),
+        (("auto", "auto"), (21696 // 2, 21696 // 2), (226 * 4, 226 * 4), (2, 2), np.float64, (904, 904)),
         # 3km area
-        (("auto", "auto"), (21696 // 3, 21696 // 3), (226*4, 226*4), (6, 6), np.float32, (452, 452)),
+        (("auto", "auto"), (21696 // 3, 21696 // 3), (226 * 4, 226 * 4), (6, 6), np.float32, (452, 452)),
         # 500m area
-        (("auto", "auto"), (21696, 21696), (226*4, 226*4), (1, 1), np.float32, (1356 * 2, 1356 * 2)),
+        (("auto", "auto"), (21696, 21696), (226 * 4, 226 * 4), (1, 1), np.float32, (1356 * 2, 1356 * 2)),
         # 500m area (64-bit)
-        (("auto", "auto"), (21696, 21696), (226*4, 226*4), (1, 1), np.float64, (904 * 2, 904 * 2)),
+        (("auto", "auto"), (21696, 21696), (226 * 4, 226 * 4), (1, 1), np.float64, (904 * 2, 904 * 2)),
         # 250m swath with bands:
         ((1, "auto", -1), (7, 1000 * 4, 3200 * 4), (1, 40, 40), (1, 1, 1), np.float32, (1, 160 * 4, -1)),
         # lots of dimensions:
@@ -520,7 +517,7 @@ def test_convert_remote_files_to_fsspec_filename_dict():
 
     filenames = {
         "reader1": ["/tmp/file1.nc", "/tmp/file2.nc"],
-        "reader2": ["s3://tmp/file3.nc", "file:///tmp/file4.nc", "/tmp/file5.nc"]
+        "reader2": ["s3://tmp/file3.nc", "file:///tmp/file4.nc", "/tmp/file5.nc"],
     }
     res = convert_remote_files_to_fsspec(filenames)
 
@@ -557,7 +554,7 @@ def test_convert_remote_files_to_fsspec_windows_paths():
     assert res == filenames
 
 
-@mock.patch('fsspec.open_files')
+@mock.patch("fsspec.open_files")
 def test_convert_remote_files_to_fsspec_storage_options(open_files):
     """Test convertion of remote files to fsspec objects.
 
@@ -566,7 +563,7 @@ def test_convert_remote_files_to_fsspec_storage_options(open_files):
     from satpy.utils import convert_remote_files_to_fsspec
 
     filenames = ["s3://tmp/file1.nc"]
-    storage_options = {'anon': True}
+    storage_options = {"anon": True}
 
     _ = convert_remote_files_to_fsspec(filenames, storage_options=storage_options)
 
@@ -585,31 +582,23 @@ def test_import_error_helper():
 def test_find_in_ancillary():
     """Test finding a dataset in ancillary variables."""
     from satpy.utils import find_in_ancillary
-    index_finger = xr.DataArray(
-        data=np.arange(25).reshape(5, 5),
-        dims=("y", "x"),
-        attrs={"name": "index-finger"})
-    ring_finger = xr.DataArray(
-        data=np.arange(25).reshape(5, 5),
-        dims=("y", "x"),
-        attrs={"name": "ring-finger"})
+
+    index_finger = xr.DataArray(data=np.arange(25).reshape(5, 5), dims=("y", "x"), attrs={"name": "index-finger"})
+    ring_finger = xr.DataArray(data=np.arange(25).reshape(5, 5), dims=("y", "x"), attrs={"name": "ring-finger"})
 
     hand = xr.DataArray(
         data=np.arange(25).reshape(5, 5),
         dims=("y", "x"),
-        attrs={
-            "name": "hand",
-            "ancillary_variables": [index_finger, index_finger, ring_finger]
-        })
+        attrs={"name": "hand", "ancillary_variables": [index_finger, index_finger, ring_finger]},
+    )
 
     assert find_in_ancillary(hand, "ring-finger") is ring_finger
     with pytest.raises(
-            ValueError,
-            match=("Expected exactly one dataset named index-finger in "
-                   "ancillary variables for dataset 'hand', found 2")):
+        ValueError,
+        match="Expected exactly one dataset named index-finger in ancillary variables for dataset 'hand', found 2",
+    ):
         find_in_ancillary(hand, "index-finger")
     with pytest.raises(
-            ValueError,
-            match=("Could not find dataset named thumb in "
-                   "ancillary variables for dataset 'hand'")):
+        ValueError, match="Could not find dataset named thumb in ancillary variables for dataset 'hand'"
+    ):
         find_in_ancillary(hand, "thumb")

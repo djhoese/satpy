@@ -44,10 +44,7 @@ class Tree:
         # __contains__
         self._all_nodes = _DataIDContainer()
 
-    def leaves(self,
-               limit_nodes_to: Optional[Iterable[DataID]] = None,
-               unique: bool = True
-               ) -> list[Node]:
+    def leaves(self, limit_nodes_to: Optional[Iterable[DataID]] = None, unique: bool = True) -> list[Node]:
         """Get the leaves of the tree starting at the root.
 
         Args:
@@ -69,11 +66,12 @@ class Tree:
                     res.append(sub_child)
         return res
 
-    def trunk(self,
-              limit_nodes_to: Optional[Iterable[DataID]] = None,
-              unique: bool = True,
-              limit_children_to: Optional[Container[DataID]] = None,
-              ) -> list[Node]:
+    def trunk(
+        self,
+        limit_nodes_to: Optional[Iterable[DataID]] = None,
+        unique: bool = True,
+        limit_children_to: Optional[Container[DataID]] = None,
+    ) -> list[Node]:
         """Get the trunk nodes of the tree starting at this root.
 
         Args:
@@ -89,8 +87,7 @@ class Tree:
 
         """
         if limit_nodes_to is None:
-            return self._root.trunk(unique=unique,
-                                    limit_children_to=limit_children_to)
+            return self._root.trunk(unique=unique, limit_children_to=limit_children_to)
 
         res = list()
         for child_id in limit_nodes_to:
@@ -351,8 +348,9 @@ class DependencyTree(Tree):
         for reader_name, reader_instance in self.readers.items():
             matching_ids[reader_name] = []
             try:
-                ds_ids = reader_instance.get_dataset_key(dataset_key, available_only=self._available_only,
-                                                         num_results=0, best=False)
+                ds_ids = reader_instance.get_dataset_key(
+                    dataset_key, available_only=self._available_only, num_results=0, best=False
+                )
             except KeyError:
                 LOG.trace("Can't find dataset %s in reader %s", str(dataset_key), reader_name)
                 continue
@@ -431,7 +429,7 @@ class DependencyTree(Tree):
                 compositor = self.get_modifier(dataset_key)
             except KeyError:
                 raise KeyError("Can't find anything called {}".format(str(dataset_key)))
-            compositor.attrs['prerequisites'] = [implicit_dependency_node] + list(compositor.attrs['prerequisites'])
+            compositor.attrs["prerequisites"] = [implicit_dependency_node] + list(compositor.attrs["prerequisites"])
         else:
             try:
                 compositor = self.get_compositor(dataset_key)
@@ -445,15 +443,19 @@ class DependencyTree(Tree):
 
         # Get the prerequisites
         LOG.trace("Looking for composite prerequisites for: {}".format(dataset_key))
-        prereqs = [create_filtered_query(prereq, prerequisite_filter) if not isinstance(prereq, Node) else prereq
-                   for prereq in compositor.attrs['prerequisites']]
+        prereqs = [
+            create_filtered_query(prereq, prerequisite_filter) if not isinstance(prereq, Node) else prereq
+            for prereq in compositor.attrs["prerequisites"]
+        ]
         prereqs = self._create_required_subtrees(root, prereqs, query=query)
         root.add_required_nodes(prereqs)
 
         # Get the optionals
         LOG.trace("Looking for optional prerequisites for: {}".format(dataset_key))
-        optionals = [create_filtered_query(prereq, prerequisite_filter) if not isinstance(prereq, Node) else prereq
-                     for prereq in compositor.attrs['optional_prerequisites']]
+        optionals = [
+            create_filtered_query(prereq, prerequisite_filter) if not isinstance(prereq, Node) else prereq
+            for prereq in compositor.attrs["optional_prerequisites"]
+        ]
         optionals = self._create_optional_subtrees(root, optionals, query=query)
         root.add_optional_nodes(optionals)
 
@@ -501,7 +503,7 @@ class DependencyTree(Tree):
     def get_modifier(self, comp_id):
         """Get a modifer."""
         # create a DataID for the compositor we are generating
-        modifier = comp_id['modifiers'][-1]
+        modifier = comp_id["modifiers"][-1]
         for sensor_name in sorted(self.modifiers):
             modifiers = self.modifiers[sensor_name]
             compositors = self.compositors[sensor_name]
@@ -511,7 +513,7 @@ class DependencyTree(Tree):
             mloader, moptions = modifiers[modifier]
             moptions = moptions.copy()
             moptions.update(comp_id.to_dict())
-            moptions['sensor'] = sensor_name
+            moptions["sensor"] = sensor_name
             compositors[comp_id] = mloader(_satpy_id=comp_id, **moptions)
             return compositors[comp_id]
 
@@ -544,8 +546,7 @@ class DependencyTree(Tree):
 
         for prereq, unknowns in unknown_datasets.items():
             u_str = ", ".join([str(x) for x in unknowns])
-            LOG.debug('Skipping optional %s: Unknown dataset %s',
-                      str(prereq), u_str)
+            LOG.debug("Skipping optional %s: Unknown dataset %s", str(prereq), u_str)
 
         return prereq_nodes
 

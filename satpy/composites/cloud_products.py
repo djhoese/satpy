@@ -28,10 +28,9 @@ class CloudCompositorWithoutCloudfree(SingleBandCompositor):
     def __call__(self, projectables, **info):
         """Create the composite."""
         if len(projectables) != 2:
-            raise ValueError("Expected 2 datasets, got %d" %
-                             (len(projectables), ))
+            raise ValueError("Expected 2 datasets, got %d" % (len(projectables),))
         data, status = projectables
-        valid = status != status.attrs['_FillValue']
+        valid = status != status.attrs["_FillValue"]
         status_cloud_free = status % 2 == 1  # bit 0 is set
         cloud_free = np.logical_and(valid, status_cloud_free)
         if "bad_optical_conditions" in status.attrs.get("flag_meanings", "") and data.name == "cmic_cre":
@@ -43,7 +42,7 @@ class CloudCompositorWithoutCloudfree(SingleBandCompositor):
         # Keep cloudfree or valid product
         data = data.where(np.logical_or(cloud_free, data != data.attrs["scaled_FillValue"]), np.nan)
         res = SingleBandCompositor.__call__(self, [data], **data.attrs)
-        res.attrs['_FillValue'] = np.nan
+        res.attrs["_FillValue"] = np.nan
         return res
 
 
@@ -53,18 +52,16 @@ class CloudCompositorCommonMask(SingleBandCompositor):
     def __call__(self, projectables, **info):
         """Create the composite."""
         if len(projectables) != 2:
-            raise ValueError("Expected 2 datasets, got %d" %
-                             (len(projectables), ))
+            raise ValueError("Expected 2 datasets, got %d" % (len(projectables),))
         data, cma = projectables
-        valid_cma = cma != cma.attrs['_FillValue']
-        valid_prod = data != data.attrs['_FillValue']
+        valid_cma = cma != cma.attrs["_FillValue"]
+        valid_prod = data != data.attrs["_FillValue"]
         valid_prod = np.logical_and(valid_prod, np.logical_not(np.isnan(data)))
         # Update valid_cma and not valid_prod means: keep not valid cma or valid prod
-        data = data.where(np.logical_or(np.logical_not(valid_cma), valid_prod),
-                          data.attrs["scaled_FillValue"])
+        data = data.where(np.logical_or(np.logical_not(valid_cma), valid_prod), data.attrs["scaled_FillValue"])
         data = data.where(np.logical_or(valid_prod, valid_cma), np.nan)
         res = SingleBandCompositor.__call__(self, [data], **data.attrs)
-        res.attrs['_FillValue'] = np.nan
+        res.attrs["_FillValue"] = np.nan
         return res
 
 
@@ -94,18 +91,17 @@ class PrecipCloudsRGB(GenericCompositor):
         scalef2 = 1.0 / maxs2 - 1 / 255.0
         scalef1 = 1.0 / maxs1 - 1 / 255.0
 
-        p1data = (light*scalef1).where(light != 0)
-        p1data = p1data.where(light != light.attrs['_FillValue'])
+        p1data = (light * scalef1).where(light != 0)
+        p1data = p1data.where(light != light.attrs["_FillValue"])
         p1data.attrs = light.attrs
-        data = moderate*scalef2
+        data = moderate * scalef2
         p2data = data.where(moderate != 0)
-        p2data = p2data.where(moderate != moderate.attrs['_FillValue'])
+        p2data = p2data.where(moderate != moderate.attrs["_FillValue"])
         p2data.attrs = moderate.attrs
-        data = intense*scalef3
+        data = intense * scalef3
         p3data = data.where(intense != 0)
-        p3data = p3data.where(intense != intense.attrs['_FillValue'])
+        p3data = p3data.where(intense != intense.attrs["_FillValue"])
         p3data.attrs = intense.attrs
 
-        res = super(PrecipCloudsRGB, self).__call__((p3data, p2data, p1data),
-                                                    *args, **kwargs)
+        res = super(PrecipCloudsRGB, self).__call__((p3data, p2data, p1data), *args, **kwargs)
         return res

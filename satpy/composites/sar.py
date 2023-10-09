@@ -46,7 +46,7 @@ def soft_light(top, bottom, maxval):
     """
     a = top / maxval
     b = bottom / maxval
-    return (2*a*b + a*a * (1 - 2*b)) * maxval
+    return (2 * a * b + a * a * (1 - 2 * b)) * maxval
 
 
 class SARIce(GenericCompositor):

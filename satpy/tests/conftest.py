@@ -26,7 +26,7 @@ import pytest
 
 import satpy
 
-TEST_ETC_DIR = os.path.join(os.path.dirname(__file__), 'etc')
+TEST_ETC_DIR = os.path.join(os.path.dirname(__file__), "etc")
 
 
 @pytest.fixture(autouse=True)
@@ -47,6 +47,7 @@ def reset_satpy_config(tmpdir):
 def clear_function_caches():
     """Clear out global function-level caches that may cause conflicts between tests."""
     from satpy.composites.config_loader import load_compositor_configs_for_sensor
+
     load_compositor_configs_for_sensor.cache_clear()
 
 

@@ -38,9 +38,12 @@ from satpy.utils import PerformanceWarning
 
 def _angle_cache_area_def():
     area = AreaDefinition(
-        "test", "", "",
+        "test",
+        "",
+        "",
         {"proj": "merc"},
-        5, 5,
+        5,
+        5,
         (-2500, -2500, 2500, 2500),
     )
     return area
@@ -48,25 +51,32 @@ def _angle_cache_area_def():
 
 def _angle_cache_stacked_area_def():
     area1 = AreaDefinition(
-        "test", "", "",
+        "test",
+        "",
+        "",
         {"proj": "merc"},
-        5, 2,
+        5,
+        2,
         (2500, 500, 7500, 2500),
     )
     area2 = AreaDefinition(
-        "test", "", "",
+        "test",
+        "",
+        "",
         {"proj": "merc"},
-        5, 3,
+        5,
+        3,
         (2500, -2500, 7500, 500),
     )
     return StackedAreaDefinition(area1, area2)
 
 
-def _get_angle_test_data(area_def: Optional[Union[AreaDefinition, StackedAreaDefinition]] = None,
-                         chunks: Optional[Union[int, tuple]] = 2,
-                         shape: tuple = (5, 5),
-                         dims: Optional[tuple] = None,
-                         ) -> xr.DataArray:
+def _get_angle_test_data(
+    area_def: Optional[Union[AreaDefinition, StackedAreaDefinition]] = None,
+    chunks: Optional[Union[int, tuple]] = 2,
+    shape: tuple = (5, 5),
+    dims: Optional[tuple] = None,
+) -> xr.DataArray:
     if area_def is None:
         area_def = _angle_cache_area_def()
     orb_params = {
@@ -76,24 +86,24 @@ def _get_angle_test_data(area_def: Optional[Union[AreaDefinition, StackedAreaDef
     }
     stime = datetime(2020, 1, 1, 12, 0, 0)
     data = da.zeros(shape, chunks=chunks)
-    vis = xr.DataArray(data,
-                       dims=dims,
-                       attrs={
-                           'area': area_def,
-                           'start_time': stime,
-                           'orbital_parameters': orb_params,
-                       })
+    vis = xr.DataArray(
+        data,
+        dims=dims,
+        attrs={
+            "area": area_def,
+            "start_time": stime,
+            "orbital_parameters": orb_params,
+        },
+    )
     return vis
 
 
 def _get_stacked_angle_test_data():
-    return _get_angle_test_data(area_def=_angle_cache_stacked_area_def(),
-                                chunks=(5, (2, 2, 1)))
+    return _get_angle_test_data(area_def=_angle_cache_stacked_area_def(), chunks=(5, (2, 2, 1)))
 
 
 def _get_angle_test_data_rgb():
-    return _get_angle_test_data(shape=(5, 5, 3), chunks=((2, 2, 1), (2, 2, 1), (1, 1, 1)),
-                                dims=("y", "x", "bands"))
+    return _get_angle_test_data(shape=(5, 5, 3), chunks=((2, 2, 1), (2, 2, 1), (1, 1, 1)), dims=("y", "x", "bands"))
 
 
 def _get_angle_test_data_rgb_nodims():
@@ -157,9 +167,11 @@ class TestAngleGeneration:
     def test_get_angles(self, input_func, exp_calls):
         """Test sun and satellite angle calculation."""
         from satpy.modifiers.angles import get_angles
+
         data = input_func()
 
         from pyorbital.orbital import get_observer_look
+
         with mock.patch("satpy.modifiers.angles.get_observer_look", wraps=get_observer_look) as gol:
             angles = get_angles(data)
             assert all(isinstance(x, xr.DataArray) for x in angles)
@@ -193,8 +205,11 @@ class TestAngleGeneration:
         input_data2.attrs["orbital_parameters"]["satellite_actual_altitude"] = 12345679
 
         from pyorbital.orbital import get_observer_look
-        with mock.patch("satpy.modifiers.angles.get_observer_look", wraps=get_observer_look) as gol, \
-                satpy.config.set(sensor_angles_position_preference=forced_preference):
+
+        with (
+            mock.patch("satpy.modifiers.angles.get_observer_look", wraps=get_observer_look) as gol,
+            satpy.config.set(sensor_angles_position_preference=forced_preference),
+        ):
             angles1 = get_angles(input_data1)
             da.compute(angles1)
             angles2 = get_angles(input_data2)
@@ -222,7 +237,7 @@ class TestAngleGeneration:
             (lambda x: x, True, 4),
             (_similar_sat_pos_datetime, False, 4),
             (_diff_sat_pos_datetime, False, 6),
-        ]
+        ],
     )
     @pytest.mark.parametrize(
         ("input_func", "num_normalized_chunks", "exp_zarr_chunks"),
@@ -233,12 +248,19 @@ class TestAngleGeneration:
             (_get_angle_test_data_odd_chunks2, 4, ((1, 4), (2, 3))),
             (_get_angle_test_data_rgb, 9, ((2, 2, 1), (2, 2, 1))),
             (_get_angle_test_data_rgb_nodims, 9, ((2, 2, 1), (2, 2, 1))),
-        ])
+        ],
+    )
     def test_cache_get_angles(
-            self,
-            input_func, num_normalized_chunks, exp_zarr_chunks,
-            input2_func, exp_equal_sun, exp_num_zarr,
-            force_bad_glob, tmp_path):
+        self,
+        input_func,
+        num_normalized_chunks,
+        exp_zarr_chunks,
+        input2_func,
+        exp_equal_sun,
+        exp_num_zarr,
+        force_bad_glob,
+        tmp_path,
+    ):
         """Test get_angles when caching is enabled."""
         from satpy.modifiers.angles import STATIC_EARTH_INERTIAL_DATETIME, get_angles
 
@@ -248,9 +270,12 @@ class TestAngleGeneration:
 
         # Compute angles
         from pyorbital.orbital import get_observer_look
-        with mock.patch("satpy.modifiers.angles.get_observer_look", wraps=get_observer_look) as gol, \
-                satpy.config.set(cache_lonlats=True, cache_sensor_angles=True, cache_dir=str(tmp_path)), \
-                warnings.catch_warnings(record=True) as caught_warnings:
+
+        with (
+            mock.patch("satpy.modifiers.angles.get_observer_look", wraps=get_observer_look) as gol,
+            satpy.config.set(cache_lonlats=True, cache_sensor_angles=True, cache_dir=str(tmp_path)),
+            warnings.catch_warnings(record=True) as caught_warnings,
+        ):
             res = get_angles(data)
             self._check_cached_result(res, exp_zarr_chunks)
 
@@ -289,6 +314,7 @@ class TestAngleGeneration:
     @staticmethod
     def _check_cache_and_clear(tmp_path, exp_num_zarr):
         from satpy.modifiers.angles import _get_sensor_angles_from_sat_pos, _get_valid_lonlats
+
         zarr_dirs = glob(str(tmp_path / "*.zarr"))
         assert len(zarr_dirs) == exp_num_zarr  # two for lon/lat, one for sata, one for satz
 
@@ -306,8 +332,7 @@ class TestAngleGeneration:
             return da.from_array(data)
 
         data = list(range(5))
-        with pytest.raises(RuntimeError), \
-                satpy.config.set(cache_lonlats=True, cache_dir=str(tmp_path)):
+        with pytest.raises(RuntimeError), satpy.config.set(cache_lonlats=True, cache_dir=str(tmp_path)):
             _fake_func(data, (1, 2, 3), 5)
 
     def test_cached_result_numpy_fails(self, tmp_path):
@@ -318,29 +343,33 @@ class TestAngleGeneration:
         def _fake_func(shape, chunks):
             return np.zeros(shape)
 
-        with pytest.raises(ValueError), \
-                satpy.config.set(cache_lonlats=True, cache_dir=str(tmp_path)):
+        with pytest.raises(ValueError), satpy.config.set(cache_lonlats=True, cache_dir=str(tmp_path)):
             _fake_func((5, 5), ((5,), (5,)))
 
     def test_no_cache_dir_fails(self, tmp_path):
         """Test that 'cache_dir' not being set fails."""
         from satpy.modifiers.angles import _get_sensor_angles_from_sat_pos, get_angles
+
         data = _get_angle_test_data()
-        with pytest.raises(RuntimeError), \
-                satpy.config.set(cache_lonlats=True, cache_sensor_angles=True, cache_dir=None):
+        with (
+            pytest.raises(RuntimeError),
+            satpy.config.set(cache_lonlats=True, cache_sensor_angles=True, cache_dir=None),
+        ):
             get_angles(data)
-        with pytest.raises(RuntimeError), \
-                satpy.config.set(cache_lonlats=True, cache_sensor_angles=True, cache_dir=None):
+        with (
+            pytest.raises(RuntimeError),
+            satpy.config.set(cache_lonlats=True, cache_sensor_angles=True, cache_dir=None),
+        ):
             _get_sensor_angles_from_sat_pos.cache_clear()
 
     def test_relative_azimuth_calculation(self):
         """Test relative azimuth calculation."""
         from satpy.modifiers.angles import compute_relative_azimuth
 
-        saa = xr.DataArray(np.array([-120, 40., 0.04, 179.4, 94.2, 12.1]))
-        vaa = xr.DataArray(np.array([60., 57.7, 175.1, 234.18, 355.4, 12.1]))
+        saa = xr.DataArray(np.array([-120, 40.0, 0.04, 179.4, 94.2, 12.1]))
+        vaa = xr.DataArray(np.array([60.0, 57.7, 175.1, 234.18, 355.4, 12.1]))
 
-        expected_raa = xr.DataArray(np.array([180., 17.7, 175.06, 54.78, 98.8, 0.]))
+        expected_raa = xr.DataArray(np.array([180.0, 17.7, 175.06, 54.78, 98.8, 0.0]))
 
         raa = compute_relative_azimuth(vaa, saa)
         assert isinstance(raa, xr.DataArray)

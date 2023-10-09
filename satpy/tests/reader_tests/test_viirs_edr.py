@@ -78,8 +78,9 @@ def surface_reflectance_file(tmp_path_factory: TempPathFactory) -> Path:
 @pytest.fixture(scope="module")
 def surface_reflectance_file2(tmp_path_factory: TempPathFactory) -> Path:
     """Generate fake surface reflectance EDR file."""
-    return _create_surface_reflectance_file(tmp_path_factory, START_TIME + timedelta(minutes=5),
-                                            include_veg_indices=False)
+    return _create_surface_reflectance_file(
+        tmp_path_factory, START_TIME + timedelta(minutes=5), include_veg_indices=False
+    )
 
 
 @pytest.fixture(scope="module")
@@ -97,21 +98,23 @@ def surface_reflectance_with_veg_indices_file(tmp_path_factory: TempPathFactory)
 @pytest.fixture(scope="module")
 def surface_reflectance_with_veg_indices_file2(tmp_path_factory: TempPathFactory) -> Path:
     """Generate fake surface reflectance EDR file with vegetation indexes included."""
-    return _create_surface_reflectance_file(tmp_path_factory, START_TIME + timedelta(minutes=5),
-                                            include_veg_indices=True)
+    return _create_surface_reflectance_file(
+        tmp_path_factory, START_TIME + timedelta(minutes=5), include_veg_indices=True
+    )
 
 
 @pytest.fixture(scope="module")
-def multiple_surface_reflectance_files_with_veg_indices(surface_reflectance_with_veg_indices_file,
-                                                        surface_reflectance_with_veg_indices_file2) -> list[Path]:
+def multiple_surface_reflectance_files_with_veg_indices(
+    surface_reflectance_with_veg_indices_file, surface_reflectance_with_veg_indices_file2
+) -> list[Path]:
     """Get two multiple surface reflectance files with vegetation indexes included."""
     return [surface_reflectance_with_veg_indices_file, surface_reflectance_with_veg_indices_file2]
 
 
 def _create_surface_reflectance_file(
-        tmp_path_factory: TempPathFactory,
-        start_time: datetime,
-        include_veg_indices: bool = False,
+    tmp_path_factory: TempPathFactory,
+    start_time: datetime,
+    include_veg_indices: bool = False,
 ) -> Path:
     fn = f"SurfRefl_v1r2_npp_s{start_time:%Y%m%d%H%M%S}0_e{END_TIME:%Y%m%d%H%M%S}0_c202305302025590.nc"
     sr_vars = _create_surf_refl_variables()
@@ -128,10 +131,20 @@ def _create_surf_refl_variables() -> dict[str, xr.DataArray]:
     dim_x_375 = "Along_Scan_375m"
     i_dims = (dim_y_375, dim_x_375)
 
-    lon_attrs = {"standard_name": "longitude", "units": "degrees_east", "_FillValue": -999.9,
-                 "valid_min": -180.0, "valid_max": 180.0}
-    lat_attrs = {"standard_name": "latitude", "units": "degrees_north", "_FillValue": -999.9,
-                 "valid_min": -90.0, "valid_max": 90.0}
+    lon_attrs = {
+        "standard_name": "longitude",
+        "units": "degrees_east",
+        "_FillValue": -999.9,
+        "valid_min": -180.0,
+        "valid_max": 180.0,
+    }
+    lat_attrs = {
+        "standard_name": "latitude",
+        "units": "degrees_north",
+        "_FillValue": -999.9,
+        "valid_min": -90.0,
+        "valid_max": 90.0,
+    }
     sr_attrs = {"units": "unitless", "_FillValue": -9999, "scale_factor": 0.0001, "add_offset": 0.0}
 
     i_data = np.random.random_sample((I_ROWS, I_COLS)).astype(np.float32)
@@ -206,9 +219,7 @@ def _create_veg_index_variables() -> dict[str, xr.DataArray]:
 def cloud_height_file(tmp_path_factory: TempPathFactory) -> Path:
     """Generate fake CloudHeight VIIRS EDR file."""
     fn = f"JRR-CloudHeight_v3r2_npp_s{START_TIME:%Y%m%d%H%M%S}0_e{END_TIME:%Y%m%d%H%M%S}0_c202307231023395.nc"
-    data_vars = _create_continuous_variables(
-        ("CldTopTemp", "CldTopHght", "CldTopPres")
-    )
+    data_vars = _create_continuous_variables(("CldTopTemp", "CldTopHght", "CldTopPres"))
     return _create_fake_file(tmp_path_factory, fn, data_vars)
 
 
@@ -216,9 +227,7 @@ def cloud_height_file(tmp_path_factory: TempPathFactory) -> Path:
 def aod_file(tmp_path_factory: TempPathFactory) -> Path:
     """Generate fake AOD VIIRs EDR file."""
     fn = f"JRR-AOD_v3r2_npp_s{START_TIME:%Y%m%d%H%M%S}0_e{END_TIME:%Y%m%d%H%M%S}0_c202307231023395.nc"
-    data_vars = _create_continuous_variables(
-        ("AOD550",)
-    )
+    data_vars = _create_continuous_variables(("AOD550",))
     return _create_fake_file(tmp_path_factory, fn, data_vars)
 
 
@@ -278,10 +287,7 @@ def _create_fake_file(tmp_path_factory: TempPathFactory, filename: str, data_arr
 
 
 def _create_fake_dataset(vars_dict: dict[str, xr.DataArray]) -> xr.Dataset:
-    ds = xr.Dataset(
-        vars_dict,
-        attrs={}
-    )
+    ds = xr.Dataset(vars_dict, attrs={})
     return ds
 
 
@@ -320,9 +326,9 @@ class TestVIIRSJRRReader:
         ],
     )
     def test_get_dataset_surf_refl_with_veg_idx(
-            self,
-            data_files,
-            filter_veg,
+        self,
+        data_files,
+        filter_veg,
     ):
         """Test retrieval of vegetation indices from surface reflectance files."""
         from satpy import Scene
@@ -332,8 +338,7 @@ class TestVIIRSJRRReader:
         is_multiple = len(data_files) > 1
         bytes_in_m_row = 4 * 3200
         with dask.config.set({"array.chunk-size": f"{bytes_in_m_row * 4}B"}):
-            scn = Scene(reader="viirs_edr", filenames=data_files,
-                        reader_kwargs={"filter_veg": filter_veg})
+            scn = Scene(reader="viirs_edr", filenames=data_files, reader_kwargs={"filter_veg": filter_veg})
             scn.load(["NDVI", "EVI", "surf_refl_qf1"])
         _check_vi_data_arr(scn["NDVI"], filter_veg, is_multiple)
         _check_vi_data_arr(scn["EVI"], filter_veg, is_multiple)
@@ -345,11 +350,12 @@ class TestVIIRSJRRReader:
             (("CldTopTemp", "CldTopHght", "CldTopPres"), lazy_fixture("cloud_height_file")),
             (("AOD550",), lazy_fixture("aod_file")),
             (("VLST",), lazy_fixture("lst_file")),
-        ]
+        ],
     )
     def test_get_dataset_generic(self, var_names, data_file):
         """Test datasets from cloud height files."""
         from satpy import Scene
+
         bytes_in_m_row = 4 * 3200
         with dask.config.set({"array.chunk-size": f"{bytes_in_m_row * 4}B"}):
             scn = Scene(reader="viirs_edr", filenames=[data_file])
@@ -362,11 +368,12 @@ class TestVIIRSJRRReader:
         [
             (lazy_fixture("surface_reflectance_file"), False),
             (lazy_fixture("surface_reflectance_with_veg_indices_file"), True),
-        ]
+        ],
     )
     def test_availability_veg_idx(self, data_file, exp_available):
         """Test that vegetation indexes aren't available when they aren't present."""
         from satpy import Scene
+
         scn = Scene(reader="viirs_edr", filenames=[data_file])
         avail = scn.available_dataset_names()
         if exp_available:
@@ -377,15 +384,12 @@ class TestVIIRSJRRReader:
             assert "EVI" not in avail
 
     @pytest.mark.parametrize(
-        ("filename_platform", "exp_shortname"),
-        [
-            ("npp", "Suomi-NPP"),
-            ("JPSS-1", "NOAA-20"),
-            ("J01", "NOAA-20")
-        ])
+        ("filename_platform", "exp_shortname"), [("npp", "Suomi-NPP"), ("JPSS-1", "NOAA-20"), ("J01", "NOAA-20")]
+    )
     def test_get_platformname(self, surface_reflectance_file, filename_platform, exp_shortname):
         """Test finding start and end times of granules."""
         from satpy import Scene
+
         new_name = str(surface_reflectance_file).replace("npp", filename_platform)
         if new_name != str(surface_reflectance_file):
             shutil.copy(surface_reflectance_file, new_name)
@@ -410,17 +414,15 @@ def _check_vi_data_arr(data_arr: xr.DataArray, is_filtered: bool, multiple_files
     data = data_arr.data.compute()
     if is_filtered:
         np.testing.assert_allclose(data[0, :7], [np.nan, -1.0, -0.5, 0.0, 0.5, 1.0, np.nan])
-        np.testing.assert_allclose(data[0, 8:8 + 16], np.nan)
-        np.testing.assert_allclose(data[0, 8 + 16:], 0.0)
+        np.testing.assert_allclose(data[0, 8 : 8 + 16], np.nan)
+        np.testing.assert_allclose(data[0, 8 + 16 :], 0.0)
     else:
         np.testing.assert_allclose(data[0, :7], [np.nan, -1.0, -0.5, 0.0, 0.5, 1.0, np.nan])
         np.testing.assert_allclose(data[0, 8:], 0.0)
 
 
 def _check_surf_refl_data_arr(
-        data_arr: xr.DataArray,
-        dtype: npt.DType = np.float32,
-        multiple_files: bool = False
+    data_arr: xr.DataArray, dtype: npt.DType = np.float32, multiple_files: bool = False
 ) -> None:
     _array_checks(data_arr, dtype, multiple_files=multiple_files)
     data = data_arr.data.compute()

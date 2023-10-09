@@ -107,13 +107,14 @@ class ZarrCacheHelper:
 
     """
 
-    def __init__(self,
-                 func: Callable,
-                 cache_config_key: str,
-                 uncacheable_arg_types=DEFAULT_UNCACHE_TYPES,
-                 sanitize_args_func: Optional[Callable] = None,
-                 cache_version: int = 1,
-                 ):
+    def __init__(
+        self,
+        func: Callable,
+        cache_config_key: str,
+        uncacheable_arg_types=DEFAULT_UNCACHE_TYPES,
+        sanitize_args_func: Optional[Callable] = None,
+        cache_version: int = 1,
+    ):
         """Hold on to provided arguments for future use."""
         self._func = func
         self._cache_config_key = cache_config_key
@@ -186,7 +187,7 @@ class ZarrCacheHelper:
                 "future calculations. "
                 f"Original chunks: {arg_chunks}; New chunks: {new_chunks}",
                 PerformanceWarning,
-                stacklevel=3
+                stacklevel=3,
             )
 
     def _cache_results(self, res, zarr_format):
@@ -194,8 +195,7 @@ class ZarrCacheHelper:
         new_res = []
         for idx, sub_res in enumerate(res):
             if not isinstance(sub_res, da.Array):
-                raise ValueError("Zarr caching currently only supports dask "
-                                 f"arrays. Got {type(sub_res)}")
+                raise ValueError(f"Zarr caching currently only supports dask arrays. Got {type(sub_res)}")
             zarr_path = zarr_format.format(idx)
             # See https://github.com/dask/dask/issues/8380
             with dask.config.set({"optimization.fuse.active": False}):
@@ -222,9 +222,9 @@ def _get_output_chunks_from_func_arguments(args):
 
 
 def cache_to_zarr_if(
-        cache_config_key: str,
-        uncacheable_arg_types=DEFAULT_UNCACHE_TYPES,
-        sanitize_args_func: Optional[Callable] = None,
+    cache_config_key: str,
+    uncacheable_arg_types=DEFAULT_UNCACHE_TYPES,
+    sanitize_args_func: Optional[Callable] = None,
 ) -> Callable:
     """Decorate a function and cache the results as a zarr array on disk.
 
@@ -235,18 +235,18 @@ def cache_to_zarr_if(
     out old entries. It is up to the user to manage the size of the cache.
 
     """
+
     def _decorator(func: Callable) -> Callable:
-        zarr_cacher = ZarrCacheHelper(func,
-                                      cache_config_key,
-                                      uncacheable_arg_types,
-                                      sanitize_args_func)
+        zarr_cacher = ZarrCacheHelper(func, cache_config_key, uncacheable_arg_types, sanitize_args_func)
         wrapper = update_wrapper(zarr_cacher, func)
         return wrapper
+
     return _decorator
 
 
 def _hash_args(*args, unhashable_types=DEFAULT_UNCACHE_TYPES):
     import json
+
     hashable_args = []
     for arg in args:
         if isinstance(arg, unhashable_types):
@@ -257,7 +257,7 @@ def _hash_args(*args, unhashable_types=DEFAULT_UNCACHE_TYPES):
             arg = arg.isoformat(" ")
         hashable_args.append(arg)
     arg_hash = hashlib.sha1()  # nosec
-    arg_hash.update(json.dumps(tuple(hashable_args)).encode('utf8'))
+    arg_hash.update(json.dumps(tuple(hashable_args)).encode("utf8"))
     return arg_hash.hexdigest()
 
 
@@ -299,9 +299,7 @@ def _is_chunk_tuple(some_obj: Any) -> bool:
     return all(isinstance(sub_obj_elem, int) for sub_obj_elem in sub_elements)
 
 
-def _regular_chunks_from_irregular_chunks(
-        old_chunks: tuple[tuple[int, ...], ...]
-) -> tuple[tuple[int, ...], ...]:
+def _regular_chunks_from_irregular_chunks(old_chunks: tuple[tuple[int, ...], ...]) -> tuple[tuple[int, ...], ...]:
     shape = tuple(sum(dim_chunks) for dim_chunks in old_chunks)
     new_dim_chunks = tuple(max(dim_chunks) for dim_chunks in old_chunks)
     return da.core.normalize_chunks(new_dim_chunks, shape=shape)
@@ -320,7 +318,7 @@ def _chunks_are_irregular(chunks_tuple: tuple) -> bool:
 
 
 def _geo_dask_to_data_array(arr: da.Array) -> xr.DataArray:
-    return xr.DataArray(arr, dims=('y', 'x'))
+    return xr.DataArray(arr, dims=("y", "x"))
 
 
 def compute_relative_azimuth(sat_azi: xr.DataArray, sun_azi: xr.DataArray) -> xr.DataArray:
@@ -409,10 +407,15 @@ def _get_valid_lonlats(area: PRGeometry, chunks: Union[int, str, tuple] = "auto"
 def _get_sun_angles(data_arr: xr.DataArray) -> tuple[xr.DataArray, xr.DataArray]:
     chunks = _geo_chunks_from_data_arr(data_arr)
     lons, lats = _get_valid_lonlats(data_arr.attrs["area"], chunks)
-    suna = da.map_blocks(_get_sun_azimuth_ndarray, lons, lats,
-                         data_arr.attrs["start_time"],
-                         dtype=lons.dtype, meta=np.array((), dtype=lons.dtype),
-                         chunks=lons.chunks)
+    suna = da.map_blocks(
+        _get_sun_azimuth_ndarray,
+        lons,
+        lats,
+        data_arr.attrs["start_time"],
+        dtype=lons.dtype,
+        meta=np.array((), dtype=lons.dtype),
+        chunks=lons.chunks,
+    )
     cos_sza = _get_cos_sza(data_arr.attrs["start_time"], lons, lats)
     sunz = np.rad2deg(np.arccos(cos_sza))
     suna = _geo_dask_to_data_array(suna)
@@ -421,11 +424,15 @@ def _get_sun_angles(data_arr: xr.DataArray) -> tuple[xr.DataArray, xr.DataArray]
 
 
 def _get_cos_sza(utc_time, lons, lats):
-    cos_sza = da.map_blocks(_cos_zen_ndarray,
-                            lons, lats, utc_time,
-                            meta=np.array((), dtype=lons.dtype),
-                            dtype=lons.dtype,
-                            chunks=lons.chunks)
+    cos_sza = da.map_blocks(
+        _cos_zen_ndarray,
+        lons,
+        lats,
+        utc_time,
+        meta=np.array((), dtype=lons.dtype),
+        dtype=lons.dtype,
+        chunks=lons.chunks,
+    )
     return cos_sza
 
 
@@ -443,19 +450,19 @@ def _get_sun_azimuth_ndarray(lons: np.ndarray, lats: np.ndarray, start_time: dat
         # Satpy expects values in the 0 - 360 range, which is what is returned for the
         # satellite azimuth angles.
         # Here this is corrected so both sun and sat azimuths are in the same range.
-        suna = suna % 360.
+        suna = suna % 360.0
     return suna
 
 
 def _get_sensor_angles(data_arr: xr.DataArray) -> tuple[xr.DataArray, xr.DataArray]:
-    preference = satpy.config.get('sensor_angles_position_preference', 'actual')
+    preference = satpy.config.get("sensor_angles_position_preference", "actual")
     sat_lon, sat_lat, sat_alt = get_satpos(data_arr, preference=preference)
     area_def = data_arr.attrs["area"]
     chunks = _geo_chunks_from_data_arr(data_arr)
 
-    sata, satz = _get_sensor_angles_from_sat_pos(sat_lon, sat_lat, sat_alt,
-                                                 data_arr.attrs["start_time"],
-                                                 area_def, chunks)
+    sata, satz = _get_sensor_angles_from_sat_pos(
+        sat_lon, sat_lat, sat_alt, data_arr.attrs["start_time"], area_def, chunks
+    )
     sata = _geo_dask_to_data_array(sata)
     satz = _geo_dask_to_data_array(satz)
     return sata, satz
@@ -478,28 +485,32 @@ def _dim_index_with_default(dims: tuple, dim_name: str, default: int) -> int:
 @cache_to_zarr_if("cache_sensor_angles", sanitize_args_func=_sanitize_observer_look_args)
 def _get_sensor_angles_from_sat_pos(sat_lon, sat_lat, sat_alt, start_time, area_def, chunks):
     lons, lats = _get_valid_lonlats(area_def, chunks)
-    res = da.map_blocks(_get_sensor_angles_ndarray, lons, lats, start_time, sat_lon, sat_lat, sat_alt,
-                        dtype=lons.dtype, meta=np.array((), dtype=lons.dtype), new_axis=[0],
-                        chunks=(2,) + lons.chunks)
+    res = da.map_blocks(
+        _get_sensor_angles_ndarray,
+        lons,
+        lats,
+        start_time,
+        sat_lon,
+        sat_lat,
+        sat_alt,
+        dtype=lons.dtype,
+        meta=np.array((), dtype=lons.dtype),
+        new_axis=[0],
+        chunks=(2,) + lons.chunks,
+    )
     return res[0], res[1]
 
 
 def _get_sensor_angles_ndarray(lons, lats, start_time, sat_lon, sat_lat, sat_alt) -> np.ndarray:
     with ignore_invalid_float_warnings():
-        sata, satel = get_observer_look(
-            sat_lon,
-            sat_lat,
-            sat_alt / 1000.0,  # km
-            start_time,
-            lons, lats, 0)
+        sata, satel = get_observer_look(sat_lon, sat_lat, sat_alt / 1000.0, start_time, lons, lats, 0)  # km
         satz = 90 - satel
         return np.stack([sata, satz])
 
 
-def sunzen_corr_cos(data: da.Array,
-                    cos_zen: da.Array,
-                    limit: float = 88.,
-                    max_sza: Optional[float] = 95.) -> da.Array:
+def sunzen_corr_cos(
+    data: da.Array, cos_zen: da.Array, limit: float = 88.0, max_sza: Optional[float] = 95.0
+) -> da.Array:
     """Perform Sun zenith angle correction.
 
     The correction is based on the provided cosine of the zenith
@@ -511,39 +522,33 @@ def sunzen_corr_cos(data: da.Array,
     0. Both ``data`` and ``cos_zen`` should be 2D arrays of the same shape.
 
     """
-    return da.map_blocks(_sunzen_corr_cos_ndarray,
-                         data, cos_zen, limit, max_sza,
-                         meta=np.array((), dtype=data.dtype),
-                         chunks=data.chunks)
+    return da.map_blocks(
+        _sunzen_corr_cos_ndarray, data, cos_zen, limit, max_sza, meta=np.array((), dtype=data.dtype), chunks=data.chunks
+    )
 
 
-def _sunzen_corr_cos_ndarray(data: np.ndarray,
-                             cos_zen: np.ndarray,
-                             limit: float,
-                             max_sza: Optional[float]) -> np.ndarray:
+def _sunzen_corr_cos_ndarray(
+    data: np.ndarray, cos_zen: np.ndarray, limit: float, max_sza: Optional[float]
+) -> np.ndarray:
     # Convert the zenith angle limit to cosine of zenith angle
     limit_rad = np.deg2rad(limit)
     limit_cos = np.cos(limit_rad)
     max_sza_rad = np.deg2rad(max_sza) if max_sza is not None else max_sza
 
     # Cosine correction
-    corr = (1. / cos_zen).astype(data.dtype, copy=False)
+    corr = (1.0 / cos_zen).astype(data.dtype, copy=False)
     if max_sza is not None:
         # gradually fall off for larger zenith angle
         grad_factor = (np.arccos(cos_zen) - limit_rad) / (max_sza_rad - limit_rad)
         # invert the factor so maximum correction is done at `limit` and falls off later
-        with np.errstate(invalid='ignore'):  # we expect space pixels to be invalid
-            grad_factor = 1. - np.log(grad_factor + 1) / np.log(2)
+        with np.errstate(invalid="ignore"):  # we expect space pixels to be invalid
+            grad_factor = 1.0 - np.log(grad_factor + 1) / np.log(2)
         # make sure we don't make anything negative
-        grad_factor = grad_factor.clip(0.)
+        grad_factor = grad_factor.clip(0.0)
     else:
         # Use constant value (the limit) for larger zenith angles
-        grad_factor = 1.
-    corr = np.where(
-        cos_zen > limit_cos,
-        corr,
-        (grad_factor / limit_cos).astype(data.dtype, copy=False)
-    )
+        grad_factor = 1.0
+    corr = np.where(cos_zen > limit_cos, corr, (grad_factor / limit_cos).astype(data.dtype, copy=False))
     # Force "night" pixels to 0 (where SZA is invalid)
     corr[np.isnan(cos_zen)] = 0
     return data * corr

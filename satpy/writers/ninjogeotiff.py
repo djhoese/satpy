@@ -104,12 +104,26 @@ class NinJoGeoTIFFWriter(GeoTIFFWriter):
     scale_offset_tag_names = ("ninjo_Gradient", "ninjo_AxisIntercept")
 
     def save_image(
-            self, image, filename=None, fill_value=None,
-            compute=True, keep_palette=False, cmap=None, overviews=None,
-            overviews_minsize=256, overviews_resampling=None,
-            tags=None, config_files=None,
-            *, ChannelID, DataType, PhysicUnit, PhysicValue,
-            SatelliteNameID, **kwargs):
+        self,
+        image,
+        filename=None,
+        fill_value=None,
+        compute=True,
+        keep_palette=False,
+        cmap=None,
+        overviews=None,
+        overviews_minsize=256,
+        overviews_resampling=None,
+        tags=None,
+        config_files=None,
+        *,
+        ChannelID,
+        DataType,
+        PhysicUnit,
+        PhysicValue,
+        SatelliteNameID,
+        **kwargs,
+    ):
         """Save image along with NinJo tags.
 
         Save image along with NinJo tags.  Interface as for GeoTIFF,
@@ -174,7 +188,7 @@ class NinJoGeoTIFFWriter(GeoTIFFWriter):
 
         gdal_opts = {}
         ntg_opts = {}
-        for (k, v) in kwargs.items():
+        for k, v in kwargs.items():
             if k in self.GDAL_OPTIONS:
                 gdal_opts[k] = v
             else:
@@ -189,7 +203,8 @@ class NinJoGeoTIFFWriter(GeoTIFFWriter):
             PhysicUnit=PhysicUnit,
             PhysicValue=PhysicValue,
             SatelliteNameID=SatelliteNameID,
-            **ntg_opts)
+            **ntg_opts,
+        )
         ninjo_tags = {f"ninjo_{k:s}": v for (k, v) in ntg.get_all_tags().items()}
         image = self._fix_units(image, PhysicValue, PhysicUnit)
 
@@ -204,10 +219,11 @@ class NinJoGeoTIFFWriter(GeoTIFFWriter):
             overviews_minsize=overviews_minsize,
             overviews_resampling=overviews_resampling,
             tags={**(tags or {}), **ninjo_tags},
-            scale_offset_tags=(self.scale_offset_tag_names
-                               if self._check_include_scale_offset(image, PhysicUnit)
-                               else None),
-            **gdal_opts)
+            scale_offset_tags=(
+                self.scale_offset_tag_names if self._check_include_scale_offset(image, PhysicUnit) else None
+            ),
+            **gdal_opts,
+        )
 
     def _fix_units(self, image, quantity, unit):
         """Adapt units between °C and K.
@@ -216,9 +232,7 @@ class NinJoGeoTIFFWriter(GeoTIFFWriter):
         enhancement history aren't touched.
         """
         data_units = image.data.attrs.get("units")
-        if (quantity.lower() == "temperature" and
-                unit == "C" and
-                data_units == "K"):
+        if quantity.lower() == "temperature" and unit == "C" and data_units == "K":
             logger.debug("Adding offset for K → °C conversion")
             new_attrs = copy.deepcopy(image.data.attrs)
             im2 = type(image)(image.data.copy())
@@ -228,9 +242,10 @@ class NinJoGeoTIFFWriter(GeoTIFFWriter):
             return im2
         if unit != data_units and unit.lower() != "n/a":
             logger.warning(
-                    f"Writing {unit!s} to ninjogeotiff headers, but "
-                    f"data attributes have unit {data_units!s}. "
-                    "No conversion applied.")
+                f"Writing {unit!s} to ninjogeotiff headers, but "
+                f"data attributes have unit {data_units!s}. "
+                "No conversion applied."
+            )
 
         return image
 
@@ -264,15 +279,10 @@ class NinJoTagGenerator:
     """
 
     # tags that never change
-    fixed_tags = {
-        "Magic": "NINJO",
-        "HeaderVersion": 2,
-        "XMinimum": 1,
-        "YMinimum": 1}
+    fixed_tags = {"Magic": "NINJO", "HeaderVersion": 2, "XMinimum": 1, "YMinimum": 1}
 
     # tags that must be passed directly by the user
-    passed_tags = {"ChannelID", "DataType", "PhysicUnit",
-                   "SatelliteNameID", "PhysicValue"}
+    passed_tags = {"ChannelID", "DataType", "PhysicUnit", "SatelliteNameID", "PhysicValue"}
 
     # tags that can be calculated dynamically from (meta)data
     dynamic_tags = {
@@ -289,28 +299,62 @@ class NinJoTagGenerator:
         "ReferenceLatitude1": "ref_lat_1",
         "TransparentPixel": "transparent_pixel",
         "XMaximum": "xmaximum",
-        "YMaximum": "ymaximum"
-        }
+        "YMaximum": "ymaximum",
+    }
 
     # mandatory tags according to documentation
-    mandatory_tags = {"SatelliteNameID", "DateID", "CreationDateID",
-                      "ChannelID", "HeaderVersion", "DataType",
-                      "SatelliteNumber", "ColorDepth", "XMinimum", "XMaximum",
-                      "YMinimum", "YMaximum", "Projection", "PhysicValue",
-                      "PhysicUnit", "MinGrayValue", "MaxGrayValue", "Gradient",
-                      "AxisIntercept", "TransparentPixel"}
+    mandatory_tags = {
+        "SatelliteNameID",
+        "DateID",
+        "CreationDateID",
+        "ChannelID",
+        "HeaderVersion",
+        "DataType",
+        "SatelliteNumber",
+        "ColorDepth",
+        "XMinimum",
+        "XMaximum",
+        "YMinimum",
+        "YMaximum",
+        "Projection",
+        "PhysicValue",
+        "PhysicUnit",
+        "MinGrayValue",
+        "MaxGrayValue",
+        "Gradient",
+        "AxisIntercept",
+        "TransparentPixel",
+    }
 
     # optional tags are added on best effort or if passed by user
-    optional_tags = {"DataSource", "MeridianWest", "MeridianEast",
-                     "EarthRadiusLarge", "EarthRadiusSmall", "GeodeticDate",
-                     "ReferenceLatitude1", "ReferenceLatitude2",
-                     "CentralMeridian", "ColorTable", "Description",
-                     "OverflightDirection", "GeoLatitude", "GeoLongitude",
-                     "Altitude", "AOSAzimuth", "LOSAzimuth", "MaxElevation",
-                     "OverFlightTime", "IsBlackLinesCorrection",
-                     "IsAtmosphereCorrected", "IsCalibrated", "IsNormalized",
-                     "OriginalHeader", "IsValueTableAvailable",
-                     "ValueTableFloatField"}
+    optional_tags = {
+        "DataSource",
+        "MeridianWest",
+        "MeridianEast",
+        "EarthRadiusLarge",
+        "EarthRadiusSmall",
+        "GeodeticDate",
+        "ReferenceLatitude1",
+        "ReferenceLatitude2",
+        "CentralMeridian",
+        "ColorTable",
+        "Description",
+        "OverflightDirection",
+        "GeoLatitude",
+        "GeoLongitude",
+        "Altitude",
+        "AOSAzimuth",
+        "LOSAzimuth",
+        "MaxElevation",
+        "OverFlightTime",
+        "IsBlackLinesCorrection",
+        "IsAtmosphereCorrected",
+        "IsCalibrated",
+        "IsNormalized",
+        "OriginalHeader",
+        "IsValueTableAvailable",
+        "ValueTableFloatField",
+    }
 
     # tags that are added later in other ways
     postponed_tags = {"AxisIntercept", "Gradient"}
@@ -330,13 +374,14 @@ class NinJoTagGenerator:
         self.fill_value = fill_value
         self.filename = filename
         self.args = kwargs
-        self.tag_names = (self.fixed_tags.keys() |
-                          self.passed_tags |
-                          self.dynamic_tags.keys() |
-                          (self.args.keys() & self.optional_tags))
+        self.tag_names = (
+            self.fixed_tags.keys()
+            | self.passed_tags
+            | self.dynamic_tags.keys()
+            | (self.args.keys() & self.optional_tags)
+        )
         if self.args.keys() - self.tag_names:
-            raise ValueError("The following tags were not recognised: " +
-                             " ".join(self.args.keys() - self.tag_names))
+            raise ValueError("The following tags were not recognised: " + " ".join(self.args.keys() - self.tag_names))
 
     def get_all_tags(self):
         """Get a dictionary with all tags for NinJo."""
@@ -349,7 +394,8 @@ class NinJoTagGenerator:
                     raise
                 logger.debug(
                     f"Unable to obtain value for optional NinJo tag {tag:s}. "
-                    f"This is probably expected.  The reason is: {e.args[0]}")
+                    f"This is probably expected.  The reason is: {e.args[0]}"
+                )
         return tags
 
     def get_tag(self, tag):
@@ -366,8 +412,8 @@ class NinJoTagGenerator:
             raise ValueError(f"Tag {tag!s} is added later by the GeoTIFF writer.")
         if tag in self.optional_tags:
             raise ValueError(
-                f"Optional tag {tag!s} must be supplied by user if user wants to "
-                "request the value, but wasn't.")
+                f"Optional tag {tag!s} must be supplied by user if user wants to request the value, but wasn't."
+            )
         raise ValueError(f"Unknown tag: {tag!s}")
 
     def get_central_meridian(self):
@@ -386,8 +432,7 @@ class NinJoTagGenerator:
             return 24
         if self.image.mode == "RGBA":
             return 32
-        raise ValueError(
-                f"Unsupported image mode: {self.image.mode:s}")
+        raise ValueError(f"Unsupported image mode: {self.image.mode:s}")
 
     # Set unix epoch here explicitly, because datetime.timestamp() is
     # apparently not supported on Windows.
@@ -425,17 +470,11 @@ class NinJoTagGenerator:
 
     def get_min_gray_value(self):
         """Calculate minimum gray value."""
-        return self.image._scale_to_dtype(
-            self.dataset.min(),
-            np.uint8,
-            self.fill_value).astype(np.uint8)
+        return self.image._scale_to_dtype(self.dataset.min(), np.uint8, self.fill_value).astype(np.uint8)
 
     def get_max_gray_value(self):
         """Calculate maximum gray value."""
-        return self.image._scale_to_dtype(
-            self.dataset.max(),
-            np.uint8,
-            self.fill_value).astype(np.uint8)
+        return self.image._scale_to_dtype(self.dataset.max(), np.uint8, self.fill_value).astype(np.uint8)
 
     def get_projection(self):
         """Get NinJo projection string.
@@ -461,10 +500,11 @@ class NinJoTagGenerator:
                 return "NPOL"
             return "SPOL"
         raise ValueError(
-                "Unknown mapping from area "
-                f"{self.dataset.attrs['area'].description!r} with CRS coordinate "
-                f"operation name {name:s} to NinJo projection.  NinJo understands only "
-                "equidistant cylindrical, mercator, or stereographic projections.")
+            "Unknown mapping from area "
+            f"{self.dataset.attrs['area'].description!r} with CRS coordinate "
+            f"operation name {name:s} to NinJo projection.  NinJo understands only "
+            "equidistant cylindrical, mercator, or stereographic projections."
+        )
 
     def get_ref_lat_1(self):
         """Get reference latitude one.
@@ -472,14 +512,14 @@ class NinJoTagGenerator:
         Derived from area definition.
         """
         pams = {p.name: p.value for p in self.dataset.attrs["area"].crs.coordinate_operation.params}
-        for label in ["Latitude of standard parallel",
-                      "Latitude of natural origin",
-                      "Latitude of 1st standard parallel"]:
+        for label in [
+            "Latitude of standard parallel",
+            "Latitude of natural origin",
+            "Latitude of 1st standard parallel",
+        ]:
             if label in pams:
                 return pams[label]
-        raise ValueError(
-                "Could not find reference latitude for area "
-                f"{self.dataset.attrs['area'].description}")
+        raise ValueError(f"Could not find reference latitude for area {self.dataset.attrs['area'].description}")
 
     def get_transparent_pixel(self):
         """Get the transparent pixel value, also known as the fill value.

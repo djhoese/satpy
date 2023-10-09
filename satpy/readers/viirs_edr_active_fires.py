@@ -28,23 +28,18 @@ from satpy.readers.file_handlers import BaseFileHandler
 from satpy.readers.netcdf_utils import NetCDF4FileHandler
 
 # map platform attributes to Oscar standard name
-PLATFORM_MAP = {
-    "NPP": "Suomi-NPP",
-    "J01": "NOAA-20",
-    "J02": "NOAA-21"
-}
+PLATFORM_MAP = {"NPP": "Suomi-NPP", "J01": "NOAA-20", "J02": "NOAA-21"}
 
 
 class VIIRSActiveFiresFileHandler(NetCDF4FileHandler):
     """NetCDF4 reader for VIIRS Active Fires."""
 
-    def __init__(self, filename, filename_info, filetype_info,
-                 auto_maskandscale=False, xarray_kwargs=None):
+    def __init__(self, filename, filename_info, filetype_info, auto_maskandscale=False, xarray_kwargs=None):
         """Open and perform initial investigation of NetCDF file."""
         super(VIIRSActiveFiresFileHandler, self).__init__(
-            filename, filename_info, filetype_info,
-            auto_maskandscale=auto_maskandscale, xarray_kwargs=xarray_kwargs)
-        self.prefix = filetype_info.get('variable_prefix')
+            filename, filename_info, filetype_info, auto_maskandscale=auto_maskandscale, xarray_kwargs=xarray_kwargs
+        )
+        self.prefix = filetype_info.get("variable_prefix")
 
     def get_dataset(self, dsid, dsinfo):
         """Get requested data as DataArray.
@@ -57,24 +52,24 @@ class VIIRSActiveFiresFileHandler(NetCDF4FileHandler):
             Dask DataArray: Data
 
         """
-        key = dsinfo.get('file_key', dsid['name']).format(variable_prefix=self.prefix)
+        key = dsinfo.get("file_key", dsid["name"]).format(variable_prefix=self.prefix)
         data = self[key]
         # rename "phoney dims"
-        data = data.rename(dict(zip(data.dims, ['y', 'x'])))
+        data = data.rename(dict(zip(data.dims, ["y", "x"])))
 
         # handle attributes from YAML
-        for key in ('units', 'standard_name', 'flag_meanings', 'flag_values', '_FillValue'):
+        for key in ("units", "standard_name", "flag_meanings", "flag_values", "_FillValue"):
             # we only want to add information that isn't present already
             if key in dsinfo and key not in data.attrs:
                 data.attrs[key] = dsinfo[key]
-        if isinstance(data.attrs.get('flag_meanings'), str):
-            data.attrs['flag_meanings'] = data.attrs['flag_meanings'].split(' ')
+        if isinstance(data.attrs.get("flag_meanings"), str):
+            data.attrs["flag_meanings"] = data.attrs["flag_meanings"].split(" ")
 
         # use more common CF standard units
-        if data.attrs.get('units') == 'kelvins':
-            data.attrs['units'] = 'K'
+        if data.attrs.get("units") == "kelvins":
+            data.attrs["units"] = "K"
 
-        data.attrs["platform_name"] = PLATFORM_MAP.get(self.filename_info['satellite_name'].upper(), "unknown")
+        data.attrs["platform_name"] = PLATFORM_MAP.get(self.filename_info["satellite_name"].upper(), "unknown")
         data.attrs["sensor"] = self.sensor_name
 
         return data
@@ -82,12 +77,12 @@ class VIIRSActiveFiresFileHandler(NetCDF4FileHandler):
     @property
     def start_time(self):
         """Get first date/time when observations were recorded."""
-        return self.filename_info['start_time']
+        return self.filename_info["start_time"]
 
     @property
     def end_time(self):
         """Get last date/time when observations were recorded."""
-        return self.filename_info.get('end_time', self.start_time)
+        return self.filename_info.get("end_time", self.start_time)
 
     @property
     def sensor_name(self):
@@ -112,33 +107,33 @@ class VIIRSActiveFiresTextFileHandler(BaseFileHandler):
             filetype_info: Filetype information
 
         """
-        skip_rows = filetype_info.get('skip_rows', 15)
-        columns = filetype_info['columns']
+        skip_rows = filetype_info.get("skip_rows", 15)
+        columns = filetype_info["columns"]
         self.file_content = dd.read_csv(filename, skiprows=skip_rows, header=None, names=columns)
         super(VIIRSActiveFiresTextFileHandler, self).__init__(filename, filename_info, filetype_info)
-        self.platform_name = PLATFORM_MAP.get(self.filename_info['satellite_name'].upper(), "unknown")
+        self.platform_name = PLATFORM_MAP.get(self.filename_info["satellite_name"].upper(), "unknown")
 
     def get_dataset(self, dsid, dsinfo):
         """Get requested data as DataArray."""
-        ds = self[dsid['name']].to_dask_array(lengths=True)
+        ds = self[dsid["name"]].to_dask_array(lengths=True)
         data = xr.DataArray(ds, dims=("y",), attrs={"platform_name": self.platform_name, "sensor": "VIIRS"})
-        for key in ('units', 'standard_name', 'flag_meanings', 'flag_values', '_FillValue'):
+        for key in ("units", "standard_name", "flag_meanings", "flag_values", "_FillValue"):
             # we only want to add information that isn't present already
             if key in dsinfo and key not in data.attrs:
                 data.attrs[key] = dsinfo[key]
-        if isinstance(data.attrs.get('flag_meanings'), str):
-            data.attrs['flag_meanings'] = data.attrs['flag_meanings'].split(' ')
+        if isinstance(data.attrs.get("flag_meanings"), str):
+            data.attrs["flag_meanings"] = data.attrs["flag_meanings"].split(" ")
         return data
 
     @property
     def start_time(self):
         """Get first date/time when observations were recorded."""
-        return self.filename_info['start_time']
+        return self.filename_info["start_time"]
 
     @property
     def end_time(self):
         """Get last date/time when observations were recorded."""
-        return self.filename_info.get('end_time', self.start_time)
+        return self.filename_info.get("end_time", self.start_time)
 
     def __getitem__(self, key):
         """Get file content for 'key'."""

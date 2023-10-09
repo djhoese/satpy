@@ -37,13 +37,11 @@ LOG = logging.getLogger(__name__)
 
 
 # Old Name -> New Name
-PENDING_OLD_READER_NAMES = {'fci_l1c_fdhsi': 'fci_l1c_nc', 'viirs_l2_cloud_mask_nc': 'viirs_edr'}
+PENDING_OLD_READER_NAMES = {"fci_l1c_fdhsi": "fci_l1c_nc", "viirs_l2_cloud_mask_nc": "viirs_edr"}
 OLD_READER_NAMES: dict[str, str] = {}
 
 
-def group_files(files_to_sort, reader=None, time_threshold=10,
-                group_keys=None, reader_kwargs=None,
-                missing="pass"):
+def group_files(files_to_sort, reader=None, time_threshold=10, group_keys=None, reader_kwargs=None, missing="pass"):
     """Group series of files by file pattern information.
 
     By default this will group files by their filename ``start_time``
@@ -95,14 +93,12 @@ def group_files(files_to_sort, reader=None, time_threshold=10,
 
     reader_kwargs = reader_kwargs or {}
 
-    reader_files = _assign_files_to_readers(
-            files_to_sort, reader, reader_kwargs)
+    reader_files = _assign_files_to_readers(files_to_sort, reader, reader_kwargs)
 
     if reader is None:
         reader = reader_files.keys()
 
-    file_keys = _get_file_keys_for_reader_files(
-            reader_files, group_keys=group_keys)
+    file_keys = _get_file_keys_for_reader_files(reader_files, group_keys=group_keys)
 
     file_groups = _get_sorted_file_groups(file_keys, time_threshold)
 
@@ -111,8 +107,7 @@ def group_files(files_to_sort, reader=None, time_threshold=10,
     return list(_filter_groups(groups, missing=missing))
 
 
-def _assign_files_to_readers(files_to_sort, reader_names,
-                             reader_kwargs):
+def _assign_files_to_readers(files_to_sort, reader_names, reader_kwargs):
     """Assign files to readers.
 
     Given a list of file names (paths), match those to reader instances.
@@ -136,11 +131,12 @@ def _assign_files_to_readers(files_to_sort, reader_names,
             reader = load_reader(reader_configs, **reader_kwargs)
         except yaml.constructor.ConstructorError:
             LOG.exception(
-                    f"ConstructorError loading {reader_configs!s}, "
-                    "probably a missing dependency, skipping "
-                    "corresponding reader (if you did not explicitly "
-                    "specify the reader, Satpy tries all; performance "
-                    "will improve if you pass readers explicitly).")
+                f"ConstructorError loading {reader_configs!s}, "
+                "probably a missing dependency, skipping "
+                "corresponding reader (if you did not explicitly "
+                "specify the reader, Satpy tries all; performance "
+                "will improve if you pass readers explicitly)."
+            )
             continue
         reader_name = reader.info["name"]
         files_matching = set(reader.filter_selected_filenames(files_to_sort))
@@ -148,8 +144,7 @@ def _assign_files_to_readers(files_to_sort, reader_names,
         if files_matching or reader_names is not None:
             reader_dict[reader_name] = (reader, files_matching)
     if files_to_sort:
-        raise ValueError("No matching readers found for these files: " +
-                         ", ".join(files_to_sort))
+        raise ValueError("No matching readers found for these files: " + ", ".join(files_to_sort))
     return reader_dict
 
 
@@ -169,9 +164,9 @@ def _get_file_keys_for_reader_files(reader_files, group_keys=None):
         Mapping[str, List[Tuple[Tuple, str]]], as described.
     """
     file_keys = {}
-    for (reader_name, (reader_instance, files_to_sort)) in reader_files.items():
+    for reader_name, (reader_instance, files_to_sort) in reader_files.items():
         if group_keys is None:
-            group_keys = reader_instance.info.get('group_keys', ('start_time',))
+            group_keys = reader_instance.info.get("group_keys", ("start_time",))
         file_keys[reader_name] = []
         # make a copy because filename_items_for_filetype will modify inplace
         files_to_sort = set(files_to_sort)
@@ -182,9 +177,10 @@ def _get_file_keys_for_reader_files(reader_files, group_keys=None):
                     warnings.warn(
                         f"Found matching file {f:s} for reader "
                         "{reader_name:s}, but none of group keys found. "
-                        "Group keys requested: " + ", ".join(group_keys),
+                        "Group keys requested: "
+                        + ", ".join(group_keys),
                         UserWarning,
-                        stacklevel=3
+                        stacklevel=3,
                     )
                 file_keys[reader_name].append((group_key, f))
     return file_keys
@@ -228,8 +224,11 @@ def _get_sorted_file_groups(all_file_keys, time_threshold):
         # compare keys for those that are found for both the key and
         # this is a generator and is not computed until the if statement below
         # when we know that `prev_key` is not None
-        vals_not_equal = (this_val != prev_val for this_val, prev_val in zip(gk[1:], prev_key[1:])
-                          if this_val is not None and prev_val is not None)
+        vals_not_equal = (
+            this_val != prev_val
+            for this_val, prev_val in zip(gk[1:], prev_key[1:])
+            if this_val is not None and prev_val is not None
+        )
         # if this is a new group based on the first element
         if is_new_group or any(vals_not_equal):
             file_groups[gk] = {rn: [f]}
@@ -264,16 +263,17 @@ def _filter_groups(groups, missing="pass"):
         yield from groups
         return
     if missing not in ("raise", "skip"):
-        raise ValueError("Invalid value for ``missing`` argument.  Expected "
-                         f"'raise', 'skip', or 'pass', got {missing!r}")
-    for (i, grp) in enumerate(groups):
+        raise ValueError(
+            f"Invalid value for ``missing`` argument.  Expected 'raise', 'skip', or 'pass', got {missing!r}"
+        )
+    for i, grp in enumerate(groups):
         readers_without_files = _get_keys_with_empty_values(grp)
         if readers_without_files:
             if missing == "raise":
                 raise FileNotFoundError(
-                        f"when grouping files, group at index {i:d} "
-                        "had no files for readers: " +
-                        ", ".join(readers_without_files))
+                    f"when grouping files, group at index {i:d} had no files for readers: "
+                    + ", ".join(readers_without_files)
+                )
         else:
             yield grp
 
@@ -292,7 +292,7 @@ def _get_keys_with_empty_values(grp):
         set of keys
     """
     empty = set()
-    for (k, v) in grp.items():
+    for k, v in grp.items():
         if len(v) == 0:  # explicit check to ensure failure if not a collection
             empty.add(k)
     return empty
@@ -301,7 +301,7 @@ def _get_keys_with_empty_values(grp):
 def read_reader_config(config_files, loader=UnsafeLoader):
     """Read the reader `config_files` and return the extracted reader metadata."""
     reader_config = load_yaml_reader_configs(*config_files, loader=loader)
-    return reader_config['reader']
+    return reader_config["reader"]
 
 
 def load_reader(reader_configs, **reader_kwargs):
@@ -324,19 +324,19 @@ def configs_for_reader(reader=None):
 
         reader = get_valid_reader_names(reader)
         # given a config filename or reader name
-        config_files = [r if r.endswith('.yaml') else r + '.yaml' for r in reader]
+        config_files = [r if r.endswith(".yaml") else r + ".yaml" for r in reader]
     else:
-        paths = get_entry_points_config_dirs('satpy.readers')
-        reader_configs = glob_config(os.path.join('readers', '*.yaml'), search_dirs=paths)
+        paths = get_entry_points_config_dirs("satpy.readers")
+        reader_configs = glob_config(os.path.join("readers", "*.yaml"), search_dirs=paths)
         config_files = set(reader_configs)
 
     for config_file in config_files:
         config_basename = os.path.basename(config_file)
         reader_name = os.path.splitext(config_basename)[0]
-        paths = get_entry_points_config_dirs('satpy.readers')
+        paths = get_entry_points_config_dirs("satpy.readers")
         reader_configs = config_search_paths(
-            os.path.join("readers", config_basename),
-            search_dirs=paths, check_exists=True)
+            os.path.join("readers", config_basename), search_dirs=paths, check_exists=True
+        )
 
         if not reader_configs:
             # either the reader they asked for does not exist
@@ -352,17 +352,19 @@ def get_valid_reader_names(reader):
     for reader_name in reader:
         if reader_name in OLD_READER_NAMES:
             raise ValueError(
-                "Reader name '{}' has been deprecated, "
-                "use '{}' instead.".format(reader_name,
-                                           OLD_READER_NAMES[reader_name]))
+                "Reader name '{}' has been deprecated, use '{}' instead.".format(
+                    reader_name, OLD_READER_NAMES[reader_name]
+                )
+            )
 
         if reader_name in PENDING_OLD_READER_NAMES:
             new_name = PENDING_OLD_READER_NAMES[reader_name]
             warnings.warn(
-                "Reader name '{}' is being deprecated and will be removed soon."
-                "Please use '{}' instead.".format(reader_name, new_name),
+                "Reader name '{}' is being deprecated and will be removed soon.Please use '{}' instead.".format(
+                    reader_name, new_name
+                ),
                 FutureWarning,
-                stacklevel=2
+                stacklevel=2,
             )
             new_readers.append(new_name)
         else:
@@ -393,18 +395,25 @@ def available_readers(as_dict=False, yaml_loader=UnsafeLoader):
             LOG.debug("Could not import reader config from: %s", reader_configs)
             LOG.debug("Error loading YAML", exc_info=True)
             continue
-        readers.append(reader_info if as_dict else reader_info['name'])
+        readers.append(reader_info if as_dict else reader_info["name"])
     if as_dict:
-        readers = sorted(readers, key=lambda reader_info: reader_info['name'])
+        readers = sorted(readers, key=lambda reader_info: reader_info["name"])
     else:
         readers = sorted(readers)
     return readers
 
 
-def find_files_and_readers(start_time=None, end_time=None, base_dir=None,
-                           reader=None, sensor=None,
-                           filter_parameters=None, reader_kwargs=None,
-                           missing_ok=False, fs=None):
+def find_files_and_readers(
+    start_time=None,
+    end_time=None,
+    base_dir=None,
+    reader=None,
+    sensor=None,
+    filter_parameters=None,
+    reader_kwargs=None,
+    missing_ok=False,
+    fs=None,
+):
     """Find files matching the provided parameters.
 
     Use `start_time` and/or `end_time` to limit found filenames by the times
@@ -467,17 +476,18 @@ def find_files_and_readers(start_time=None, end_time=None, base_dir=None,
     """
     reader_files = {}
     reader_kwargs = reader_kwargs or {}
-    filter_parameters = filter_parameters or reader_kwargs.get('filter_parameters', {})
+    filter_parameters = filter_parameters or reader_kwargs.get("filter_parameters", {})
     sensor_supported = False
 
     if start_time or end_time:
-        filter_parameters['start_time'] = start_time
-        filter_parameters['end_time'] = end_time
-    reader_kwargs['filter_parameters'] = filter_parameters
+        filter_parameters["start_time"] = start_time
+        filter_parameters["end_time"] = end_time
+    reader_kwargs["filter_parameters"] = filter_parameters
 
     for reader_configs in configs_for_reader(reader):
         (reader_instance, loadables, this_sensor_supported) = _get_loadables_for_reader_config(
-                base_dir, reader, sensor, reader_configs, reader_kwargs, fs)
+            base_dir, reader, sensor, reader_configs, reader_kwargs, fs
+        )
         sensor_supported = sensor_supported or this_sensor_supported
         if loadables:
             reader_files[reader_instance.name] = list(loadables)
@@ -490,8 +500,7 @@ def find_files_and_readers(start_time=None, end_time=None, base_dir=None,
     return reader_files
 
 
-def _get_loadables_for_reader_config(base_dir, reader, sensor, reader_configs,
-                                     reader_kwargs, fs):
+def _get_loadables_for_reader_config(base_dir, reader, sensor, reader_configs, reader_kwargs, fs):
     """Get loadables for reader configs.
 
     Helper for find_files_and_readers.
@@ -509,7 +518,7 @@ def _get_loadables_for_reader_config(base_dir, reader, sensor, reader_configs,
     try:
         reader_instance = load_reader(reader_configs, **reader_kwargs)
     except (KeyError, IOError, yaml.YAMLError) as err:
-        LOG.info('Cannot use %s', str(reader_configs))
+        LOG.info("Cannot use %s", str(reader_configs))
         LOG.debug(str(err))
         if reader and (isinstance(reader, str) or len(reader) == 1):
             # if it is a single reader then give a more usable error
@@ -523,8 +532,7 @@ def _get_loadables_for_reader_config(base_dir, reader, sensor, reader_configs,
         sensor_supported = True
     loadables = reader_instance.select_files_from_directory(base_dir, fs)
     if loadables:
-        loadables = list(
-            reader_instance.filter_selected_filenames(loadables))
+        loadables = list(reader_instance.filter_selected_filenames(loadables))
     return (reader_instance, loadables, sensor_supported)
 
 
@@ -559,11 +567,9 @@ def load_readers(filenames=None, reader=None, reader_kwargs=None):
             readers_files = remaining_filenames
 
         try:
-            reader_instance = load_reader(
-                    reader_configs,
-                    **reader_kwargs[None if reader is None else reader[idx]])
+            reader_instance = load_reader(reader_configs, **reader_kwargs[None if reader is None else reader[idx]])
         except (KeyError, IOError, yaml.YAMLError) as err:
-            LOG.info('Cannot use %s', str(reader_configs))
+            LOG.info("Cannot use %s", str(reader_configs))
             LOG.debug(str(err))
             continue
 
@@ -573,8 +579,8 @@ def load_readers(filenames=None, reader=None, reader_kwargs=None):
         loadables = reader_instance.select_files_from_pathnames(readers_files)
         if loadables:
             reader_instance.create_filehandlers(
-                    loadables,
-                    fh_kwargs=reader_kwargs_without_filter[None if reader is None else reader[idx]])
+                loadables, fh_kwargs=reader_kwargs_without_filter[None if reader is None else reader[idx]]
+            )
             reader_instances[reader_instance.name] = reader_instance
             remaining_filenames -= set(loadables)
         if not remaining_filenames:
@@ -622,9 +628,11 @@ def _check_reader_instances(reader_instances):
     if not reader_instances:
         raise ValueError("No supported files found")
     if not any(list(r.available_dataset_ids) for r in reader_instances.values()):
-        raise ValueError("No dataset could be loaded. Either missing "
-                         "requirements (such as Epilog, Prolog) or none of the "
-                         "provided files match the filter parameters.")
+        raise ValueError(
+            "No dataset could be loaded. Either missing "
+            "requirements (such as Epilog, Prolog) or none of the "
+            "provided files match the filter parameters."
+        )
 
 
 def _get_reader_kwargs(reader, reader_kwargs):
@@ -642,9 +650,9 @@ def _get_reader_kwargs(reader, reader_kwargs):
         reader_kwargs = dict.fromkeys(reader, reader_kwargs)
 
     reader_kwargs_without_filter = {}
-    for (k, v) in reader_kwargs.items():
+    for k, v in reader_kwargs.items():
         reader_kwargs_without_filter[k] = v.copy()
-        reader_kwargs_without_filter[k].pop('filter_parameters', None)
+        reader_kwargs_without_filter[k].pop("filter_parameters", None)
 
     return (reader_kwargs, reader_kwargs_without_filter)
 
@@ -736,9 +744,7 @@ class FSFile(os.PathLike):
         Two FSFile instances are considered equal if they have the same
         filename and the same file system.
         """
-        return (isinstance(other, FSFile) and
-                self._file == other._file and
-                self._fs == other._fs)
+        return isinstance(other, FSFile) and self._file == other._file and self._fs == other._fs
 
     def __hash__(self):
         """Implement hashing.
@@ -765,9 +771,7 @@ def _get_fs_open_kwargs(file):
 
     For example compression.
     """
-    return {
-        "compression": _get_compression(file)
-    }
+    return {"compression": _get_compression(file)}
 
 
 def _get_compression(file):

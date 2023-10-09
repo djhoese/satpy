@@ -38,10 +38,12 @@ from satpy.readers.hdf5_utils import HDF5FileHandler
 
 logger = logging.getLogger(__name__)
 
-PLATFORM_NAMES = {'MSG1': 'Meteosat-8',
-                  'MSG2': 'Meteosat-9',
-                  'MSG3': 'Meteosat-10',
-                  'MSG4': 'Meteosat-11', }
+PLATFORM_NAMES = {
+    "MSG1": "Meteosat-8",
+    "MSG2": "Meteosat-9",
+    "MSG3": "Meteosat-10",
+    "MSG4": "Meteosat-11",
+}
 
 
 class Hdf5NWCSAF(HDF5FileHandler):
@@ -49,34 +51,33 @@ class Hdf5NWCSAF(HDF5FileHandler):
 
     def __init__(self, filename, filename_info, filetype_info):
         """Init method."""
-        super(Hdf5NWCSAF, self).__init__(filename, filename_info,
-                                         filetype_info)
+        super(Hdf5NWCSAF, self).__init__(filename, filename_info, filetype_info)
 
         self.cache = {}
 
     def get_dataset(self, dataset_id, ds_info):
         """Load a dataset."""
-        file_key = ds_info.get('file_key', dataset_id['name'])
+        file_key = ds_info.get("file_key", dataset_id["name"])
         data = self[file_key]
 
         nodata = None
-        if 'SCALING_FACTOR' in data.attrs and 'OFFSET' in data.attrs:
+        if "SCALING_FACTOR" in data.attrs and "OFFSET" in data.attrs:
             dtype = np.dtype(data.data)
-            if dataset_id['name'] in ['ctth_alti']:
-                data.attrs['valid_range'] = (0, 27000)
-                data.attrs['_FillValue'] = np.nan
+            if dataset_id["name"] in ["ctth_alti"]:
+                data.attrs["valid_range"] = (0, 27000)
+                data.attrs["_FillValue"] = np.nan
 
-            if dataset_id['name'] in ['ctth_alti', 'ctth_pres', 'ctth_tempe', 'ctth_effective_cloudiness']:
-                dtype = np.dtype('float32')
+            if dataset_id["name"] in ["ctth_alti", "ctth_pres", "ctth_tempe", "ctth_effective_cloudiness"]:
+                dtype = np.dtype("float32")
                 nodata = 255
 
-            if dataset_id['name'] in ['ct']:
-                data.attrs['valid_range'] = (0, 20)
-                data.attrs['_FillValue'] = 255
+            if dataset_id["name"] in ["ct"]:
+                data.attrs["valid_range"] = (0, 20)
+                data.attrs["_FillValue"] = 255
                 # data.attrs['palette_meanings'] = list(range(21))
 
             attrs = data.attrs
-            scaled_data = (data * data.attrs['SCALING_FACTOR'] + data.attrs['OFFSET']).astype(dtype)
+            scaled_data = (data * data.attrs["SCALING_FACTOR"] + data.attrs["OFFSET"]).astype(dtype)
             if nodata:
                 scaled_data = scaled_data.where(data != nodata)
                 scaled_data = scaled_data.where(scaled_data >= 0)
@@ -92,18 +93,18 @@ class Hdf5NWCSAF(HDF5FileHandler):
 
     def get_area_def(self, dsid):
         """Get the area definition of the datasets in the file."""
-        if dsid['name'].endswith('_pal'):
+        if dsid["name"].endswith("_pal"):
             raise NotImplementedError
 
-        cfac = self.file_content['/attr/CFAC']
-        lfac = self.file_content['/attr/LFAC']
-        coff = self.file_content['/attr/COFF']
-        loff = self.file_content['/attr/LOFF']
-        numcols = int(self.file_content['/attr/NC'])
-        numlines = int(self.file_content['/attr/NL'])
+        cfac = self.file_content["/attr/CFAC"]
+        lfac = self.file_content["/attr/LFAC"]
+        coff = self.file_content["/attr/COFF"]
+        loff = self.file_content["/attr/LOFF"]
+        numcols = int(self.file_content["/attr/NC"])
+        numlines = int(self.file_content["/attr/NL"])
 
         aex = get_area_extent(cfac, lfac, coff, loff, numcols, numlines)
-        pname = self.file_content['/attr/PROJECTION_NAME']
+        pname = self.file_content["/attr/PROJECTION_NAME"]
         proj = {}
         if pname.startswith("GEOS"):
             proj["proj"] = "geos"
@@ -114,33 +115,35 @@ class Hdf5NWCSAF(HDF5FileHandler):
         else:
             raise NotImplementedError("Only geos projection supported yet.")
 
-        area_def = AreaDefinition(self.file_content['/attr/REGION_NAME'],
-                                  self.file_content['/attr/REGION_NAME'],
-                                  pname,
-                                  proj,
-                                  numcols,
-                                  numlines,
-                                  aex)
+        area_def = AreaDefinition(
+            self.file_content["/attr/REGION_NAME"],
+            self.file_content["/attr/REGION_NAME"],
+            pname,
+            proj,
+            numcols,
+            numlines,
+            aex,
+        )
 
         return area_def
 
     @property
     def start_time(self):
         """Return the start time of the object."""
-        return datetime.strptime(self.file_content['/attr/IMAGE_ACQUISITION_TIME'], '%Y%m%d%H%M')
+        return datetime.strptime(self.file_content["/attr/IMAGE_ACQUISITION_TIME"], "%Y%m%d%H%M")
 
 
 def get_area_extent(cfac, lfac, coff, loff, numcols, numlines):
     """Get the area extent from msg parameters."""
-    xur = (numcols - coff) * 2 ** 16 / (cfac * 1.0)
+    xur = (numcols - coff) * 2**16 / (cfac * 1.0)
     xur = np.deg2rad(xur) * 35785831.0
-    xll = (-1 - coff) * 2 ** 16 / (cfac * 1.0)
+    xll = (-1 - coff) * 2**16 / (cfac * 1.0)
     xll = np.deg2rad(xll) * 35785831.0
     xres = (xur - xll) / numcols
     xur, xll = xur - xres / 2, xll + xres / 2
-    yll = (numlines - loff) * 2 ** 16 / (-lfac * 1.0)
+    yll = (numlines - loff) * 2**16 / (-lfac * 1.0)
     yll = np.deg2rad(yll) * 35785831.0
-    yur = (-1 - loff) * 2 ** 16 / (-lfac * 1.0)
+    yur = (-1 - loff) * 2**16 / (-lfac * 1.0)
     yur = np.deg2rad(yur) * 35785831.0
     yres = (yur - yll) / numlines
     yll, yur = yll + yres / 2, yur - yres / 2

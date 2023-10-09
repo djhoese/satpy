@@ -20,12 +20,16 @@ def test_median(caplog):
     median_filter = Median(median_filter_params, name=name)
     array = xr.DataArray(da.arange(36).reshape((6, 6)), coords=coordinates, dims=dims, attrs=attrs)
     res = median_filter([array])
-    filtered_array = np.array([[1, 2, 3, 4, 5, 5],
-                               [6, 7, 8, 9, 10, 11],
-                               [12, 13, 14, 15, 16, 17],
-                               [18, 19, 20, 21, 22, 23],
-                               [24, 25, 26, 27, 28, 29],
-                               [30, 30, 31, 32, 33, 34]])
+    filtered_array = np.array(
+        [
+            [1, 2, 3, 4, 5, 5],
+            [6, 7, 8, 9, 10, 11],
+            [12, 13, 14, 15, 16, 17],
+            [18, 19, 20, 21, 22, 23],
+            [24, 25, 26, 27, 28, 29],
+            [30, 30, 31, 32, 33, 34],
+        ]
+    )
     np.testing.assert_allclose(res, filtered_array)
     assert res.dims == dims
     assert attrs.items() <= res.attrs.items()

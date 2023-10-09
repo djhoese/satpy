@@ -23,8 +23,8 @@ import unittest
 import satpy.readers.vii_utils
 
 # Constants to be tested
-C1 = 1.191062e+8
-C2 = 1.4387863e+4
+C1 = 1.191062e8
+C2 = 1.4387863e4
 TIE_POINTS_FACTOR = 8
 SCAN_ALT_TIE_POINTS = 4
 MEAN_EARTH_RADIUS = 6371008.7714

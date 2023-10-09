@@ -51,8 +51,7 @@ def get_best_dataset_key(key, choices):
         return [choice for choice, distance in zip(sorted_choices, distances) if distance == distances[0]]
 
 
-def get_key(key, key_container, num_results=1, best=True, query=None,
-            **kwargs):
+def get_key(key, key_container, num_results=1, best=True, query=None, **kwargs):
     """Get the fully-specified key best matching the provided key.
 
     Only the best match is returned if `best` is `True` (default). See
@@ -133,9 +132,9 @@ class DatasetDict(dict):
         # sort keys so things are a little more deterministic (.keys() is not)
         keys = sorted(super(DatasetDict, self).keys())
         if names:
-            return (k.get('name') for k in keys)
+            return (k.get("name") for k in keys)
         elif wavelengths:
-            return (k.get('wavelength') for k in keys)
+            return (k.get("wavelength") for k in keys)
         else:
             return keys
 
@@ -155,8 +154,7 @@ class DatasetDict(dict):
             **dfilter (dict): See `get_key` function for more information.
 
         """
-        return get_key(match_key, self.keys(), num_results=num_results,
-                       best=best, **dfilter)
+        return get_key(match_key, self.keys(), num_results=num_results, best=best, **dfilter)
 
     def getitem(self, item):
         """Get Node when we know the *exact* DataID."""
@@ -181,7 +179,7 @@ class DatasetDict(dict):
 
     def __setitem__(self, key, value):
         """Support assigning 'Dataset' objects or dictionaries of metadata."""
-        if hasattr(value, 'attrs'):
+        if hasattr(value, "attrs"):
             # xarray.DataArray objects
             value_info = value.attrs
         else:
@@ -198,7 +196,7 @@ class DatasetDict(dict):
         if isinstance(value_info, dict):
             value_info.update(new_info)
             if isinstance(key, DataID):
-                value_info['_satpy_id'] = key
+                value_info["_satpy_id"] = key
 
         return super(DatasetDict, self).__setitem__(key, value)
 
@@ -215,21 +213,20 @@ class DatasetDict(dict):
             else:
                 new_name = value_info.get("name")
             # this is a new key and it's not a full DataID tuple
-            if new_name is None and value_info.get('wavelength') is None:
-                raise ValueError("One of 'name' or 'wavelength' attrs "
-                                 "values should be set.")
+            if new_name is None and value_info.get("wavelength") is None:
+                raise ValueError("One of 'name' or 'wavelength' attrs values should be set.")
             id_keys = self._create_id_keys_from_dict(value_info)
-            value_info['name'] = new_name
+            value_info["name"] = new_name
             key = DataID(id_keys, **value_info)
         return key
 
     def _create_id_keys_from_dict(self, value_info_dict):
         """Create id_keys from dict."""
         try:
-            id_keys = value_info_dict['_satpy_id'].id_keys
+            id_keys = value_info_dict["_satpy_id"].id_keys
         except KeyError:
             try:
-                id_keys = value_info_dict['_satpy_id_keys']
+                id_keys = value_info_dict["_satpy_id_keys"]
             except KeyError:
                 id_keys = minimal_default_keys_config
         return id_keys

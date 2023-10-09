@@ -156,8 +156,9 @@ class NDVIHybridGreen(SpectralBlender):
         ndvi.data = da.where(ndvi > self.ndvi_min, ndvi, self.ndvi_min)
         ndvi.data = da.where(ndvi < self.ndvi_max, ndvi, self.ndvi_max)
 
-        fraction = (ndvi - self.ndvi_min) / (self.ndvi_max - self.ndvi_min) * (self.limits[1] - self.limits[0]) \
-            + self.limits[0]
+        fraction = (ndvi - self.ndvi_min) / (self.ndvi_max - self.ndvi_min) * (
+            self.limits[1] - self.limits[0]
+        ) + self.limits[0]
         self.fractions = (1 - fraction, fraction)
 
         return super().__call__([projectables[0], projectables[2]], **attrs)
@@ -178,6 +179,6 @@ class GreenCorrector(SpectralBlender):
             "'GreenCorrector' is deprecated, use 'SpectralBlender' instead, or 'HybridGreen' for hybrid green"
             " correction following Miller et al. (2016).",
             UserWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         super().__init__(fractions=fractions, *args, **kwargs)

@@ -27,10 +27,19 @@ class TestCreflUtils(unittest.TestCase):
         import numpy as np
 
         from satpy.modifiers._crefl_utils import _ABIAtmosphereVariables
+
         atm_vars = _ABIAtmosphereVariables(
-            21.71342113, 77.14385758, 56.214566960,
-            0.17690244, 6.123234e-17, 530.61332168, 405.,
-            0.0043149700000000004, 0.0037296, 0.014107995000000002, 0.052349,
+            21.71342113,
+            77.14385758,
+            56.214566960,
+            0.17690244,
+            6.123234e-17,
+            530.61332168,
+            405.0,
+            0.0043149700000000004,
+            0.0037296,
+            0.014107995000000002,
+            0.052349,
         )
         sphalb, rhoray, TtotraytH2O, tOG = atm_vars()
         self.assertLess(abs(np.array(sphalb) - 0.045213532544630494), 1e-10)

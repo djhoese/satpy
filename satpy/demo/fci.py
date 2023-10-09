@@ -28,7 +28,8 @@ from . import utils
 _fci_uncompressed_nominal = (
     "https://sftp.eumetsat.int/public/folder/UsCVknVOOkSyCdgpMimJNQ/"
     "User-Materials/Test-Data/MTG/MTG_FCI_L1C_Enhanced-NonN_TD-272_May2020/"
-    "FCI_1C_UNCOMPRESSED_NOMINAL.tar.gz")
+    "FCI_1C_UNCOMPRESSED_NOMINAL.tar.gz"
+)
 
 
 def download_fci_test_data(base_dir=None):

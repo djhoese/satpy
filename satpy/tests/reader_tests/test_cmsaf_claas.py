@@ -33,9 +33,7 @@ from satpy.tests.utils import make_dataid
 # - request
 
 
-@pytest.fixture(
-    params=[datetime.datetime(2017, 12, 5), datetime.datetime(2017, 12, 6)]
-)
+@pytest.fixture(params=[datetime.datetime(2017, 12, 5), datetime.datetime(2017, 12, 6)])
 def start_time(request):
     """Get start time of the dataset."""
     return request.param
@@ -50,35 +48,16 @@ def start_time_str(start_time):
 @pytest.fixture()
 def fake_dataset(start_time_str):
     """Create a CLAAS-like test dataset."""
-    cph = xr.DataArray(
-        [[[0, 1], [2, 0]]],
-        dims=("time", "y", "x")
-    )
-    ctt = xr.DataArray(
-        [[280, 290], [300, 310]],
-        dims=("y", "x")
-    )
-    time_bounds = xr.DataArray(
-        [[12436.91666667, 12436.92534722]],
-        dims=("time", "bndsize")
-    )
+    cph = xr.DataArray([[[0, 1], [2, 0]]], dims=("time", "y", "x"))
+    ctt = xr.DataArray([[280, 290], [300, 310]], dims=("y", "x"))
+    time_bounds = xr.DataArray([[12436.91666667, 12436.92534722]], dims=("time", "bndsize"))
     attrs = {
-        "CMSAF_proj4_params": "+a=6378169.0 +h=35785831.0 "
-                              "+b=6356583.8 +lon_0=0 +proj=geos",
-        "CMSAF_area_extent": np.array(
-            [-5456233.41938636, -5453233.01608472,
-             5453233.01608472, 5456233.41938636]),
+        "CMSAF_proj4_params": "+a=6378169.0 +h=35785831.0 +b=6356583.8 +lon_0=0 +proj=geos",
+        "CMSAF_area_extent": np.array([-5456233.41938636, -5453233.01608472, 5453233.01608472, 5456233.41938636]),
         "time_coverage_start": start_time_str,
         "time_coverage_end": "2085-08-13T13:15:00Z",
     }
-    return xr.Dataset(
-        {
-            "cph": cph,
-            "ctt": ctt,
-            "time_bnds": time_bounds
-        },
-        attrs=attrs
-    )
+    return xr.Dataset({"cph": cph, "ctt": ctt, "time_bnds": time_bounds}, attrs=attrs)
 
 
 @pytest.fixture
@@ -115,8 +94,7 @@ def reader():
     from satpy._config import config_search_paths
     from satpy.readers import load_reader
 
-    reader_configs = config_search_paths(
-        os.path.join("readers", "cmsaf-claas2_l2_nc.yaml"))
+    reader_configs = config_search_paths(os.path.join("readers", "cmsaf-claas2_l2_nc.yaml"))
     reader = load_reader(reader_configs)
     return reader
 
@@ -124,10 +102,11 @@ def reader():
 def test_file_pattern(reader):
     """Test file pattern matching."""
     filenames = [
-            "CTXin20040120091500305SVMSG01MD.nc",
-            "CTXin20040120093000305SVMSG01MD.nc",
-            "CTXin20040120094500305SVMSG01MD.nc",
-            "abcde52034294023489248MVSSG03DD.nc"]
+        "CTXin20040120091500305SVMSG01MD.nc",
+        "CTXin20040120093000305SVMSG01MD.nc",
+        "CTXin20040120094500305SVMSG01MD.nc",
+        "abcde52034294023489248MVSSG03DD.nc",
+    ]
 
     files = reader.select_files_from_pathnames(filenames)
     # only 3 out of 4 above should match
@@ -161,13 +140,11 @@ class TestCLAAS2MultiFile:
         [
             ("cph", [[0, 1], [2, 0], [0, 1], [2, 0]]),
             ("ctt", [[280, 290], [300, 310], [280, 290], [300, 310]]),
-        ]
+        ],
     )
     def test_combine_datasets(self, multi_file_dataset, ds_name, expected):
         """Test combination of datasets."""
-        np.testing.assert_array_almost_equal(
-            multi_file_dataset[ds_name].data, expected
-        )
+        np.testing.assert_array_almost_equal(multi_file_dataset[ds_name].data, expected)
 
     def test_number_of_datasets(self, multi_file_dataset):
         """Test number of datasets."""
@@ -181,6 +158,7 @@ class TestCLAAS2SingleFile:
     def file_handler(self, fake_file):
         """Return a CLAAS-2 file handler."""
         from satpy.readers.cmsaf_claas2 import CLAAS2
+
         return CLAAS2(fake_file, {}, {})
 
     @pytest.fixture
@@ -219,9 +197,9 @@ class TestCLAAS2SingleFile:
     @pytest.mark.parametrize(
         "ds_name,expected",
         [
-            ("ctt", xr.DataArray([[280, 290], [300, 310]], dims=('y', 'x'))),
-            ("cph", xr.DataArray([[0, 1], [2, 0]], dims=('y', 'x'))),
-        ]
+            ("ctt", xr.DataArray([[280, 290], [300, 310]], dims=("y", "x"))),
+            ("cph", xr.DataArray([[0, 1], [2, 0]], dims=("y", "x"))),
+        ],
     )
     def test_get_dataset(self, file_handler, ds_name, expected):
         """Test dataset loading."""

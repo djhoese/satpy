@@ -23,7 +23,8 @@ except ModuleNotFoundError:
     raise ModuleNotFoundError(
         "No module named satpy.version. This could mean "
         "you didn't install 'satpy' properly. Try reinstalling ('pip "
-        "install').")
+        "install')."
+    )
 
 from satpy._config import config  # noqa
 from satpy.dataset import DataID, DataQuery  # noqa
@@ -35,4 +36,4 @@ from satpy.scene import Scene  # noqa
 from satpy.utils import get_logger  # noqa
 from satpy.writers import available_writers  # noqa
 
-log = get_logger('satpy')
+log = get_logger("satpy")

@@ -30,10 +30,8 @@ def test_essl_moisture():
     ratio = xr.DataArray(
         da.linspace(1.0, 1.7, 25, chunks=5).reshape((5, 5)),
         dims=("y", "x"),
-        attrs={"name": "ratio",
-               "calibration": "reflectance",
-               "units": "%",
-               "mode": "L"})
+        attrs={"name": "ratio", "calibration": "reflectance", "units": "%", "mode": "L"},
+    )
     im = XRImage(ratio)
 
     essl_moisture(im)
@@ -48,12 +46,15 @@ def test_essl_moisture():
     ratio = xr.DataArray(
         da.linspace(1.0, 1.7, 25, chunks=5).reshape((5, 5)),
         dims=("y", "x"),
-        attrs={"name": "ratio",
-               "calibration": "reflectance",
-               "units": "%",
-               "mode": "L",
-               "sensor": "fci",
-               "start_time": datetime.datetime(1999, 1, 1)})
+        attrs={
+            "name": "ratio",
+            "calibration": "reflectance",
+            "units": "%",
+            "mode": "L",
+            "sensor": "fci",
+            "start_time": datetime.datetime(1999, 1, 1),
+        },
+    )
     im = XRImage(ratio)
     essl_moisture(im)
     np.testing.assert_allclose(im.data.sel(bands="R")[3, 3], 0.7342, rtol=1e-4)

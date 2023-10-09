@@ -35,11 +35,14 @@ class TestVIIRSComposites:
         rows = 5
         cols = 10
         area = AreaDefinition(
-            'test', 'test', 'test',
-            {'proj': 'eqc', 'lon_0': 0.0,
-             'lat_0': 0.0},
-            cols, rows,
-            (-20037508.34, -10018754.17, 20037508.34, 10018754.17))
+            "test",
+            "test",
+            "test",
+            {"proj": "eqc", "lon_0": 0.0, "lat_0": 0.0},
+            cols,
+            rows,
+            (-20037508.34, -10018754.17, 20037508.34, 10018754.17),
+        )
         return area
 
     @pytest.fixture
@@ -49,10 +52,9 @@ class TestVIIRSComposites:
         dnb[3, :] += 0.25
         dnb[4:, :] += 0.5
         dnb = da.from_array(dnb, chunks=25)
-        c01 = xr.DataArray(dnb,
-                           dims=('y', 'x'),
-                           attrs={'name': 'DNB', 'area': area,
-                                  'start_time': datetime(2020, 1, 1, 12, 0, 0)})
+        c01 = xr.DataArray(
+            dnb, dims=("y", "x"), attrs={"name": "DNB", "area": area, "start_time": datetime(2020, 1, 1, 12, 0, 0)}
+        )
         return c01
 
     @pytest.fixture
@@ -63,10 +65,11 @@ class TestVIIRSComposites:
         sza[:, 3] += 20.0
         sza[:, 4:] += 45.0
         sza = da.from_array(sza, chunks=25)
-        c02 = xr.DataArray(sza,
-                           dims=('y', 'x'),
-                           attrs={'name': 'solar_zenith_angle', 'area': area,
-                                  'start_time': datetime(2020, 1, 1, 12, 0, 0)})
+        c02 = xr.DataArray(
+            sza,
+            dims=("y", "x"),
+            attrs={"name": "solar_zenith_angle", "area": area, "start_time": datetime(2020, 1, 1, 12, 0, 0)},
+        )
         return c02
 
     @pytest.fixture
@@ -76,30 +79,31 @@ class TestVIIRSComposites:
         lza[:, 3] += 20.0
         lza[:, 4:] += 45.0
         lza = da.from_array(lza, chunks=25)
-        c03 = xr.DataArray(lza,
-                           dims=('y', 'x'),
-                           attrs={'name': 'lunar_zenith_angle', 'area': area,
-                                  'start_time': datetime(2020, 1, 1, 12, 0, 0)
-                                  })
+        c03 = xr.DataArray(
+            lza,
+            dims=("y", "x"),
+            attrs={"name": "lunar_zenith_angle", "area": area, "start_time": datetime(2020, 1, 1, 12, 0, 0)},
+        )
         return c03
 
     def test_load_composite_yaml(self):
         """Test loading the yaml for this sensor."""
         from satpy.composites.config_loader import load_compositor_configs_for_sensors
-        load_compositor_configs_for_sensors(['viirs'])
+
+        load_compositor_configs_for_sensors(["viirs"])
 
     def test_histogram_dnb(self, dnb, sza):
         """Test the 'histogram_dnb' compositor."""
         from satpy.composites.viirs import HistogramDNB
 
-        comp = HistogramDNB('histogram_dnb', prerequisites=('dnb',),
-                            standard_name='toa_outgoing_radiance_per_'
-                                          'unit_wavelength')
+        comp = HistogramDNB(
+            "histogram_dnb", prerequisites=("dnb",), standard_name="toa_outgoing_radiance_per_unit_wavelength"
+        )
         res = comp((dnb, sza))
         assert isinstance(res, xr.DataArray)
         assert isinstance(res.data, da.Array)
-        assert res.attrs['name'] == 'histogram_dnb'
-        assert res.attrs['standard_name'] == 'equalized_radiance'
+        assert res.attrs["name"] == "histogram_dnb"
+        assert res.attrs["standard_name"] == "equalized_radiance"
         data = res.compute()
         unique_values = np.unique(data)
         np.testing.assert_allclose(unique_values, [0.5994, 0.7992, 0.999], rtol=1e-3)
@@ -108,14 +112,14 @@ class TestVIIRSComposites:
         """Test the 'adaptive_dnb' compositor."""
         from satpy.composites.viirs import AdaptiveDNB
 
-        comp = AdaptiveDNB('adaptive_dnb', prerequisites=('dnb',),
-                           standard_name='toa_outgoing_radiance_per_'
-                                         'unit_wavelength')
+        comp = AdaptiveDNB(
+            "adaptive_dnb", prerequisites=("dnb",), standard_name="toa_outgoing_radiance_per_unit_wavelength"
+        )
         res = comp((dnb, sza))
         assert isinstance(res, xr.DataArray)
         assert isinstance(res.data, da.Array)
-        assert res.attrs['name'] == 'adaptive_dnb'
-        assert res.attrs['standard_name'] == 'equalized_radiance'
+        assert res.attrs["name"] == "adaptive_dnb"
+        assert res.attrs["standard_name"] == "equalized_radiance"
         data = res.compute()
         np.testing.assert_allclose(data.data, 0.999, rtol=1e-4)
 
@@ -123,23 +127,31 @@ class TestVIIRSComposites:
         """Test the 'hncc_dnb' compositor."""
         from satpy.composites.viirs import NCCZinke
 
-        comp = NCCZinke('hncc_dnb', prerequisites=('dnb',),
-                        standard_name='toa_outgoing_radiance_per_'
-                                      'unit_wavelength')
-        mif = xr.DataArray(da.zeros((5,), chunks=5) + 0.1,
-                           dims=('y',),
-                           attrs={'name': 'moon_illumination_fraction', 'area': area})
+        comp = NCCZinke("hncc_dnb", prerequisites=("dnb",), standard_name="toa_outgoing_radiance_per_unit_wavelength")
+        mif = xr.DataArray(
+            da.zeros((5,), chunks=5) + 0.1, dims=("y",), attrs={"name": "moon_illumination_fraction", "area": area}
+        )
         res = comp((dnb, sza, lza, mif))
         assert isinstance(res, xr.DataArray)
         assert isinstance(res.data, da.Array)
-        assert res.attrs['name'] == 'hncc_dnb'
-        assert res.attrs['standard_name'] == 'ncc_radiance'
+        assert res.attrs["name"] == "hncc_dnb"
+        assert res.attrs["standard_name"] == "ncc_radiance"
         data = res.compute()
         unique = np.unique(data)
         np.testing.assert_allclose(
-            unique, [3.48479712e-04, 6.96955799e-04, 1.04543189e-03, 4.75394738e-03,
-                     9.50784532e-03, 1.42617433e-02, 1.50001560e+03, 3.00001560e+03,
-                     4.50001560e+03])
+            unique,
+            [
+                3.48479712e-04,
+                6.96955799e-04,
+                1.04543189e-03,
+                4.75394738e-03,
+                9.50784532e-03,
+                1.42617433e-02,
+                1.50001560e03,
+                3.00001560e03,
+                4.50001560e03,
+            ],
+        )
 
         with pytest.raises(ValueError):
             comp((dnb, sza))
@@ -148,20 +160,28 @@ class TestVIIRSComposites:
         """Test the 'hncc_dnb' compositor when no moon phase data is provided."""
         from satpy.composites.viirs import NCCZinke
 
-        comp = NCCZinke('hncc_dnb', prerequisites=('dnb',),
-                        standard_name='toa_outgoing_radiance_per_'
-                                      'unit_wavelength')
+        comp = NCCZinke("hncc_dnb", prerequisites=("dnb",), standard_name="toa_outgoing_radiance_per_unit_wavelength")
         res = comp((dnb, sza, lza))
         assert isinstance(res, xr.DataArray)
         assert isinstance(res.data, da.Array)
-        assert res.attrs['name'] == 'hncc_dnb'
-        assert res.attrs['standard_name'] == 'ncc_radiance'
+        assert res.attrs["name"] == "hncc_dnb"
+        assert res.attrs["standard_name"] == "ncc_radiance"
         data = res.compute()
         unique = np.unique(data)
         np.testing.assert_allclose(
-            unique, [3.48479672e-04, 6.96955721e-04, 1.04543177e-03, 4.75394684e-03,
-                     9.50784425e-03, 1.42617416e-02, 1.50001543e+03, 3.00001526e+03,
-                     4.50001509e+03])
+            unique,
+            [
+                3.48479672e-04,
+                6.96955721e-04,
+                1.04543177e-03,
+                4.75394684e-03,
+                9.50784425e-03,
+                1.42617416e-02,
+                1.50001543e03,
+                3.00001526e03,
+                4.50001509e03,
+            ],
+        )
 
     @pytest.mark.parametrize("dnb_units", ["W m-2 sr-1", "W cm-2 sr-1"])
     @pytest.mark.parametrize("saturation_correction", [False, True])
@@ -169,43 +189,55 @@ class TestVIIRSComposites:
         """Test the 'dynamic_dnb' or ERF DNB compositor."""
         from satpy.composites.viirs import ERFDNB
 
-        comp = ERFDNB('dynamic_dnb', prerequisites=('dnb',),
-                      saturation_correction=saturation_correction,
-                      standard_name='toa_outgoing_radiance_per_'
-                                    'unit_wavelength')
+        comp = ERFDNB(
+            "dynamic_dnb",
+            prerequisites=("dnb",),
+            saturation_correction=saturation_correction,
+            standard_name="toa_outgoing_radiance_per_unit_wavelength",
+        )
         # dnb is different from in the other tests, so don't use the fixture
         # here
         dnb = np.zeros(area.shape) + 0.25
         cols = area.shape[1]
-        dnb[2, :cols // 2] = np.nan
+        dnb[2, : cols // 2] = np.nan
         dnb[3, :] += 0.25
         dnb[4:, :] += 0.5
         if dnb_units == "W cm-2 sr-1":
             dnb /= 10000.0
         dnb = da.from_array(dnb, chunks=25)
-        c01 = xr.DataArray(dnb,
-                           dims=('y', 'x'),
-                           attrs={'name': 'DNB', 'area': area, 'units': dnb_units})
-        mif = xr.DataArray(da.zeros((5,), chunks=5) + 0.1,
-                           dims=('y',),
-                           attrs={'name': 'moon_illumination_fraction', 'area': area})
+        c01 = xr.DataArray(dnb, dims=("y", "x"), attrs={"name": "DNB", "area": area, "units": dnb_units})
+        mif = xr.DataArray(
+            da.zeros((5,), chunks=5) + 0.1, dims=("y",), attrs={"name": "moon_illumination_fraction", "area": area}
+        )
         res = comp((c01, sza, lza, mif))
         assert isinstance(res, xr.DataArray)
         assert isinstance(res.data, da.Array)
-        assert res.attrs['name'] == 'dynamic_dnb'
-        assert res.attrs['standard_name'] == 'equalized_radiance'
+        assert res.attrs["name"] == "dynamic_dnb"
+        assert res.attrs["standard_name"] == "equalized_radiance"
         data = res.compute()
         unique = np.unique(data)
         assert np.isnan(unique).any()
         nonnan_unique = unique[~np.isnan(unique)]
         if saturation_correction:
-            exp_unique = [0.000000e+00, 3.978305e-04, 6.500003e-04,
-                          8.286927e-04, 5.628335e-01, 7.959671e-01,
-                          9.748567e-01]
+            exp_unique = [
+                0.000000e00,
+                3.978305e-04,
+                6.500003e-04,
+                8.286927e-04,
+                5.628335e-01,
+                7.959671e-01,
+                9.748567e-01,
+            ]
         else:
-            exp_unique = [0.00000000e+00, 1.00446703e-01, 1.64116082e-01,
-                          2.09233451e-01, 1.43916324e+02, 2.03528498e+02,
-                          2.49270516e+02]
+            exp_unique = [
+                0.00000000e00,
+                1.00446703e-01,
+                1.64116082e-01,
+                2.09233451e-01,
+                1.43916324e02,
+                2.03528498e02,
+                2.49270516e02,
+            ]
         np.testing.assert_allclose(nonnan_unique, exp_unique)
 
     def test_snow_age(self, area):
@@ -213,17 +245,24 @@ class TestVIIRSComposites:
         from satpy.composites.viirs import SnowAge
 
         projectables = tuple(
-           xr.DataArray(
-                da.from_array(np.full(area.shape, 5.*i), chunks=5),
+            xr.DataArray(
+                da.from_array(np.full(area.shape, 5.0 * i), chunks=5),
                 dims=("y", "x"),
-                attrs={"name": f"M0{i:d}",
-                       "calibration": "reflectance",
-                       "units": "%"})
-           for i in range(7, 12))
+                attrs={"name": f"M0{i:d}", "calibration": "reflectance", "units": "%"},
+            )
+            for i in range(7, 12)
+        )
         comp = SnowAge(
-                "snow_age",
-                prerequisites=("M07", "M08", "M09", "M10", "M11",),
-                standard_name="snow_age")
+            "snow_age",
+            prerequisites=(
+                "M07",
+                "M08",
+                "M09",
+                "M10",
+                "M11",
+            ),
+            standard_name="snow_age",
+        )
         res = comp(projectables)
         assert isinstance(res, xr.DataArray)
         assert isinstance(res.data, da.Array)

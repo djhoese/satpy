@@ -33,21 +33,18 @@ class CLAAS2(NetCDF4FileHandler):
 
     def __init__(self, *args, **kwargs):
         """Initialise class."""
-        super().__init__(*args, **kwargs, cache_handle=False,
-                         auto_maskandscale=True)
+        super().__init__(*args, **kwargs, cache_handle=False, auto_maskandscale=True)
 
     @property
     def start_time(self):
         """Get start time from file."""
         # datetime module can't handle timezone identifier
-        return datetime.datetime.fromisoformat(
-                self["/attr/time_coverage_start"].rstrip("Z"))
+        return datetime.datetime.fromisoformat(self["/attr/time_coverage_start"].rstrip("Z"))
 
     @property
     def end_time(self):
         """Get end time from file."""
-        return datetime.datetime.fromisoformat(
-                self["/attr/time_coverage_end"].rstrip("Z"))
+        return datetime.datetime.fromisoformat(self["/attr/time_coverage_end"].rstrip("Z"))
 
     def available_datasets(self, configured_datasets=None):
         """Yield a collection of available datasets.
@@ -60,8 +57,7 @@ class CLAAS2(NetCDF4FileHandler):
         # `NetCDF4FileHandler`?
 
         yield from super().available_datasets(configured_datasets)
-        data_vars = [k for k in self.file_content
-                     if k + "/dimensions" in self.file_content]
+        data_vars = [k for k in self.file_content if k + "/dimensions" in self.file_content]
         for k in data_vars:
             # if it doesn't have a y-dimension we're not interested
             if "y" not in self.file_content[k + "/dimensions"]:
@@ -74,12 +70,9 @@ class CLAAS2(NetCDF4FileHandler):
 
         Return metadata dictionary for variable ``var``.
         """
-        ds_info = {"name": var,
-                   "file_type": self.filetype_info["file_type"]}
+        ds_info = {"name": var, "file_type": self.filetype_info["file_type"]}
         # attributes for this data variable
-        attrs = {k[len(f"{k:s}/attr")+1]: v
-                 for (k, v) in self.file_content.items()
-                 if k.startswith(f"{k:s}/attr")}
+        attrs = {k[len(f"{k:s}/attr") + 1]: v for (k, v) in self.file_content.items() if k.startswith(f"{k:s}/attr")}
         # we don't need "special" attributes in our metadata here
         for unkey in {"_FillValue", "add_offset", "scale_factor"}:
             attrs.pop(unkey, None)
@@ -87,7 +80,7 @@ class CLAAS2(NetCDF4FileHandler):
 
     def get_dataset(self, dataset_id, info):
         """Get the dataset."""
-        ds = self[dataset_id['name']]
+        ds = self[dataset_id["name"]]
         if "time" in ds.dims:
             return ds.squeeze(["time"])
 

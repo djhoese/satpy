@@ -37,20 +37,18 @@ class HDF5FileHandler(BaseFileHandler):
 
     def __init__(self, filename, filename_info, filetype_info):
         """Initialize file handler."""
-        super(HDF5FileHandler, self).__init__(
-            filename, filename_info, filetype_info)
+        super(HDF5FileHandler, self).__init__(filename, filename_info, filetype_info)
         self.file_content = {}
         self._attrs_cache = {}
 
         try:
-            file_handle = h5py.File(self.filename, 'r')
+            file_handle = h5py.File(self.filename, "r")
         except IOError:
-            LOG.exception(
-                'Failed reading file %s. Possibly corrupted file', self.filename)
+            LOG.exception("Failed reading file %s. Possibly corrupted file", self.filename)
             raise
 
         file_handle.visititems(self.collect_metadata)
-        self._collect_attrs('', file_handle.attrs)
+        self._collect_attrs("", file_handle.attrs)
         file_handle.close()
 
     def _collect_attrs(self, name, attrs):
@@ -73,7 +71,7 @@ class HDF5FileHandler(BaseFileHandler):
 
     def get_reference(self, name, key):
         """Get reference."""
-        with h5py.File(self.filename, 'r') as hf:
+        with h5py.File(self.filename, "r") as hf:
             return self._get_reference(hf, hf[name].attrs[key])
 
     def _get_reference(self, hf, ref):
@@ -97,11 +95,11 @@ class HDF5FileHandler(BaseFileHandler):
         val = self.file_content[key]
         if isinstance(val, h5py.Dataset):
             # these datasets are closed and inaccessible when the file is closed, need to reopen
-            dset = h5py.File(self.filename, 'r')[key]
+            dset = h5py.File(self.filename, "r")[key]
             dset_data = da.from_array(dset, chunks=CHUNK_SIZE)
             attrs = self._attrs_cache.get(key, dset.attrs)
             if dset.ndim == 2:
-                return xr.DataArray(dset_data, dims=['y', 'x'], attrs=attrs)
+                return xr.DataArray(dset_data, dims=["y", "x"], attrs=attrs)
             return xr.DataArray(dset_data, attrs=attrs)
 
         return val

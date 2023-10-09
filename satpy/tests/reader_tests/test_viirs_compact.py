@@ -649,12 +649,8 @@ def fake_dnb():
                 },
                 "Latitude": {"value": np.random.rand(96, 332).astype(np.float32)},
                 "Longitude": {"value": np.random.rand(96, 332).astype(np.float32)},
-                "LunarAzimuthAngle": {
-                    "value": np.random.rand(96, 332).astype(np.float32)
-                },
-                "LunarZenithAngle": {
-                    "value": np.random.rand(96, 332).astype(np.float32)
-                },
+                "LunarAzimuthAngle": {"value": np.random.rand(96, 332).astype(np.float32)},
+                "LunarZenithAngle": {"value": np.random.rand(96, 332).astype(np.float32)},
                 "MidTime": {
                     "value": np.array(
                         [
@@ -1169,18 +1165,10 @@ def fake_dnb():
                         dtype=np.float32,
                     )
                 },
-                "SatelliteAzimuthAngle": {
-                    "value": np.random.rand(96, 332).astype(np.float32)
-                },
-                "SatelliteZenithAngle": {
-                    "value": np.random.rand(96, 332).astype(np.float32)
-                },
-                "SolarAzimuthAngle": {
-                    "value": np.random.rand(96, 332).astype(np.float32)
-                },
-                "SolarZenithAngle": {
-                    "value": np.random.rand(96, 332).astype(np.float32)
-                },
+                "SatelliteAzimuthAngle": {"value": np.random.rand(96, 332).astype(np.float32)},
+                "SatelliteZenithAngle": {"value": np.random.rand(96, 332).astype(np.float32)},
+                "SolarAzimuthAngle": {"value": np.random.rand(96, 332).astype(np.float32)},
+                "SolarZenithAngle": {"value": np.random.rand(96, 332).astype(np.float32)},
                 "StartTime": {
                     "value": np.array(
                         [
@@ -1307,11 +1295,7 @@ def fake_dnb():
                 "TiePointZoneGroupLocationTrackCompact": {"value": 0},
                 "attrs": {
                     "OriginalFilename": np.array(
-                        [
-                            [
-                                b"GDNBO_j01_d20191025_t0611251_e0612478_b10015_c20191025062405837630_cspp_dev.h5"
-                            ]
-                        ],
+                        [[b"GDNBO_j01_d20191025_t0611251_e0612478_b10015_c20191025062405837630_cspp_dev.h5"]],
                         dtype="|S78",
                     )
                 },
@@ -1483,9 +1467,7 @@ def fake_dnb():
                     )
                 },
                 "PadByte1": {"value": np.array([0, 0, 0], dtype=np.uint8)},
-                "QF1_VIIRSDNBSDR": {
-                    "value": (np.random.rand(768, 4064) * 255).astype(np.uint8)
-                },
+                "QF1_VIIRSDNBSDR": {"value": (np.random.rand(768, 4064) * 255).astype(np.uint8)},
                 "QF2_SCAN_SDR": {
                     "value": np.array(
                         [
@@ -1599,11 +1581,7 @@ def fake_dnb():
                 "Radiance": {"value": np.random.rand(768, 4064).astype(np.float32)},
                 "attrs": {
                     "OriginalFilename": np.array(
-                        [
-                            [
-                                b"SVDNB_j01_d20191025_t0611251_e0612478_b10015_c20191025062427398006_cspp_dev.h5"
-                            ]
-                        ],
+                        [[b"SVDNB_j01_d20191025_t0611251_e0612478_b10015_c20191025062427398006_cspp_dev.h5"]],
                         dtype="|S78",
                     ),
                     "PixelOffsetScan": np.array([[0.5]], dtype=np.float32),
@@ -1675,9 +1653,7 @@ def fake_dnb():
                         ],
                         dtype=np.int32,
                     ),
-                    "TiePointZoneGroupLocationTrack": np.array(
-                        [[0]], dtype=np.int32
-                    ),
+                    "TiePointZoneGroupLocationTrack": np.array([[0]], dtype=np.int32),
                     "TiePointZoneSizeScan": np.array(
                         [
                             [2],
@@ -1754,49 +1730,25 @@ def fake_dnb():
             "VIIRS-DNB-GEO": {
                 "VIIRS-DNB-GEO_Aggr": {
                     "attrs": {
-                        "AggregateBeginningDate": np.array(
-                            [[b"20191025"]], dtype="|S9"
-                        ),
-                        "AggregateBeginningGranuleID": np.array(
-                            [[b"J01002526558865"]], dtype="|S16"
-                        ),
-                        "AggregateBeginningOrbitNumber": np.array(
-                            [[10015]], dtype=np.uint64
-                        ),
-                        "AggregateBeginningTime": np.array(
-                            [[b"061125.120971Z"]], dtype="|S15"
-                        ),
-                        "AggregateEndingDate": np.array(
-                            [[b"20191025"]], dtype="|S9"
-                        ),
-                        "AggregateEndingGranuleID": np.array(
-                            [[b"J01002526558865"]], dtype="|S16"
-                        ),
-                        "AggregateEndingOrbitNumber": np.array(
-                            [[10015]], dtype=np.uint64
-                        ),
-                        "AggregateEndingTime": np.array(
-                            [[b"061247.849492Z"]], dtype="|S15"
-                        ),
+                        "AggregateBeginningDate": np.array([[b"20191025"]], dtype="|S9"),
+                        "AggregateBeginningGranuleID": np.array([[b"J01002526558865"]], dtype="|S16"),
+                        "AggregateBeginningOrbitNumber": np.array([[10015]], dtype=np.uint64),
+                        "AggregateBeginningTime": np.array([[b"061125.120971Z"]], dtype="|S15"),
+                        "AggregateEndingDate": np.array([[b"20191025"]], dtype="|S9"),
+                        "AggregateEndingGranuleID": np.array([[b"J01002526558865"]], dtype="|S16"),
+                        "AggregateEndingOrbitNumber": np.array([[10015]], dtype=np.uint64),
+                        "AggregateEndingTime": np.array([[b"061247.849492Z"]], dtype="|S15"),
                         "AggregateNumberGranules": np.array([[1]], dtype=np.uint64),
                     }
                 },
                 "VIIRS-DNB-GEO_Gran_0": {
                     "attrs": {
-                        "Ascending/Descending_Indicator": np.array(
-                            [[1]], dtype=np.uint8
-                        ),
+                        "Ascending/Descending_Indicator": np.array([[1]], dtype=np.uint8),
                         "Beginning_Date": np.array([[b"20191025"]], dtype="|S9"),
-                        "Beginning_Time": np.array(
-                            [[b"061125.120971Z"]], dtype="|S15"
-                        ),
-                        "East_Bounding_Coordinate": np.array(
-                            [[-45.09228]], dtype=np.float32
-                        ),
+                        "Beginning_Time": np.array([[b"061125.120971Z"]], dtype="|S15"),
+                        "East_Bounding_Coordinate": np.array([[-45.09228]], dtype=np.float32),
                         "Ending_Date": np.array([[b"20191025"]], dtype="|S9"),
-                        "Ending_Time": np.array(
-                            [[b"061247.849492Z"]], dtype="|S15"
-                        ),
+                        "Ending_Time": np.array([[b"061247.849492Z"]], dtype="|S15"),
                         "G-Ring_Latitude": np.array(
                             [
                                 [41.84151],
@@ -1824,41 +1776,19 @@ def fake_dnb():
                             dtype=np.float32,
                         ),
                         "LeapSecondsGranuleStart": np.array([[37]], dtype=np.int32),
-                        "N_Algorithm_Version": np.array(
-                            [[b"1.O.000.014"]], dtype="|S12"
-                        ),
+                        "N_Algorithm_Version": np.array([[b"1.O.000.014"]], dtype="|S12"),
                         "N_Anc_Filename": np.array(
                             [
-                                [
-                                    b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0691_1.O.0.0"
-                                ],
-                                [
-                                    b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0692_1.O.0.0"
-                                ],
-                                [
-                                    b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0693_1.O.0.0"
-                                ],
-                                [
-                                    b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0719_1.O.0.0"
-                                ],
-                                [
-                                    b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0720_1.O.0.0"
-                                ],
-                                [
-                                    b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0721_1.O.0.0"
-                                ],
-                                [
-                                    b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0722_1.O.0.0"
-                                ],
-                                [
-                                    b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0723_1.O.0.0"
-                                ],
-                                [
-                                    b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0724_1.O.0.0"
-                                ],
-                                [
-                                    b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0725_1.O.0.0"
-                                ],
+                                [b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0691_1.O.0.0"],
+                                [b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0692_1.O.0.0"],
+                                [b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0693_1.O.0.0"],
+                                [b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0719_1.O.0.0"],
+                                [b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0720_1.O.0.0"],
+                                [b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0721_1.O.0.0"],
+                                [b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0722_1.O.0.0"],
+                                [b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0723_1.O.0.0"],
+                                [b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0724_1.O.0.0"],
+                                [b"Terrain-Eco-ANC-Tile_20030125000000Z_ee00000000000000Z_NA_NA_N0725_1.O.0.0"],
                                 [
                                     b"off_Planet-Eph-ANC_Static_JPL_000f_20151008_200001010000Z_20000101000000Z_ee00000000000000Z_np"  # noqa
                                 ],
@@ -1894,23 +1824,13 @@ def fake_dnb():
                             ],
                             dtype="|S126",
                         ),
-                        "N_Beginning_Orbit_Number": np.array(
-                            [[10015]], dtype=np.uint64
-                        ),
-                        "N_Beginning_Time_IET": np.array(
-                            [[1950675122120971]], dtype=np.uint64
-                        ),
+                        "N_Beginning_Orbit_Number": np.array([[10015]], dtype=np.uint64),
+                        "N_Beginning_Time_IET": np.array([[1950675122120971]], dtype=np.uint64),
                         "N_Creation_Date": np.array([[b"20191025"]], dtype="|S9"),
-                        "N_Creation_Time": np.array(
-                            [[b"062136.412867Z"]], dtype="|S15"
-                        ),
+                        "N_Creation_Time": np.array([[b"062136.412867Z"]], dtype="|S15"),
                         "N_Day_Night_Flag": np.array([[b"Night"]], dtype="|S6"),
-                        "N_Ending_Time_IET": np.array(
-                            [[1950675204849492]], dtype=np.uint64
-                        ),
-                        "N_Granule_ID": np.array(
-                            [[b"J01002526558865"]], dtype="|S16"
-                        ),
+                        "N_Ending_Time_IET": np.array([[1950675204849492]], dtype=np.uint64),
+                        "N_Granule_ID": np.array([[b"J01002526558865"]], dtype="|S16"),
                         "N_Granule_Status": np.array([[b"N/A"]], dtype="|S4"),
                         "N_Granule_Version": np.array([[b"A1"]], dtype="|S3"),
                         "N_IDPS_Mode": np.array([[b"N/A"]], dtype="|S4"),
@@ -1924,35 +1844,19 @@ def fake_dnb():
                         ),
                         "N_JPSS_Document_Ref": np.array(
                             [
-                                [
-                                    b"474-00448-02-06_JPSS-DD-Vol-II-Part-6_0200H.pdf"
-                                ],
-                                [
-                                    b"474-00448-02-06_JPSS-VIIRS-SDR-DD-Part-6_0200H_VIIRS-DNB-GEO-PP.xml"
-                                ],
-                                [
-                                    b"474-00448-03-06_JPSS-OAD-Vol-III-Part-6-VIIRS-RDR-SDR_-1.pdf"
-                                ],
+                                [b"474-00448-02-06_JPSS-DD-Vol-II-Part-6_0200H.pdf"],
+                                [b"474-00448-02-06_JPSS-VIIRS-SDR-DD-Part-6_0200H_VIIRS-DNB-GEO-PP.xml"],
+                                [b"474-00448-03-06_JPSS-OAD-Vol-III-Part-6-VIIRS-RDR-SDR_-1.pdf"],
                             ],
                             dtype="|S68",
                         ),
                         "N_LEOA_Flag": np.array([[b"On"]], dtype="|S3"),
-                        "N_Nadir_Latitude_Max": np.array(
-                            [[45.3722]], dtype=np.float32
-                        ),
-                        "N_Nadir_Latitude_Min": np.array(
-                            [[40.6172]], dtype=np.float32
-                        ),
-                        "N_Nadir_Longitude_Max": np.array(
-                            [[-62.80047]], dtype=np.float32
-                        ),
-                        "N_Nadir_Longitude_Min": np.array(
-                            [[-64.51342]], dtype=np.float32
-                        ),
+                        "N_Nadir_Latitude_Max": np.array([[45.3722]], dtype=np.float32),
+                        "N_Nadir_Latitude_Min": np.array([[40.6172]], dtype=np.float32),
+                        "N_Nadir_Longitude_Max": np.array([[-62.80047]], dtype=np.float32),
+                        "N_Nadir_Longitude_Min": np.array([[-64.51342]], dtype=np.float32),
                         "N_Number_Of_Scans": np.array([[47]], dtype=np.int32),
-                        "N_Primary_Label": np.array(
-                            [[b"Non-Primary"]], dtype="|S12"
-                        ),
+                        "N_Primary_Label": np.array([[b"Non-Primary"]], dtype="|S12"),
                         "N_Quality_Summary_Names": np.array(
                             [
                                 [b"Automatic Quality Flag"],
@@ -1961,35 +1865,19 @@ def fake_dnb():
                             ],
                             dtype="|S23",
                         ),
-                        "N_Quality_Summary_Values": np.array(
-                            [[1], [61], [0]], dtype=np.int32
-                        ),
-                        "N_Reference_ID": np.array(
-                            [[b"VIIRS-DNB-GEO:J01002526558865:A1"]], dtype="|S33"
-                        ),
-                        "N_Software_Version": np.array(
-                            [[b"CSPP_SDR_3_1_3"]], dtype="|S15"
-                        ),
-                        "N_Spacecraft_Maneuver": np.array(
-                            [[b"Normal Operations"]], dtype="|S18"
-                        ),
-                        "North_Bounding_Coordinate": np.array(
-                            [[46.8018]], dtype=np.float32
-                        ),
-                        "South_Bounding_Coordinate": np.array(
-                            [[36.53401]], dtype=np.float32
-                        ),
-                        "West_Bounding_Coordinate": np.array(
-                            [[-82.66234]], dtype=np.float32
-                        ),
+                        "N_Quality_Summary_Values": np.array([[1], [61], [0]], dtype=np.int32),
+                        "N_Reference_ID": np.array([[b"VIIRS-DNB-GEO:J01002526558865:A1"]], dtype="|S33"),
+                        "N_Software_Version": np.array([[b"CSPP_SDR_3_1_3"]], dtype="|S15"),
+                        "N_Spacecraft_Maneuver": np.array([[b"Normal Operations"]], dtype="|S18"),
+                        "North_Bounding_Coordinate": np.array([[46.8018]], dtype=np.float32),
+                        "South_Bounding_Coordinate": np.array([[36.53401]], dtype=np.float32),
+                        "West_Bounding_Coordinate": np.array([[-82.66234]], dtype=np.float32),
                     }
                 },
                 "attrs": {
                     "Instrument_Short_Name": np.array([[b"VIIRS"]], dtype="|S6"),
                     "N_Anc_Type_Tasked": np.array([[b"Official"]], dtype="|S9"),
-                    "N_Collection_Short_Name": np.array(
-                        [[b"VIIRS-DNB-GEO"]], dtype="|S14"
-                    ),
+                    "N_Collection_Short_Name": np.array([[b"VIIRS-DNB-GEO"]], dtype="|S14"),
                     "N_Dataset_Type_Tag": np.array([[b"GEO"]], dtype="|S4"),
                     "N_Processing_Domain": np.array([[b"ops"]], dtype="|S4"),
                     "Operational_Mode": np.array(
@@ -2001,50 +1889,26 @@ def fake_dnb():
             "VIIRS-DNB-SDR": {
                 "VIIRS-DNB-SDR_Aggr": {
                     "attrs": {
-                        "AggregateBeginningDate": np.array(
-                            [[b"20191025"]], dtype="|S9"
-                        ),
-                        "AggregateBeginningGranuleID": np.array(
-                            [[b"J01002526558865"]], dtype="|S16"
-                        ),
-                        "AggregateBeginningOrbitNumber": np.array(
-                            [[10015]], dtype=np.uint64
-                        ),
-                        "AggregateBeginningTime": np.array(
-                            [[b"061125.120971Z"]], dtype="|S15"
-                        ),
-                        "AggregateEndingDate": np.array(
-                            [[b"20191025"]], dtype="|S9"
-                        ),
-                        "AggregateEndingGranuleID": np.array(
-                            [[b"J01002526558865"]], dtype="|S16"
-                        ),
-                        "AggregateEndingOrbitNumber": np.array(
-                            [[10015]], dtype=np.uint64
-                        ),
-                        "AggregateEndingTime": np.array(
-                            [[b"061247.849492Z"]], dtype="|S15"
-                        ),
+                        "AggregateBeginningDate": np.array([[b"20191025"]], dtype="|S9"),
+                        "AggregateBeginningGranuleID": np.array([[b"J01002526558865"]], dtype="|S16"),
+                        "AggregateBeginningOrbitNumber": np.array([[10015]], dtype=np.uint64),
+                        "AggregateBeginningTime": np.array([[b"061125.120971Z"]], dtype="|S15"),
+                        "AggregateEndingDate": np.array([[b"20191025"]], dtype="|S9"),
+                        "AggregateEndingGranuleID": np.array([[b"J01002526558865"]], dtype="|S16"),
+                        "AggregateEndingOrbitNumber": np.array([[10015]], dtype=np.uint64),
+                        "AggregateEndingTime": np.array([[b"061247.849492Z"]], dtype="|S15"),
                         "AggregateNumberGranules": np.array([[1]], dtype=np.uint64),
                     }
                 },
                 "VIIRS-DNB-SDR_Gran_0": {
                     "attrs": {
-                        "Ascending/Descending_Indicator": np.array(
-                            [[1]], dtype=np.uint8
-                        ),
+                        "Ascending/Descending_Indicator": np.array([[1]], dtype=np.uint8),
                         "Band_ID": np.array([[b"N/A"]], dtype="|S4"),
                         "Beginning_Date": np.array([[b"20191025"]], dtype="|S9"),
-                        "Beginning_Time": np.array(
-                            [[b"061125.120971Z"]], dtype="|S15"
-                        ),
-                        "East_Bounding_Coordinate": np.array(
-                            [[-45.09281]], dtype=np.float32
-                        ),
+                        "Beginning_Time": np.array([[b"061125.120971Z"]], dtype="|S15"),
+                        "East_Bounding_Coordinate": np.array([[-45.09281]], dtype=np.float32),
                         "Ending_Date": np.array([[b"20191025"]], dtype="|S9"),
-                        "Ending_Time": np.array(
-                            [[b"061247.849492Z"]], dtype="|S15"
-                        ),
+                        "Ending_Time": np.array([[b"061247.849492Z"]], dtype="|S15"),
                         "G-Ring_Latitude": np.array(
                             [
                                 [41.84157],
@@ -2071,9 +1935,7 @@ def fake_dnb():
                             ],
                             dtype=np.float32,
                         ),
-                        "N_Algorithm_Version": np.array(
-                            [[b"1.O.000.015"]], dtype="|S12"
-                        ),
+                        "N_Algorithm_Version": np.array([[b"1.O.000.015"]], dtype="|S12"),
                         "N_Anc_Filename": np.array(
                             [
                                 [
@@ -2249,24 +2111,14 @@ def fake_dnb():
                             ],
                             dtype="|S151",
                         ),
-                        "N_Beginning_Orbit_Number": np.array(
-                            [[10015]], dtype=np.uint64
-                        ),
-                        "N_Beginning_Time_IET": np.array(
-                            [[1950675122120971]], dtype=np.uint64
-                        ),
+                        "N_Beginning_Orbit_Number": np.array([[10015]], dtype=np.uint64),
+                        "N_Beginning_Time_IET": np.array([[1950675122120971]], dtype=np.uint64),
                         "N_Creation_Date": np.array([[b"20191025"]], dtype="|S9"),
-                        "N_Creation_Time": np.array(
-                            [[b"062411.116253Z"]], dtype="|S15"
-                        ),
+                        "N_Creation_Time": np.array([[b"062411.116253Z"]], dtype="|S15"),
                         "N_Day_Night_Flag": np.array([[b"Night"]], dtype="|S6"),
-                        "N_Ending_Time_IET": np.array(
-                            [[1950675204849492]], dtype=np.uint64
-                        ),
+                        "N_Ending_Time_IET": np.array([[1950675204849492]], dtype=np.uint64),
                         "N_Graceful_Degradation": np.array([[b"No"]], dtype="|S3"),
-                        "N_Granule_ID": np.array(
-                            [[b"J01002526558865"]], dtype="|S16"
-                        ),
+                        "N_Granule_ID": np.array([[b"J01002526558865"]], dtype="|S16"),
                         "N_Granule_Status": np.array([[b"N/A"]], dtype="|S4"),
                         "N_Granule_Version": np.array([[b"A1"]], dtype="|S3"),
                         "N_IDPS_Mode": np.array([[b"N/A"]], dtype="|S4"),
@@ -2285,44 +2137,22 @@ def fake_dnb():
                         ),
                         "N_JPSS_Document_Ref": np.array(
                             [
-                                [
-                                    b"474-00448-02-06_JPSS-DD-Vol-II-Part-6_0200H.pdf"
-                                ],
-                                [
-                                    b"474-00448-02-06_JPSS-VIIRS-SDR-DD-Part-6_0200H_VIIRS-DNB-SDR-PP.xml"
-                                ],
-                                [
-                                    b"474-00448-03-06_JPSS-OAD-Vol-III-Part-6-VIIRS-RDR-SDR_-1.pdf"
-                                ],
+                                [b"474-00448-02-06_JPSS-DD-Vol-II-Part-6_0200H.pdf"],
+                                [b"474-00448-02-06_JPSS-VIIRS-SDR-DD-Part-6_0200H_VIIRS-DNB-SDR-PP.xml"],
+                                [b"474-00448-03-06_JPSS-OAD-Vol-III-Part-6-VIIRS-RDR-SDR_-1.pdf"],
                             ],
                             dtype="|S68",
                         ),
                         "N_LEOA_Flag": np.array([[b"On"]], dtype="|S3"),
-                        "N_Nadir_Latitude_Max": np.array(
-                            [[45.3722]], dtype=np.float32
-                        ),
-                        "N_Nadir_Latitude_Min": np.array(
-                            [[40.6172]], dtype=np.float32
-                        ),
-                        "N_Nadir_Longitude_Max": np.array(
-                            [[-62.80047]], dtype=np.float32
-                        ),
-                        "N_Nadir_Longitude_Min": np.array(
-                            [[-64.51342]], dtype=np.float32
-                        ),
+                        "N_Nadir_Latitude_Max": np.array([[45.3722]], dtype=np.float32),
+                        "N_Nadir_Latitude_Min": np.array([[40.6172]], dtype=np.float32),
+                        "N_Nadir_Longitude_Max": np.array([[-62.80047]], dtype=np.float32),
+                        "N_Nadir_Longitude_Min": np.array([[-64.51342]], dtype=np.float32),
                         "N_Number_Of_Scans": np.array([[47]], dtype=np.int32),
-                        "N_Percent_Erroneous_Data": np.array(
-                            [[0.0]], dtype=np.float32
-                        ),
-                        "N_Percent_Missing_Data": np.array(
-                            [[51.05127]], dtype=np.float32
-                        ),
-                        "N_Percent_Not-Applicable_Data": np.array(
-                            [[0.0]], dtype=np.float32
-                        ),
-                        "N_Primary_Label": np.array(
-                            [[b"Non-Primary"]], dtype="|S12"
-                        ),
+                        "N_Percent_Erroneous_Data": np.array([[0.0]], dtype=np.float32),
+                        "N_Percent_Missing_Data": np.array([[51.05127]], dtype=np.float32),
+                        "N_Percent_Not-Applicable_Data": np.array([[0.0]], dtype=np.float32),
+                        "N_Primary_Label": np.array([[b"Non-Primary"]], dtype="|S12"),
                         "N_Quality_Summary_Names": np.array(
                             [
                                 [b"Scan Quality Exclusion"],
@@ -2330,63 +2160,29 @@ def fake_dnb():
                             ],
                             dtype="|S26",
                         ),
-                        "N_Quality_Summary_Values": np.array(
-                            [[24], [49]], dtype=np.int32
-                        ),
+                        "N_Quality_Summary_Values": np.array([[24], [49]], dtype=np.int32),
                         "N_RSB_Index": np.array([[17]], dtype=np.int32),
-                        "N_Reference_ID": np.array(
-                            [[b"VIIRS-DNB-SDR:J01002526558865:A1"]], dtype="|S33"
-                        ),
-                        "N_Satellite/Local_Azimuth_Angle_Max": np.array(
-                            [[179.9995]], dtype=np.float32
-                        ),
-                        "N_Satellite/Local_Azimuth_Angle_Min": np.array(
-                            [[-179.9976]], dtype=np.float32
-                        ),
-                        "N_Satellite/Local_Zenith_Angle_Max": np.array(
-                            [[69.83973]], dtype=np.float32
-                        ),
-                        "N_Satellite/Local_Zenith_Angle_Min": np.array(
-                            [[0.00898314]], dtype=np.float32
-                        ),
-                        "N_Software_Version": np.array(
-                            [[b"CSPP_SDR_3_1_3"]], dtype="|S15"
-                        ),
-                        "N_Solar_Azimuth_Angle_Max": np.array(
-                            [[73.93496]], dtype=np.float32
-                        ),
-                        "N_Solar_Azimuth_Angle_Min": np.array(
-                            [[23.83542]], dtype=np.float32
-                        ),
-                        "N_Solar_Zenith_Angle_Max": np.array(
-                            [[147.5895]], dtype=np.float32
-                        ),
-                        "N_Solar_Zenith_Angle_Min": np.array(
-                            [[126.3929]], dtype=np.float32
-                        ),
-                        "N_Spacecraft_Maneuver": np.array(
-                            [[b"Normal Operations"]], dtype="|S18"
-                        ),
-                        "North_Bounding_Coordinate": np.array(
-                            [[46.8018]], dtype=np.float32
-                        ),
-                        "South_Bounding_Coordinate": np.array(
-                            [[36.53402]], dtype=np.float32
-                        ),
-                        "West_Bounding_Coordinate": np.array(
-                            [[-82.65787]], dtype=np.float32
-                        ),
+                        "N_Reference_ID": np.array([[b"VIIRS-DNB-SDR:J01002526558865:A1"]], dtype="|S33"),
+                        "N_Satellite/Local_Azimuth_Angle_Max": np.array([[179.9995]], dtype=np.float32),
+                        "N_Satellite/Local_Azimuth_Angle_Min": np.array([[-179.9976]], dtype=np.float32),
+                        "N_Satellite/Local_Zenith_Angle_Max": np.array([[69.83973]], dtype=np.float32),
+                        "N_Satellite/Local_Zenith_Angle_Min": np.array([[0.00898314]], dtype=np.float32),
+                        "N_Software_Version": np.array([[b"CSPP_SDR_3_1_3"]], dtype="|S15"),
+                        "N_Solar_Azimuth_Angle_Max": np.array([[73.93496]], dtype=np.float32),
+                        "N_Solar_Azimuth_Angle_Min": np.array([[23.83542]], dtype=np.float32),
+                        "N_Solar_Zenith_Angle_Max": np.array([[147.5895]], dtype=np.float32),
+                        "N_Solar_Zenith_Angle_Min": np.array([[126.3929]], dtype=np.float32),
+                        "N_Spacecraft_Maneuver": np.array([[b"Normal Operations"]], dtype="|S18"),
+                        "North_Bounding_Coordinate": np.array([[46.8018]], dtype=np.float32),
+                        "South_Bounding_Coordinate": np.array([[36.53402]], dtype=np.float32),
+                        "West_Bounding_Coordinate": np.array([[-82.65787]], dtype=np.float32),
                     }
                 },
                 "attrs": {
                     "Instrument_Short_Name": np.array([[b"VIIRS"]], dtype="|S6"),
-                    "N_Collection_Short_Name": np.array(
-                        [[b"VIIRS-DNB-SDR"]], dtype="|S14"
-                    ),
+                    "N_Collection_Short_Name": np.array([[b"VIIRS-DNB-SDR"]], dtype="|S14"),
                     "N_Dataset_Type_Tag": np.array([[b"SDR"]], dtype="|S4"),
-                    "N_Instrument_Flight_SW_Version": np.array(
-                        [[20], [65534]], dtype=np.int32
-                    ),
+                    "N_Instrument_Flight_SW_Version": np.array([[20], [65534]], dtype=np.int32),
                     "N_Processing_Domain": np.array([[b"ops"]], dtype="|S4"),
                     "Operational_Mode": np.array(
                         [[b"J01 Normal Operations, VIIRS Operational"]],
@@ -2402,11 +2198,7 @@ def fake_dnb():
             "Mission_Name": np.array([[b"JPSS-1"]], dtype="|S7"),
             "N_Dataset_Source": np.array([[b"all-"]], dtype="|S5"),
             "N_GEO_Ref": np.array(
-                [
-                    [
-                        b"GDNBO_j01_d20191025_t0611251_e0612478_b10015_c20191025062405837630_cspp_dev.h5"
-                    ]
-                ],
+                [[b"GDNBO_j01_d20191025_t0611251_e0612478_b10015_c20191025062405837630_cspp_dev.h5"]],
                 dtype="|S78",
             ),
             "N_HDF_Creation_Date": np.array([[b"20191025"]], dtype="|S8"),
@@ -2445,17 +2237,17 @@ class TestCompact:
         from satpy.tests.utils import make_dataid
 
         filename_info = {}
-        filetype_info = {'file_type': 'compact_dnb'}
+        filetype_info = {"file_type": "compact_dnb"}
         test = VIIRSCompactFileHandler(self.filename, filename_info, filetype_info)
 
-        dsid = make_dataid(name='DNB', calibration='radiance')
+        dsid = make_dataid(name="DNB", calibration="radiance")
         ds1 = test.get_dataset(dsid, {})
-        dsid = make_dataid(name='longitude_dnb')
-        ds2 = test.get_dataset(dsid, {'standard_name': 'longitude'})
-        dsid = make_dataid(name='latitude_dnb')
-        ds3 = test.get_dataset(dsid, {'standard_name': 'latitude'})
-        dsid = make_dataid(name='solar_zenith_angle')
-        ds4 = test.get_dataset(dsid, {'standard_name': 'solar_zenith_angle'})
+        dsid = make_dataid(name="longitude_dnb")
+        ds2 = test.get_dataset(dsid, {"standard_name": "longitude"})
+        dsid = make_dataid(name="latitude_dnb")
+        ds3 = test.get_dataset(dsid, {"standard_name": "latitude"})
+        dsid = make_dataid(name="solar_zenith_angle")
+        ds4 = test.get_dataset(dsid, {"standard_name": "solar_zenith_angle"})
 
         for ds in [ds1, ds2, ds3, ds4]:
             yield ds
@@ -2466,11 +2258,12 @@ class TestCompact:
             assert ds.shape == (752, 4064)
             assert ds.dtype == np.float32
             assert ds.compute().shape == (752, 4064)
-            assert ds.attrs['rows_per_scan'] == 16
+            assert ds.attrs["rows_per_scan"] == 16
 
     def test_distributed(self):
         """Check that distributed computations work."""
         from dask.distributed import Client
+
         self.client = Client()
 
         for ds in self._dataset_iterator():

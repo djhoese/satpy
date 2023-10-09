@@ -353,12 +353,33 @@ FILES_20170128_1229 = {
 
 
 def get_viirs_sdr_20170128_1229(
-        base_dir=None,
-        channels=("I01", "I02", "I03", "I04", "I05",
-                  "M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09", "M10",
-                  "M11", "M12", "M13", "M14", "M15", "M16",
-                  "DNB"),
-        granules=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)):
+    base_dir=None,
+    channels=(
+        "I01",
+        "I02",
+        "I03",
+        "I04",
+        "I05",
+        "M01",
+        "M02",
+        "M03",
+        "M04",
+        "M05",
+        "M06",
+        "M07",
+        "M08",
+        "M09",
+        "M10",
+        "M11",
+        "M12",
+        "M13",
+        "M14",
+        "M15",
+        "M16",
+        "DNB",
+    ),
+    granules=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+):
     r"""Get VIIRS SDR files for 2017-01-28 12:29 to 12:43.
 
     These files are downloaded from Zenodo. You can see the full file

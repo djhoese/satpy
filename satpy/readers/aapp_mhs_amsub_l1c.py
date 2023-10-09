@@ -34,23 +34,29 @@ logger = logging.getLogger(__name__)
 
 
 CHUNK_SIZE = get_legacy_chunk_size()
-LINE_CHUNK = CHUNK_SIZE ** 2 // 90
+LINE_CHUNK = CHUNK_SIZE**2 // 90
 
-MHS_AMSUB_CHANNEL_NAMES = ['1', '2', '3', '4', '5']
-MHS_AMSUB_ANGLE_NAMES = ['sensor_zenith_angle', 'sensor_azimuth_angle',
-                         'solar_zenith_angle', 'solar_azimuth_difference_angle']
+MHS_AMSUB_CHANNEL_NAMES = ["1", "2", "3", "4", "5"]
+MHS_AMSUB_ANGLE_NAMES = [
+    "sensor_zenith_angle",
+    "sensor_azimuth_angle",
+    "solar_zenith_angle",
+    "solar_azimuth_difference_angle",
+]
 
-MHS_AMSUB_PLATFORM_IDS2NAMES = {15: 'NOAA-15',
-                                16: 'NOAA-16',
-                                17: 'NOAA-17',
-                                18: 'NOAA-18',
-                                19: 'NOAA-19',
-                                1: 'Metop-B',
-                                2: 'Metop-A',
-                                3: 'Metop-C',
-                                4: 'Metop simulator'}
+MHS_AMSUB_PLATFORM_IDS2NAMES = {
+    15: "NOAA-15",
+    16: "NOAA-16",
+    17: "NOAA-17",
+    18: "NOAA-18",
+    19: "NOAA-19",
+    1: "Metop-B",
+    2: "Metop-A",
+    3: "Metop-C",
+    4: "Metop simulator",
+}
 
-MHS_AMSUB_PLATFORMS = ['Metop-A', 'Metop-B', 'Metop-C', 'NOAA-18', 'NOAA-19']
+MHS_AMSUB_PLATFORMS = ["Metop-A", "Metop-B", "Metop-C", "NOAA-18", "NOAA-19"]
 
 
 class MHS_AMSUB_AAPPL1CFile(AAPPL1BaseFileHandler):
@@ -61,7 +67,7 @@ class MHS_AMSUB_AAPPL1CFile(AAPPL1BaseFileHandler):
         super().__init__(filename, filename_info, filetype_info)
 
         self.channels = {i: None for i in MHS_AMSUB_CHANNEL_NAMES}
-        self.units = {i: 'brightness_temperature' for i in MHS_AMSUB_CHANNEL_NAMES}
+        self.units = {i: "brightness_temperature" for i in MHS_AMSUB_CHANNEL_NAMES}
 
         self._channel_names = MHS_AMSUB_CHANNEL_NAMES
         self._angle_names = MHS_AMSUB_ANGLE_NAMES
@@ -80,10 +86,10 @@ class MHS_AMSUB_AAPPL1CFile(AAPPL1BaseFileHandler):
 
     def _get_sensorname(self):
         """Get the sensor name from the header."""
-        if self._header['instrument'][0] == 11:
-            self.sensor = 'amsub'
-        elif self._header['instrument'][0] == 12:
-            self.sensor = 'mhs'
+        if self._header["instrument"][0] == 11:
+            self.sensor = "amsub"
+        elif self._header["instrument"][0] == 12:
+            self.sensor = "mhs"
         else:
             raise IOError("Sensor neither MHS nor AMSU-B!")
 
@@ -101,9 +107,9 @@ class MHS_AMSUB_AAPPL1CFile(AAPPL1BaseFileHandler):
     def navigate(self, coordinate_id):
         """Get the longitudes and latitudes of the scene."""
         lons, lats = self._get_coordinates_in_degrees()
-        if coordinate_id == 'longitude':
+        if coordinate_id == "longitude":
             return create_xarray(lons)
-        if coordinate_id == 'latitude':
+        if coordinate_id == "latitude":
             return create_xarray(lats)
 
         raise KeyError("Coordinate {} unknown.".format(coordinate_id))
@@ -119,37 +125,31 @@ class MHS_AMSUB_AAPPL1CFile(AAPPL1BaseFileHandler):
 
     def calibrate(self, dataset_id):
         """Calibrate the data."""
-        units = {'brightness_temperature': 'K'}
+        units = {"brightness_temperature": "K"}
 
         mask = True
-        idx = ['1', '2', '3', '4', '5'].index(dataset_id['name'])
+        idx = ["1", "2", "3", "4", "5"].index(dataset_id["name"])
 
-        ds = create_xarray(
-            _calibrate(self._data, idx,
-                       dataset_id['calibration'],
-                       mask=mask))
+        ds = create_xarray(_calibrate(self._data, idx, dataset_id["calibration"], mask=mask))
 
-        ds.attrs['units'] = units[dataset_id['calibration']]
+        ds.attrs["units"] = units[dataset_id["calibration"]]
         ds.attrs.update(dataset_id._asdict())
         return ds
 
 
-def _calibrate(data,
-               chn,
-               calib_type,
-               mask=True):
+def _calibrate(data, chn, calib_type, mask=True):
     """Calibrate channel data.
 
     *calib_type* in brightness_temperature.
 
     """
-    if calib_type not in ['brightness_temperature']:
-        raise ValueError('Calibration ' + calib_type + ' unknown!')
+    if calib_type not in ["brightness_temperature"]:
+        raise ValueError("Calibration " + calib_type + " unknown!")
 
-    channel = da.from_array(data["btemps"][:, :, chn] / 100., chunks=(LINE_CHUNK, 90))
+    channel = da.from_array(data["btemps"][:, :, chn] / 100.0, chunks=(LINE_CHUNK, 90))
     mask &= channel != 0
 
-    if calib_type == 'counts':
+    if calib_type == "counts":
         return channel
 
     channel = channel.astype(np.float_)
@@ -157,59 +157,65 @@ def _calibrate(data,
     return da.where(mask, channel, np.nan)
 
 
-HEADER_LENGTH = 1152*4
+HEADER_LENGTH = 1152 * 4
 
-_HEADERTYPE = np.dtype([("siteid", "S3"),
-                        ("cfill_1", "S1"),
-                        ("l1bsite", "S3"),
-                        ("cfill_2", "S1"),
-                        ("versnb", "<i4"),
-                        ("versyr", "<i4"),
-                        ("versdy", "<i4"),
-                        ("hdrcnt", "<i4"),
-                        ("satid", "<i4"),
-                        ("instrument", "<i4"),
-                        ("satht", "<i4"),
-                        ("period", "<i4"),
-                        ("startorbit", "<i4"),
-                        ("startdatayr", "<i4"),
-                        ("startdatady", "<i4"),
-                        ("startdatatime", "<i4"),
-                        ("endorbit", "<i4"),
-                        ("enddatayr", "<i4"),
-                        ("enddatady", "<i4"),
-                        ("enddatatime", "<i4"),
-                        ("scnlin", "<i4"),
-                        ("misscnlin", "<i4"),
-                        ("vnantennacorr", "<i4"),
-                        ("spare", "<i4"),
-                        ("tempradcnv", "<i4", (3, 5)),
-                        ("wmosatid", "<i4"),
-                        ("filler", "<i4", (1114,)),
-                        ])
+_HEADERTYPE = np.dtype(
+    [
+        ("siteid", "S3"),
+        ("cfill_1", "S1"),
+        ("l1bsite", "S3"),
+        ("cfill_2", "S1"),
+        ("versnb", "<i4"),
+        ("versyr", "<i4"),
+        ("versdy", "<i4"),
+        ("hdrcnt", "<i4"),
+        ("satid", "<i4"),
+        ("instrument", "<i4"),
+        ("satht", "<i4"),
+        ("period", "<i4"),
+        ("startorbit", "<i4"),
+        ("startdatayr", "<i4"),
+        ("startdatady", "<i4"),
+        ("startdatatime", "<i4"),
+        ("endorbit", "<i4"),
+        ("enddatayr", "<i4"),
+        ("enddatady", "<i4"),
+        ("enddatatime", "<i4"),
+        ("scnlin", "<i4"),
+        ("misscnlin", "<i4"),
+        ("vnantennacorr", "<i4"),
+        ("spare", "<i4"),
+        ("tempradcnv", "<i4", (3, 5)),
+        ("wmosatid", "<i4"),
+        ("filler", "<i4", (1114,)),
+    ]
+)
 
-_SCANTYPE = np.dtype([("scnlin", "<i4"),
-                      ("scnlinyr", "<i4"),
-                      ("scnlindy", "<i4"),
-                      ("scnlintime", "<i4"),
-                      ("qualind", "<i4"),
-                      ("scnlinqual", "<i4"),
-                      ("chanqual", "<i4", (5, )),
-                      ("instrtemp", "<i4"),
-                      ("spare1", "<i4", (2, )),
-                      # Navigation
-                      ("latlon", "<i4", (90, 2)),  # lat/lon in degrees for Bnfovs:
-                      # first : 10^4 x (latitude)
-                      # second : 10^4 x (longitude)
-                      ("angles", "<i4", (90, 4)),  # scan angles for Bnfovs:
-                      # first: 10^2 x (local zenith angle)
-                      # second: 10^2 x (local azimuth angle)
-                      # third: 10^2 x (solar zenith angle)
-                      # fourth: 10^2 x (solar azimuth angle)
-                      ("scalti", "<i4"),  # sat altitude above reference ellipsoid, km*10
-                      ("spare2", "<i4", (2, )),
-                      # Calibration
-                      ("btemps", "<i4", (90, 5)),  # BT data for Bnfovs 10^2 x scene Tb (K), channels 1-5
-                      ("dataqual", "<i4", (90, )),
-                      ("filler", "<i4", (55, ))
-                      ])
+_SCANTYPE = np.dtype(
+    [
+        ("scnlin", "<i4"),
+        ("scnlinyr", "<i4"),
+        ("scnlindy", "<i4"),
+        ("scnlintime", "<i4"),
+        ("qualind", "<i4"),
+        ("scnlinqual", "<i4"),
+        ("chanqual", "<i4", (5,)),
+        ("instrtemp", "<i4"),
+        ("spare1", "<i4", (2,)),
+        # Navigation
+        ("latlon", "<i4", (90, 2)),  # lat/lon in degrees for Bnfovs:
+        # first : 10^4 x (latitude)
+        # second : 10^4 x (longitude)
+        ("angles", "<i4", (90, 4)),  # scan angles for Bnfovs:
+        # first: 10^2 x (local zenith angle)
+        # second: 10^2 x (local azimuth angle)
+        # third: 10^2 x (solar zenith angle)
+        # fourth: 10^2 x (solar azimuth angle)
+        ("scalti", "<i4"),  # sat altitude above reference ellipsoid, km*10
+        ("spare2", "<i4", (2,)),
+        # Calibration
+        ("btemps", "<i4", (90, 5)),  # BT data for Bnfovs 10^2 x scene Tb (K), channels 1-5
+        ("dataqual", "<i4", (90,)),
+        ("filler", "<i4", (55,)),
+    ]
+)

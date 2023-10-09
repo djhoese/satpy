@@ -51,8 +51,10 @@ class LIL2NCFileHandler(LINCFileHandler):
         super(LIL2NCFileHandler, self).__init__(filename, filename_info, filetype_info)
 
         if with_area_definition and not self.prod_in_accumulation_grid:
-            logger.debug(f"The current product {filetype_info['file_desc']['product_type']} "
-                         f"is not an accumulated product so it will not be regridded.")
+            logger.debug(
+                f"The current product {filetype_info['file_desc']['product_type']} "
+                "is not an accumulated product so it will not be regridded."
+            )
             self.with_area_def = False
         else:
             self.with_area_def = with_area_definition
@@ -71,14 +73,14 @@ class LIL2NCFileHandler(LINCFileHandler):
         """Compute area definition for a dataset, only supported for accumulated products."""
         var_with_swath_coord = self.is_var_with_swath_coord(dsid)
         if var_with_swath_coord and self.with_area_def:
-            return get_area_def('mtg_fci_fdss_2km')
+            return get_area_def("mtg_fci_fdss_2km")
 
-        raise NotImplementedError('Area definition is not supported for accumulated products.')
+        raise NotImplementedError("Area definition is not supported for accumulated products.")
 
     def is_var_with_swath_coord(self, dsid):
         """Check if the variable corresponding to this dataset is listed as variable with swath coordinates."""
         # since the patterns are compiled to regex we use the search() method below to find matches
-        with_swath_coords = any([p.search(dsid['name']) is not None for p in self.swath_coordinates['patterns']])
+        with_swath_coords = any([p.search(dsid["name"]) is not None for p in self.swath_coordinates["patterns"]])
         return with_swath_coords
 
     def get_array_on_fci_grid(self, data_array: xr.DataArray):
@@ -92,8 +94,8 @@ class LIL2NCFileHandler(LINCFileHandler):
         # Note that x and y have origin in the south-west corner of the image
         # and start with index 1.
 
-        rows = self.get_measured_variable('y')
-        cols = self.get_measured_variable('x')
+        rows = self.get_measured_variable("y")
+        cols = self.get_measured_variable("x")
         attrs = data_array.attrs
 
         rows, cols = da.compute(rows, cols)
@@ -101,7 +103,7 @@ class LIL2NCFileHandler(LINCFileHandler):
         # origin is in the south-west corner, so we flip the rows (applying
         # offset of 1 implicitly)
         # And we manually offset the columns by 1 too:
-        rows = (LI_GRID_SHAPE[0] - rows.astype(int))
+        rows = LI_GRID_SHAPE[0] - rows.astype(int)
         cols = cols.astype(int) - 1
 
         # Create an empyt 1-D array for the results
@@ -110,7 +112,7 @@ class LIL2NCFileHandler(LINCFileHandler):
         flattened_result[rows * LI_GRID_SHAPE[0] + cols] = data_array
         # ... reshape to final 2D grid
         data_2d = da.reshape(flattened_result, LI_GRID_SHAPE)
-        xarr = xr.DataArray(da.asarray(data_2d, CHUNK_SIZE), dims=('y', 'x'))
+        xarr = xr.DataArray(da.asarray(data_2d, CHUNK_SIZE), dims=("y", "x"))
         xarr.attrs = attrs
 
         return xarr

@@ -28,7 +28,8 @@ class Median(ModifierBase):
 
         data = arrays[0]
         logger.debug(f"Apply median filtering with parameters {self.median_filter_params}.")
-        res = xr.DataArray(median_filter(data.data, **self.median_filter_params),
-                           dims=data.dims, attrs=data.attrs, coords=data.coords)
+        res = xr.DataArray(
+            median_filter(data.data, **self.median_filter_params), dims=data.dims, attrs=data.attrs, coords=data.coords
+        )
         self.apply_modifier_info(data, res)
         return res

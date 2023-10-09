@@ -25,11 +25,13 @@ import numpy as np
 
 VARIABLES: dict[str, str] = {}
 
-TYPEC = {"boolean": ">i1",
-         "integer2": ">i2",
-         "integer4": ">i4",
-         "uinteger2": ">u2",
-         "uinteger4": ">u4", }
+TYPEC = {
+    "boolean": ">i1",
+    "integer2": ">i2",
+    "integer4": ">i4",
+    "uinteger2": ">u2",
+    "uinteger4": ">u4",
+}
 
 
 def process_delimiter(elt, ascii=False):
@@ -46,7 +48,7 @@ def process_field(elt, ascii=False):
     if elt.get("type") == "bitfield" and not ascii:
         current_type = ">u" + str(int(elt.get("length")) // 8)
         scale = np.dtype(current_type).type(1)
-    elif (elt.get("length") is not None):
+    elif elt.get("length") is not None:
         if ascii:
             add = 33
         else:
@@ -55,14 +57,11 @@ def process_field(elt, ascii=False):
     else:
         current_type = TYPEC[elt.get("type")]
         try:
-            scale = (10 /
-                     float(elt.get("scaling-factor", "10").replace("^", "e")))
+            scale = 10 / float(elt.get("scaling-factor", "10").replace("^", "e"))
         except ValueError:
-            scale = (10 / np.array(
-                elt.get("scaling-factor").replace("^", "e").split(","),
-                dtype=np.float64))
+            scale = 10 / np.array(elt.get("scaling-factor").replace("^", "e").split(","), dtype=np.float64)
 
-    return ((elt.get("name"), current_type, scale))
+    return (elt.get("name"), current_type, scale)
 
 
 def process_array(elt, ascii=False):
@@ -84,14 +83,16 @@ def process_array(elt, ascii=False):
     else:
         length = int(elt.get("length"))
     if size is not None:
-        return (myname, current_type, (length, ) + size, scale)
+        return (myname, current_type, (length,) + size, scale)
     else:
-        return (myname, current_type, (length, ), scale)
+        return (myname, current_type, (length,), scale)
 
 
-CASES = {"delimiter": process_delimiter,
-         "field": process_field,
-         "array": process_array, }
+CASES = {
+    "delimiter": process_delimiter,
+    "field": process_field,
+    "array": process_array,
+}
 
 
 def to_dtype(val):
@@ -128,7 +129,7 @@ def to_scales(val):
 
     dtype = np.dtype(res)
 
-    scales = np.zeros((1, ), dtype=dtype)
+    scales = np.zeros((1,), dtype=dtype)
 
     for i in val:
         try:
@@ -149,7 +150,7 @@ def parse_format(xml_file):
     types_scales = {}
 
     for prod in tree.find("product"):
-        ascii = (prod.tag in ["mphr", "sphr"])
+        ascii = prod.tag in ["mphr", "sphr"]
         res = []
         for i in prod:
             lres = CASES[i.tag](i, ascii)
@@ -204,5 +205,5 @@ class XMLFormat(object):
         return _apply_scales(array, *self.translator[array.dtype])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

@@ -32,9 +32,17 @@ except ImportError:
 class FakeNetCDF4FileHandler(NetCDF4FileHandler):
     """Swap-in NetCDF4 File Handler for reader tests to use."""
 
-    def __init__(self, filename, filename_info, filetype_info,
-                 auto_maskandscale=False, xarray_kwargs=None,
-                 cache_var_size=0, cache_handle=False, extra_file_content=None):
+    def __init__(
+        self,
+        filename,
+        filename_info,
+        filetype_info,
+        auto_maskandscale=False,
+        xarray_kwargs=None,
+        cache_var_size=0,
+        cache_handle=False,
+        extra_file_content=None,
+    ):
         """Get fake file content from 'get_test_content'."""
         # unused kwargs from the real file handler
         del auto_maskandscale
@@ -42,8 +50,7 @@ class FakeNetCDF4FileHandler(NetCDF4FileHandler):
         del cache_var_size
         del cache_handle
         if NetCDF4FileHandler is object:
-            raise ImportError("Base 'NetCDF4FileHandler' could not be "
-                              "imported.")
+            raise ImportError("Base 'NetCDF4FileHandler' could not be imported.")
         super(NetCDF4FileHandler, self).__init__(filename, filename_info, filetype_info)
         self.file_content = self.get_test_content(filename, filename_info, filetype_info)
         if extra_file_content:
@@ -76,91 +83,88 @@ class TestNetCDF4FileHandler(unittest.TestCase):
     def setUp(self):
         """Create a test NetCDF4 file."""
         from netCDF4 import Dataset
-        with Dataset('test.nc', 'w') as nc:
+
+        with Dataset("test.nc", "w") as nc:
             # Create dimensions
-            nc.createDimension('rows', 10)
-            nc.createDimension('cols', 100)
+            nc.createDimension("rows", 10)
+            nc.createDimension("cols", 100)
 
             # Create Group
-            g1 = nc.createGroup('test_group')
+            g1 = nc.createGroup("test_group")
 
             # Add datasets
-            ds1_f = g1.createVariable('ds1_f', np.float32,
-                                      dimensions=('rows', 'cols'))
-            ds1_f[:] = np.arange(10. * 100).reshape((10, 100))
-            ds1_i = g1.createVariable('ds1_i', np.int32,
-                                      dimensions=('rows', 'cols'))
+            ds1_f = g1.createVariable("ds1_f", np.float32, dimensions=("rows", "cols"))
+            ds1_f[:] = np.arange(10.0 * 100).reshape((10, 100))
+            ds1_i = g1.createVariable("ds1_i", np.int32, dimensions=("rows", "cols"))
             ds1_i[:] = np.arange(10 * 100).reshape((10, 100))
-            ds2_f = nc.createVariable('ds2_f', np.float32,
-                                      dimensions=('rows', 'cols'))
-            ds2_f[:] = np.arange(10. * 100).reshape((10, 100))
-            ds2_i = nc.createVariable('ds2_i', np.int32,
-                                      dimensions=('rows', 'cols'))
+            ds2_f = nc.createVariable("ds2_f", np.float32, dimensions=("rows", "cols"))
+            ds2_f[:] = np.arange(10.0 * 100).reshape((10, 100))
+            ds2_i = nc.createVariable("ds2_i", np.int32, dimensions=("rows", "cols"))
             ds2_i[:] = np.arange(10 * 100).reshape((10, 100))
-            ds2_s = nc.createVariable("ds2_s", np.int8,
-                                      dimensions=("rows",))
+            ds2_s = nc.createVariable("ds2_s", np.int8, dimensions=("rows",))
             ds2_s[:] = np.arange(10)
             ds2_sc = nc.createVariable("ds2_sc", np.int8, dimensions=())
             ds2_sc[:] = 42
 
             # Add attributes
-            nc.test_attr_str = 'test_string'
+            nc.test_attr_str = "test_string"
             nc.test_attr_int = 0
             nc.test_attr_float = 1.2
             nc.test_attr_str_arr = np.array(b"test_string2")
-            g1.test_attr_str = 'test_string'
+            g1.test_attr_str = "test_string"
             g1.test_attr_int = 0
             g1.test_attr_float = 1.2
             for d in [ds1_f, ds1_i, ds2_f, ds2_i]:
-                d.test_attr_str = 'test_string'
+                d.test_attr_str = "test_string"
                 d.test_attr_int = 0
                 d.test_attr_float = 1.2
 
     def tearDown(self):
         """Remove the previously created test file."""
-        os.remove('test.nc')
+        os.remove("test.nc")
 
     def test_all_basic(self):
         """Test everything about the NetCDF4 class."""
         import xarray as xr
 
         from satpy.readers.netcdf_utils import NetCDF4FileHandler
-        file_handler = NetCDF4FileHandler('test.nc', {}, {})
 
-        self.assertEqual(file_handler['/dimension/rows'], 10)
-        self.assertEqual(file_handler['/dimension/cols'], 100)
+        file_handler = NetCDF4FileHandler("test.nc", {}, {})
 
-        for ds in ('test_group/ds1_f', 'test_group/ds1_i', 'ds2_f', 'ds2_i'):
-            self.assertEqual(file_handler[ds].dtype, np.float32 if ds.endswith('f') else np.int32)
-            self.assertTupleEqual(file_handler[ds + '/shape'], (10, 100))
-            self.assertEqual(file_handler[ds + '/dimensions'], ("rows", "cols"))
-            self.assertEqual(file_handler[ds + '/attr/test_attr_str'], 'test_string')
-            self.assertEqual(file_handler[ds + '/attr/test_attr_int'], 0)
-            self.assertEqual(file_handler[ds + '/attr/test_attr_float'], 1.2)
+        self.assertEqual(file_handler["/dimension/rows"], 10)
+        self.assertEqual(file_handler["/dimension/cols"], 100)
 
-        test_group = file_handler['test_group']
-        self.assertTupleEqual(test_group['ds1_i'].shape, (10, 100))
-        self.assertTupleEqual(test_group['ds1_i'].dims, ('rows', 'cols'))
+        for ds in ("test_group/ds1_f", "test_group/ds1_i", "ds2_f", "ds2_i"):
+            self.assertEqual(file_handler[ds].dtype, np.float32 if ds.endswith("f") else np.int32)
+            self.assertTupleEqual(file_handler[ds + "/shape"], (10, 100))
+            self.assertEqual(file_handler[ds + "/dimensions"], ("rows", "cols"))
+            self.assertEqual(file_handler[ds + "/attr/test_attr_str"], "test_string")
+            self.assertEqual(file_handler[ds + "/attr/test_attr_int"], 0)
+            self.assertEqual(file_handler[ds + "/attr/test_attr_float"], 1.2)
 
-        self.assertEqual(file_handler['/attr/test_attr_str'], 'test_string')
-        self.assertEqual(file_handler['/attr/test_attr_str_arr'], 'test_string2')
-        self.assertEqual(file_handler['/attr/test_attr_int'], 0)
-        self.assertEqual(file_handler['/attr/test_attr_float'], 1.2)
+        test_group = file_handler["test_group"]
+        self.assertTupleEqual(test_group["ds1_i"].shape, (10, 100))
+        self.assertTupleEqual(test_group["ds1_i"].dims, ("rows", "cols"))
+
+        self.assertEqual(file_handler["/attr/test_attr_str"], "test_string")
+        self.assertEqual(file_handler["/attr/test_attr_str_arr"], "test_string2")
+        self.assertEqual(file_handler["/attr/test_attr_int"], 0)
+        self.assertEqual(file_handler["/attr/test_attr_float"], 1.2)
 
         global_attrs = {
-            'test_attr_str': 'test_string',
-            'test_attr_str_arr': 'test_string2',
-            'test_attr_int': 0,
-            'test_attr_float': 1.2
-            }
-        self.assertEqual(file_handler['/attrs'], global_attrs)
+            "test_attr_str": "test_string",
+            "test_attr_str_arr": "test_string2",
+            "test_attr_int": 0,
+            "test_attr_float": 1.2,
+        }
+        self.assertEqual(file_handler["/attrs"], global_attrs)
 
-        self.assertIsInstance(file_handler.get('ds2_f')[:], xr.DataArray)
-        self.assertIsNone(file_handler.get('fake_ds'))
-        self.assertEqual(file_handler.get('fake_ds', 'test'), 'test')
+        self.assertIsInstance(file_handler.get("ds2_f")[:], xr.DataArray)
+        self.assertIsNone(file_handler.get("fake_ds"))
+        self.assertEqual(file_handler.get("fake_ds", "test"), "test")
 
-        self.assertTrue('ds2_f' in file_handler)
-        self.assertFalse('fake_ds' in file_handler)
+        self.assertTrue("ds2_f" in file_handler)
+        self.assertFalse("fake_ds" in file_handler)
         self.assertIsNone(file_handler.file_handle)
         self.assertEqual(file_handler["ds2_sc"], 42)
 
@@ -169,63 +173,57 @@ class TestNetCDF4FileHandler(unittest.TestCase):
         from satpy.readers.netcdf_utils import NetCDF4FileHandler
 
         filetype_info = {
-            'required_netcdf_variables': [
-                'test_group/attr/test_attr_str',
-                'attr/test_attr_str',
+            "required_netcdf_variables": [
+                "test_group/attr/test_attr_str",
+                "attr/test_attr_str",
             ]
         }
-        file_handler = NetCDF4FileHandler('test.nc', {}, filetype_info)
+        file_handler = NetCDF4FileHandler("test.nc", {}, filetype_info)
         assert len(file_handler.file_content) == 2
-        assert 'test_group/attr/test_attr_str' in file_handler.file_content
-        assert 'attr/test_attr_str' in file_handler.file_content
+        assert "test_group/attr/test_attr_str" in file_handler.file_content
+        assert "attr/test_attr_str" in file_handler.file_content
 
     def test_listed_variables_with_composing(self):
         """Test that composing for listed variables is performed."""
         from satpy.readers.netcdf_utils import NetCDF4FileHandler
 
         filetype_info = {
-            'required_netcdf_variables': [
-                'test_group/{some_parameter}/attr/test_attr_str',
-                'test_group/attr/test_attr_str',
+            "required_netcdf_variables": [
+                "test_group/{some_parameter}/attr/test_attr_str",
+                "test_group/attr/test_attr_str",
             ],
-            'variable_name_replacements': {
-                'some_parameter': [
-                    'ds1_f',
-                    'ds1_i',
+            "variable_name_replacements": {
+                "some_parameter": [
+                    "ds1_f",
+                    "ds1_i",
                 ],
-                'another_parameter': [
-                    'not_used'
-                ],
-            }
+                "another_parameter": ["not_used"],
+            },
         }
-        file_handler = NetCDF4FileHandler('test.nc', {}, filetype_info)
+        file_handler = NetCDF4FileHandler("test.nc", {}, filetype_info)
         assert len(file_handler.file_content) == 3
-        assert 'test_group/ds1_f/attr/test_attr_str' in file_handler.file_content
-        assert 'test_group/ds1_i/attr/test_attr_str' in file_handler.file_content
-        assert not any('not_used' in var for var in file_handler.file_content)
-        assert not any('some_parameter' in var for var in file_handler.file_content)
-        assert not any('another_parameter' in var for var in file_handler.file_content)
-        assert 'test_group/attr/test_attr_str' in file_handler.file_content
+        assert "test_group/ds1_f/attr/test_attr_str" in file_handler.file_content
+        assert "test_group/ds1_i/attr/test_attr_str" in file_handler.file_content
+        assert not any("not_used" in var for var in file_handler.file_content)
+        assert not any("some_parameter" in var for var in file_handler.file_content)
+        assert not any("another_parameter" in var for var in file_handler.file_content)
+        assert "test_group/attr/test_attr_str" in file_handler.file_content
 
     def test_caching(self):
         """Test that caching works as intended."""
         from satpy.readers.netcdf_utils import NetCDF4FileHandler
-        h = NetCDF4FileHandler("test.nc", {}, {}, cache_var_size=1000,
-                               cache_handle=True)
+
+        h = NetCDF4FileHandler("test.nc", {}, {}, cache_var_size=1000, cache_handle=True)
         self.assertIsNotNone(h.file_handle)
         self.assertTrue(h.file_handle.isopen())
 
-        self.assertEqual(sorted(h.cached_file_content.keys()),
-                         ["ds2_s", "ds2_sc"])
+        self.assertEqual(sorted(h.cached_file_content.keys()), ["ds2_s", "ds2_sc"])
         # with caching, these tests access different lines than without
         np.testing.assert_array_equal(h["ds2_s"], np.arange(10))
-        np.testing.assert_array_equal(h["test_group/ds1_i"],
-                                      np.arange(10 * 100).reshape((10, 100)))
+        np.testing.assert_array_equal(h["test_group/ds1_i"], np.arange(10 * 100).reshape((10, 100)))
         # check that root variables can still be read from cached file object,
         # even if not cached themselves
-        np.testing.assert_array_equal(
-                h["ds2_f"],
-                np.arange(10. * 100).reshape((10, 100)))
+        np.testing.assert_array_equal(h["ds2_f"], np.arange(10.0 * 100).reshape((10, 100)))
         h.__del__()
         self.assertFalse(h.file_handle.isopen())
 
@@ -241,21 +239,22 @@ class TestNetCDF4FileHandler(unittest.TestCase):
         import xarray as xr
 
         from satpy.readers.netcdf_utils import NetCDF4FileHandler
-        file_handler = NetCDF4FileHandler('test.nc', {}, {}, cache_handle=True)
 
-        data = file_handler.get_and_cache_npxr('test_group/ds1_f')
+        file_handler = NetCDF4FileHandler("test.nc", {}, {}, cache_handle=True)
+
+        data = file_handler.get_and_cache_npxr("test_group/ds1_f")
         assert isinstance(data, xr.DataArray)
 
     def test_get_and_cache_npxr_data_is_cached(self):
         """Test that the data are cached when get_and_cache_npxr() is called."""
         from satpy.readers.netcdf_utils import NetCDF4FileHandler
 
-        file_handler = NetCDF4FileHandler('test.nc', {}, {}, cache_handle=True)
-        data = file_handler.get_and_cache_npxr('test_group/ds1_f')
+        file_handler = NetCDF4FileHandler("test.nc", {}, {}, cache_handle=True)
+        data = file_handler.get_and_cache_npxr("test_group/ds1_f")
 
         # Delete the dataset from the file content dict, it should be available from the cache
         del file_handler.file_content["test_group/ds1_f"]
-        data2 = file_handler.get_and_cache_npxr('test_group/ds1_f')
+        data2 = file_handler.get_and_cache_npxr("test_group/ds1_f")
         assert np.all(data == data2)
 
 

@@ -12,3 +12,19 @@ skip_gitignore = true
 default_section = "THIRDPARTY"
 known_first_party = "satpy"
 line_length = 120
+
+[tool.black]
+target_version = ["py39", "py310", "py311", "py312"]
+line-length = 120
+# need access to experimental string processing set for release in 2024 to
+# handle breaking up long strings
+preview = true
+exclude = '''
+(
+  \.git
+  | build
+  | dist
+  | satpy/version\.py
+)
+
+'''

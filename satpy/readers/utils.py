@@ -53,9 +53,7 @@ def np2str(value):
                     type `numpy.string_` or it is not a numpy array
 
     """
-    if hasattr(value, 'dtype') and \
-            issubclass(value.dtype.type, (np.str_, np.string_, np.object_)) \
-            and value.size == 1:
+    if hasattr(value, "dtype") and issubclass(value.dtype.type, (np.str_, np.string_, np.object_)) and value.size == 1:
         value = value.item()
         if not isinstance(value, str):
             # python 3 - was scalar numpy array of bytes
@@ -68,23 +66,23 @@ def np2str(value):
 
 def _get_geostationary_height(geos_area):
     params = geos_area.crs.coordinate_operation.params
-    h_param = [p for p in params if 'satellite height' in p.name.lower()][0]
+    h_param = [p for p in params if "satellite height" in p.name.lower()][0]
     return h_param.value
 
 
 def _get_geostationary_reference_longitude(geos_area):
     params = geos_area.crs.coordinate_operation.params
-    lon_0_params = [p for p in params if 'longitude of natural origin' in p.name.lower()]
+    lon_0_params = [p for p in params if "longitude of natural origin" in p.name.lower()]
     if not lon_0_params:
         return 0
     elif len(lon_0_params) != 1:
-        raise ValueError("Not sure how to get reference longitude "
-                         "information from AreaDefinition.")
+        raise ValueError("Not sure how to get reference longitude information from AreaDefinition.")
     return lon_0_params[0].value
 
 
 def _get_geostationary_semi_axes(geos_area):
     from pyresample.utils import proj4_radius_parameters
+
     return proj4_radius_parameters(geos_area.crs)
 
 
@@ -98,8 +96,8 @@ def get_geostationary_angle_extent(geos_area):
     h = float(h) / 1000 + req
 
     # compute some constants
-    aeq = 1 - req**2 / (h ** 2)
-    ap_ = 1 - rp**2 / (h ** 2)
+    aeq = 1 - req**2 / (h**2)
+    ap_ = 1 - rp**2 / (h**2)
 
     # generate points around the north hemisphere in satellite projection
     # make it a bit smaller so that we stay inside the valid area
@@ -141,12 +139,13 @@ def _lonlat_from_geos_angle(x, y, geos_area):
     h__ = float(h + a) / 1000
     b__ = (a / float(b)) ** 2
 
-    sd = np.sqrt((h__ * np.cos(x) * np.cos(y)) ** 2 -
-                 (np.cos(y)**2 + b__ * np.sin(y)**2) *
-                 (h__**2 - (float(a) / 1000)**2))
+    sd = np.sqrt(
+        (h__ * np.cos(x) * np.cos(y)) ** 2
+        - (np.cos(y) ** 2 + b__ * np.sin(y) ** 2) * (h__**2 - (float(a) / 1000) ** 2)
+    )
     # sd = 0
 
-    sn = (h__ * np.cos(x) * np.cos(y) - sd) / (np.cos(y)**2 + b__ * np.sin(y)**2)
+    sn = (h__ * np.cos(x) * np.cos(y) - sd) / (np.cos(y) ** 2 + b__ * np.sin(y) ** 2)
     s1 = h__ - sn * np.cos(x) * np.cos(y)
     s2 = sn * np.sin(x) * np.cos(y)
     s3 = -sn * np.sin(y)
@@ -175,8 +174,7 @@ def get_geostationary_bounding_box(geos_area, nb_points=50):
     y = -np.sin(np.linspace(-np.pi, 0, nb_points // 2)) * (ymax - 0.001)
 
     # clip the projection coordinates to fit the area extent of geos_area
-    ll_x, ll_y, ur_x, ur_y = (np.array(geos_area.area_extent) /
-                              float(h))
+    ll_x, ll_y, ur_x, ur_y = np.array(geos_area.area_extent) / float(h)
 
     x = np.clip(np.concatenate([x, x[::-1]]), min(ll_x, ur_x), max(ll_x, ur_x))
     y = np.clip(np.concatenate([y, -y]), min(ll_y, ur_y), max(ll_y, ur_y))
@@ -186,20 +184,22 @@ def get_geostationary_bounding_box(geos_area, nb_points=50):
 
 def get_sub_area(area, xslice, yslice):
     """Apply slices to the area_extent and size of the area."""
-    new_area_extent = ((area.pixel_upper_left[0] +
-                        (xslice.start - 0.5) * area.pixel_size_x),
-                       (area.pixel_upper_left[1] -
-                        (yslice.stop - 0.5) * area.pixel_size_y),
-                       (area.pixel_upper_left[0] +
-                        (xslice.stop - 0.5) * area.pixel_size_x),
-                       (area.pixel_upper_left[1] -
-                        (yslice.start - 0.5) * area.pixel_size_y))
+    new_area_extent = (
+        (area.pixel_upper_left[0] + (xslice.start - 0.5) * area.pixel_size_x),
+        (area.pixel_upper_left[1] - (yslice.stop - 0.5) * area.pixel_size_y),
+        (area.pixel_upper_left[0] + (xslice.stop - 0.5) * area.pixel_size_x),
+        (area.pixel_upper_left[1] - (yslice.start - 0.5) * area.pixel_size_y),
+    )
 
-    return AreaDefinition(area.area_id, area.name,
-                          area.proj_id, area.crs,
-                          xslice.stop - xslice.start,
-                          yslice.stop - yslice.start,
-                          new_area_extent)
+    return AreaDefinition(
+        area.area_id,
+        area.name,
+        area.proj_id,
+        area.crs,
+        xslice.stop - xslice.start,
+        yslice.stop - yslice.start,
+        new_area_extent,
+    )
 
 
 def unzip_file(filename: str | FSFile, prefix=None):
@@ -232,10 +232,9 @@ def _unzip_local_file(filename: str, prefix=None):
         Temporary filename path for decompressed file or None.
 
     """
-    if not os.fspath(filename).endswith('bz2'):
+    if not os.fspath(filename).endswith("bz2"):
         return None
-    fdn, tmpfilepath = tempfile.mkstemp(prefix=prefix,
-                                        dir=config["tmp_dir"])
+    fdn, tmpfilepath = tempfile.mkstemp(prefix=prefix, dir=config["tmp_dir"])
     LOGGER.info("Using temp file for BZ2 decompression: %s", tmpfilepath)
     # check pbzip2 status
     pbzip2 = _unzip_with_pbzip(filename, tmpfilepath, fdn)
@@ -248,27 +247,21 @@ def _unzip_local_file(filename: str, prefix=None):
 
 def _unzip_with_pbzip(filename, tmpfilepath, fdn):
     # try pbzip2
-    pbzip = which('pbzip2')
+    pbzip = which("pbzip2")
     if pbzip is None:
         return None
     # Run external pbzip2
-    n_thr = os.environ.get('OMP_NUM_THREADS')
+    n_thr = os.environ.get("OMP_NUM_THREADS")
     if n_thr:
-        runner = [pbzip,
-                  '-dc',
-                  '-p'+str(n_thr),
-                  filename]
+        runner = [pbzip, "-dc", "-p" + str(n_thr), filename]
     else:
-        runner = [pbzip,
-                  '-dc',
-                  filename]
+        runner = [pbzip, "-dc", filename]
     p = Popen(runner, stdout=PIPE, stderr=PIPE)  # nosec
     stdout = BytesIO(p.communicate()[0])
     status = p.returncode
     if status != 0:
-        raise IOError("pbzip2 error '%s', failed, status=%d"
-                      % (filename, status))
-    with closing(os.fdopen(fdn, 'wb')) as ofpt:
+        raise IOError("pbzip2 error '%s', failed, status=%d" % (filename, status))
+    with closing(os.fdopen(fdn, "wb")) as ofpt:
         try:
             stdout.seek(0)
             shutil.copyfileobj(stdout, ofpt)
@@ -291,7 +284,7 @@ def _unzip_with_bz2(filename, tmpfilepath):
 
 
 def _write_uncompressed_file(content, fdn, filename, tmpfilepath):
-    with closing(os.fdopen(fdn, 'wb')) as ofpt:
+    with closing(os.fdopen(fdn, "wb")) as ofpt:
         try:
             ofpt.write(content)
         except IOError:
@@ -313,8 +306,7 @@ def _unzip_FSFile(filename: FSFile, prefix=None):
         Temporary filename path for decompressed file or None.
 
     """
-    fdn, tmpfilepath = tempfile.mkstemp(prefix=prefix,
-                                        dir=config["tmp_dir"])
+    fdn, tmpfilepath = tempfile.mkstemp(prefix=prefix, dir=config["tmp_dir"])
     # open file
     content = filename.open().read()
     # unzip file if zipped (header start with hex 425A68)
@@ -348,7 +340,7 @@ def generic_open(filename, *args, **kwargs):
 
     Returns a file-like object.
     """
-    if os.fspath(filename).endswith('.bz2'):
+    if os.fspath(filename).endswith(".bz2"):
         fp = bz2.open(filename, *args, **kwargs)
     else:
         try:
@@ -413,19 +405,18 @@ def get_user_calibration_factors(band_name, correction_dict):
     """Retrieve radiance correction factors from user-supplied dict."""
     if band_name in correction_dict:
         try:
-            slope = correction_dict[band_name]['slope']
-            offset = correction_dict[band_name]['offset']
+            slope = correction_dict[band_name]["slope"]
+            offset = correction_dict[band_name]["offset"]
         except KeyError:
-            raise KeyError("Incorrect correction factor dictionary. You must "
-                           "supply 'slope' and 'offset' keys.")
+            raise KeyError("Incorrect correction factor dictionary. You must supply 'slope' and 'offset' keys.")
     else:
         # If coefficients not present, warn user and use slope=1, offset=0
         warnings.warn(
-            "WARNING: You have selected radiance correction but "
-            " have not supplied coefficients for channel " + band_name,
-            stacklevel=2
+            "WARNING: You have selected radiance correction but  have not supplied coefficients for channel "
+            + band_name,
+            stacklevel=2,
         )
-        return 1., 0.
+        return 1.0, 0.0
 
     return slope, offset
 
@@ -440,24 +431,24 @@ def get_array_date(scn_data, utc_date=None):
     """Get start time from a channel data array."""
     if utc_date is None:
         try:
-            utc_date = scn_data.attrs['start_time']
+            utc_date = scn_data.attrs["start_time"]
         except KeyError:
             try:
-                utc_date = scn_data.attrs['scheduled_time']
+                utc_date = scn_data.attrs["scheduled_time"]
             except KeyError:
-                raise KeyError('Scene has no start_time '
-                               'or scheduled_time attribute.')
+                raise KeyError("Scene has no start_time or scheduled_time attribute.")
     return utc_date
 
 
 def apply_earthsun_distance_correction(reflectance, utc_date=None):
     """Correct reflectance data to account for changing Earth-Sun distance."""
     from pyorbital.astronomy import sun_earth_distance_correction
+
     utc_date = get_array_date(reflectance, utc_date)
     sun_earth_dist = sun_earth_distance_correction(utc_date)
 
-    reflectance.attrs['sun_earth_distance_correction_applied'] = True
-    reflectance.attrs['sun_earth_distance_correction_factor'] = sun_earth_dist
+    reflectance.attrs["sun_earth_distance_correction_applied"] = True
+    reflectance.attrs["sun_earth_distance_correction_factor"] = sun_earth_dist
     with xr.set_options(keep_attrs=True):
         reflectance = reflectance * sun_earth_dist * sun_earth_dist
     return reflectance
@@ -466,11 +457,12 @@ def apply_earthsun_distance_correction(reflectance, utc_date=None):
 def remove_earthsun_distance_correction(reflectance, utc_date=None):
     """Remove the sun-earth distance correction."""
     from pyorbital.astronomy import sun_earth_distance_correction
+
     utc_date = get_array_date(reflectance, utc_date)
     sun_earth_dist = sun_earth_distance_correction(utc_date)
 
-    reflectance.attrs['sun_earth_distance_correction_applied'] = False
-    reflectance.attrs['sun_earth_distance_correction_factor'] = sun_earth_dist
+    reflectance.attrs["sun_earth_distance_correction_applied"] = False
+    reflectance.attrs["sun_earth_distance_correction_factor"] = sun_earth_dist
     with xr.set_options(keep_attrs=True):
         reflectance = reflectance / (sun_earth_dist * sun_earth_dist)
     return reflectance

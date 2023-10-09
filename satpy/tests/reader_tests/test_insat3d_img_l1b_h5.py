@@ -35,55 +35,49 @@ values_1km[0, 0, 0] = 0
 values_4km = np.random.randint(0, 1000, shape_4km, dtype=np.uint16)
 values_8km = np.random.randint(0, 1000, shape_8km, dtype=np.uint16)
 
-values_by_resolution = {1000: values_1km,
-                        4000: values_4km,
-                        8000: values_8km}
+values_by_resolution = {1000: values_1km, 4000: values_4km, 8000: values_8km}
 
 lut_values_2 = np.arange(0, 1024 * 2, 2)
 lut_values_3 = np.arange(0, 1024 * 3, 3)
 
-dimensions = {"GeoX": shape_4km[2],
-              "GeoY": shape_4km[1],
-              "GeoX1": shape_8km[2],
-              "GeoY1": shape_8km[1],
-              "GeoX2": shape_1km[2],
-              "GeoY2": shape_1km[1],
-              "time": 1,
-              "GreyCount": 1024,
-              }
-dimensions_by_resolution = {1000: ("GeoY2", "GeoX2"),
-                            4000: ("GeoY", "GeoX"),
-                            8000: ("GeoY1", "GeoX1")}
+dimensions = {
+    "GeoX": shape_4km[2],
+    "GeoY": shape_4km[1],
+    "GeoX1": shape_8km[2],
+    "GeoY1": shape_8km[1],
+    "GeoX2": shape_1km[2],
+    "GeoY2": shape_1km[1],
+    "time": 1,
+    "GreyCount": 1024,
+}
+dimensions_by_resolution = {1000: ("GeoY2", "GeoX2"), 4000: ("GeoY", "GeoX"), 8000: ("GeoY1", "GeoX1")}
 
-channel_names = {"vis": "Visible",
-                 "mir": "Middle Infrared",
-                 "swir": "Shortwave Infrared",
-                 "tir1": "Thermal Infrared1",
-                 "tir2": "Thermal Infrared2",
-                 "wv": "Water Vapor"}
+channel_names = {
+    "vis": "Visible",
+    "mir": "Middle Infrared",
+    "swir": "Shortwave Infrared",
+    "tir1": "Thermal Infrared1",
+    "tir2": "Thermal Infrared2",
+    "wv": "Water Vapor",
+}
 
-calibrated_names = {"": "Count",
-                    "RADIANCE": "Radiance",
-                    "ALBEDO": "Albedo",
-                    "TEMP": "Brightness Temperature"}
+calibrated_names = {"": "Count", "RADIANCE": "Radiance", "ALBEDO": "Albedo", "TEMP": "Brightness Temperature"}
 
-calibrated_units = {"": "1",
-                    "RADIANCE": "mW.cm-2.sr-1.micron-1",
-                    "ALBEDO": "%",
-                    "TEMP": "K"}
+calibrated_units = {"": "1", "RADIANCE": "mW.cm-2.sr-1.micron-1", "ALBEDO": "%", "TEMP": "K"}
 
 start_time = datetime(2009, 6, 9, 9, 0)
 end_time = datetime(2009, 6, 9, 9, 30)
 
 time_pattern = "%d-%b-%YT%H:%M:%S"
 
-global_attrs = {"Observed_Altitude(km)": 35778.490219,
-                "Field_of_View(degrees)": 17.973925,
-                "Acquisition_Start_Time": start_time.strftime(time_pattern),
-                "Acquisition_End_Time": end_time.strftime(time_pattern),
-                "Nominal_Central_Point_Coordinates(degrees)_Latitude_Longitude": [0.0, 82.0],
-                "Nominal_Altitude(km)": 36000.0,
-                }
+global_attrs = {
+    "Observed_Altitude(km)": 35778.490219,
+    "Field_of_View(degrees)": 17.973925,
+    "Acquisition_Start_Time": start_time.strftime(time_pattern),
+    "Acquisition_End_Time": end_time.strftime(time_pattern),
+    "Nominal_Central_Point_Coordinates(degrees)_Latitude_Longitude": [0.0, 82.0],
+    "Nominal_Altitude(km)": 36000.0,
+}
 
 
 @pytest.fixture(scope="session")
@@ -109,8 +103,9 @@ def _create_channels(channels, h5f, resolution):
     for channel in channels:
         var_name = "IMG_" + channel.upper()
 
-        var = h5f.create_variable(var_name, ("time",) + dimensions_by_resolution[resolution], np.uint16,
-                                  chunks=chunks_1km)
+        var = h5f.create_variable(
+            var_name, ("time",) + dimensions_by_resolution[resolution], np.uint16, chunks=chunks_1km
+        )
         var[:] = values_by_resolution[resolution]
         var.attrs["_FillValue"] = 0
         for suffix, lut_values in zip(LUT_SUFFIXES[channel], (lut_values_2, lut_values_3)):
@@ -124,8 +119,7 @@ def _create_channels(channels, h5f, resolution):
 def _create_lonlats(h5f, resolution):
     lonlat_suffix = get_lonlat_suffix(resolution)
     for var_name in ["Longitude" + lonlat_suffix, "Latitude" + lonlat_suffix]:
-        var = h5f.create_variable(var_name, dimensions_by_resolution[resolution], np.uint16,
-                                  chunks=chunks_1km[1:])
+        var = h5f.create_variable(var_name, dimensions_by_resolution[resolution], np.uint16, chunks=chunks_1km[1:])
         var[:] = values_by_resolution[resolution]
         var.attrs["scale_factor"] = 0.01
         var.attrs["add_offset"] = 0.0
@@ -138,24 +132,28 @@ def test_insat3d_backend_has_1km_channels(insat_filename):
     assert res["IMG_SWIR"].shape == shape_1km
 
 
-@pytest.mark.parametrize("resolution,name,shape,expected_values,expected_name,expected_units",
-                         [(1000, "IMG_VIS_RADIANCE", shape_1km, mask_array(values_1km * 2),
-                           "Visible Radiance", rad_units),
-                          (1000, "IMG_VIS_ALBEDO", shape_1km, mask_array(values_1km * 3),
-                           "Visible Albedo", alb_units),
-                          (4000, "IMG_MIR_RADIANCE", shape_4km, mask_array(values_4km * 2),
-                           "Middle Infrared Radiance", rad_units),
-                          (4000, "IMG_MIR_TEMP", shape_4km, mask_array(values_4km * 3),
-                           "Middle Infrared Brightness Temperature", temp_units),
-                          (4000, "IMG_TIR1_RADIANCE", shape_4km, mask_array(values_4km * 2),
-                           "Thermal Infrared1 Radiance", rad_units),
-                          (4000, "IMG_TIR2_RADIANCE", shape_4km, mask_array(values_4km * 2),
-                           "Thermal Infrared2 Radiance", rad_units),
-                          (8000, "IMG_WV_RADIANCE", shape_8km, mask_array(values_8km * 2),
-                           "Water Vapor Radiance", rad_units),
-                          ])
-def test_insat3d_has_calibrated_arrays(insat_filename,
-                                       resolution, name, shape, expected_values, expected_name, expected_units):
+@pytest.mark.parametrize(
+    "resolution,name,shape,expected_values,expected_name,expected_units",
+    [
+        (1000, "IMG_VIS_RADIANCE", shape_1km, mask_array(values_1km * 2), "Visible Radiance", rad_units),
+        (1000, "IMG_VIS_ALBEDO", shape_1km, mask_array(values_1km * 3), "Visible Albedo", alb_units),
+        (4000, "IMG_MIR_RADIANCE", shape_4km, mask_array(values_4km * 2), "Middle Infrared Radiance", rad_units),
+        (
+            4000,
+            "IMG_MIR_TEMP",
+            shape_4km,
+            mask_array(values_4km * 3),
+            "Middle Infrared Brightness Temperature",
+            temp_units,
+        ),
+        (4000, "IMG_TIR1_RADIANCE", shape_4km, mask_array(values_4km * 2), "Thermal Infrared1 Radiance", rad_units),
+        (4000, "IMG_TIR2_RADIANCE", shape_4km, mask_array(values_4km * 2), "Thermal Infrared2 Radiance", rad_units),
+        (8000, "IMG_WV_RADIANCE", shape_8km, mask_array(values_8km * 2), "Water Vapor Radiance", rad_units),
+    ],
+)
+def test_insat3d_has_calibrated_arrays(
+    insat_filename, resolution, name, shape, expected_values, expected_name, expected_units
+):
     """Check that calibration happens as expected."""
     res = open_dataset(insat_filename, resolution=resolution)
     assert res[name].shape == shape
@@ -177,7 +175,14 @@ def test_insat3d_only_has_3_resolutions(insat_filename):
         _ = open_dataset(insat_filename, resolution=1024)
 
 
-@pytest.mark.parametrize("resolution", [1000, 4000, 8000, ])
+@pytest.mark.parametrize(
+    "resolution",
+    [
+        1000,
+        4000,
+        8000,
+    ],
+)
 def test_insat3d_returns_lonlat(insat_filename, resolution):
     """Test that lons and lats are loaded."""
     res = open_dataset(insat_filename, resolution=resolution)
@@ -188,14 +193,28 @@ def test_insat3d_returns_lonlat(insat_filename, resolution):
     np.testing.assert_allclose(res["Longitude"], expected)
 
 
-@pytest.mark.parametrize("resolution", [1000, 4000, 8000, ])
+@pytest.mark.parametrize(
+    "resolution",
+    [
+        1000,
+        4000,
+        8000,
+    ],
+)
 def test_insat3d_has_global_attributes(insat_filename, resolution):
     """Test that the backend supports global attributes."""
     res = open_dataset(insat_filename, resolution=resolution)
     assert res.attrs.keys() >= global_attrs.keys()
 
 
-@pytest.mark.parametrize("resolution", [1000, 4000, 8000, ])
+@pytest.mark.parametrize(
+    "resolution",
+    [
+        1000,
+        4000,
+        8000,
+    ],
+)
 def test_insat3d_opens_datatree(insat_filename, resolution):
     """Test that a datatree is produced."""
     res = open_datatree(insat_filename)
@@ -208,10 +227,10 @@ def test_insat3d_datatree_has_global_attributes(insat_filename):
     assert res.attrs.keys() >= global_attrs.keys()
 
 
-@pytest.mark.parametrize("calibration,expected_values",
-                         [("counts", values_1km),
-                          ("radiance", mask_array(values_1km * 2)),
-                          ("reflectance", mask_array(values_1km * 3))])
+@pytest.mark.parametrize(
+    "calibration,expected_values",
+    [("counts", values_1km), ("radiance", mask_array(values_1km * 2)), ("reflectance", mask_array(values_1km * 3))],
+)
 def test_filehandler_returns_data_array(insat_filehandler, calibration, expected_values):
     """Test that the filehandler can get dataarrays."""
     fh = insat_filehandler
@@ -228,7 +247,7 @@ def test_filehandler_returns_masked_data_in_space(insat_filehandler):
     fh = insat_filehandler
     ds_info = None
 
-    ds_id = make_dataid(name="VIS", resolution=1000, calibration='reflectance')
+    ds_id = make_dataid(name="VIS", resolution=1000, calibration="reflectance")
     darr = fh.get_dataset(ds_id, ds_info)
     assert np.isnan(darr[0, 0])
 
@@ -238,7 +257,7 @@ def test_insat3d_has_orbital_parameters(insat_filehandler):
     fh = insat_filehandler
     ds_info = None
 
-    ds_id = make_dataid(name="VIS", resolution=1000, calibration='reflectance')
+    ds_id = make_dataid(name="VIS", resolution=1000, calibration="reflectance")
     darr = fh.get_dataset(ds_id, ds_info)
 
     assert "orbital_parameters" in darr.attrs

@@ -67,46 +67,47 @@ class GeoTIFFWriter(ImageWriter):
 
     """
 
-    GDAL_OPTIONS = ("tfw",
-                    "rpb",
-                    "rpctxt",
-                    "interleave",
-                    "tiled",
-                    "blockxsize",
-                    "blockysize",
-                    "nbits",
-                    "compress",
-                    "num_threads",
-                    "predictor",
-                    "discard_lsb",
-                    "sparse_ok",
-                    "jpeg_quality",
-                    "jpegtablesmode",
-                    "zlevel",
-                    "photometric",
-                    "alpha",
-                    "profile",
-                    "bigtiff",
-                    "pixeltype",
-                    "copy_src_overviews",
-                    # COG driver options (different from GTiff above)
-                    "blocksize",
-                    "resampling",
-                    "quality",
-                    "level",
-                    "overview_resampling",
-                    "warp_resampling",
-                    "overview_compress",
-                    "overview_quality",
-                    "overview_predictor",
-                    "tiling_scheme",
-                    "zoom_level_strategy",
-                    "target_srs",
-                    "res",
-                    "extent",
-                    "aligned_levels",
-                    "add_alpha",
-                    )
+    GDAL_OPTIONS = (
+        "tfw",
+        "rpb",
+        "rpctxt",
+        "interleave",
+        "tiled",
+        "blockxsize",
+        "blockysize",
+        "nbits",
+        "compress",
+        "num_threads",
+        "predictor",
+        "discard_lsb",
+        "sparse_ok",
+        "jpeg_quality",
+        "jpegtablesmode",
+        "zlevel",
+        "photometric",
+        "alpha",
+        "profile",
+        "bigtiff",
+        "pixeltype",
+        "copy_src_overviews",
+        # COG driver options (different from GTiff above)
+        "blocksize",
+        "resampling",
+        "quality",
+        "level",
+        "overview_resampling",
+        "warp_resampling",
+        "overview_compress",
+        "overview_quality",
+        "overview_predictor",
+        "tiling_scheme",
+        "zoom_level_strategy",
+        "target_srs",
+        "res",
+        "extent",
+        "aligned_levels",
+        "add_alpha",
+    )
 
     def __init__(self, dtype=None, tags=None, **kwargs):
         """Init the writer."""
@@ -129,33 +130,32 @@ class GeoTIFFWriter(ImageWriter):
     def separate_init_kwargs(cls, kwargs):
         """Separate the init keyword args."""
         # FUTURE: Don't pass Scene.save_datasets kwargs to init and here
-        init_kwargs, kwargs = super(GeoTIFFWriter, cls).separate_init_kwargs(
-            kwargs)
-        for kw in ['dtype', 'tags']:
+        init_kwargs, kwargs = super(GeoTIFFWriter, cls).separate_init_kwargs(kwargs)
+        for kw in ["dtype", "tags"]:
             if kw in kwargs:
                 init_kwargs[kw] = kwargs.pop(kw)
 
         return init_kwargs, kwargs
 
     def save_image(
-            self,
-            img: XRImage,
-            filename: Optional[str] = None,
-            compute: bool = True,
-            dtype: Optional[DTypeLike] = None,
-            fill_value: Optional[Union[int, float]] = None,
-            keep_palette: bool = False,
-            cmap: Optional[Colormap] = None,
-            tags: Optional[dict[str, Any]] = None,
-            overviews: Optional[list[int]] = None,
-            overviews_minsize: int = 256,
-            overviews_resampling: Optional[str] = None,
-            include_scale_offset: bool = False,
-            scale_offset_tags: Optional[tuple[str, str]] = None,
-            colormap_tag: Optional[str] = None,
-            driver: Optional[str] = None,
-            tiled: bool = True,
-            **kwargs
+        self,
+        img: XRImage,
+        filename: Optional[str] = None,
+        compute: bool = True,
+        dtype: Optional[DTypeLike] = None,
+        fill_value: Optional[Union[int, float]] = None,
+        keep_palette: bool = False,
+        cmap: Optional[Colormap] = None,
+        tags: Optional[dict[str, Any]] = None,
+        overviews: Optional[list[int]] = None,
+        overviews_minsize: int = 256,
+        overviews_resampling: Optional[str] = None,
+        include_scale_offset: bool = False,
+        scale_offset_tags: Optional[tuple[str, str]] = None,
+        colormap_tag: Optional[str] = None,
+        driver: Optional[str] = None,
+        tiled: bool = True,
+        **kwargs,
     ):
         """Save the image to the given ``filename`` in geotiff_ format.
 
@@ -246,7 +246,7 @@ class GeoTIFFWriter(ImageWriter):
         gdal_options = self._get_gdal_options(kwargs)
         if fill_value is None:
             # fall back to fill_value from configuration file
-            fill_value = self.info.get('fill_value')
+            fill_value = self.info.get("fill_value")
 
         dtype = dtype if dtype is not None else self.dtype
         if dtype is None and self.enhancer is not False:
@@ -255,38 +255,42 @@ class GeoTIFFWriter(ImageWriter):
             dtype = img.data.dtype.type
 
         if "alpha" in kwargs:
-            raise ValueError(
-                "Keyword 'alpha' is automatically set based on 'fill_value' "
-                "and should not be specified")
+            raise ValueError("Keyword 'alpha' is automatically set based on 'fill_value' and should not be specified")
         if np.issubdtype(dtype, np.floating):
             if img.mode != "L":
-                raise ValueError("Image must be in 'L' mode for floating "
-                                 "point geotiff saving")
+                raise ValueError("Image must be in 'L' mode for floating point geotiff saving")
             if fill_value is None:
-                LOG.debug("Alpha band not supported for float geotiffs, "
-                          "setting fill value to 'NaN'")
+                LOG.debug("Alpha band not supported for float geotiffs, setting fill value to 'NaN'")
                 fill_value = np.nan
         if keep_palette and cmap is None and img.palette is not None:
             from satpy.enhancements import create_colormap
-            cmap = create_colormap({'colors': img.palette})
+
+            cmap = create_colormap({"colors": img.palette})
             cmap.set_range(0, len(img.palette) - 1)
 
         if tags is None:
             tags = {}
         tags.update(self.tags)
 
-        return img.save(filename, fformat='tif', driver=driver,
-                        fill_value=fill_value,
-                        dtype=dtype, compute=compute,
-                        keep_palette=keep_palette, cmap=cmap,
-                        tags=tags, include_scale_offset_tags=include_scale_offset,
-                        scale_offset_tags=scale_offset_tags,
-                        colormap_tag=colormap_tag,
-                        overviews=overviews,
-                        overviews_resampling=overviews_resampling,
-                        overviews_minsize=overviews_minsize,
-                        tiled=tiled,
-                        **gdal_options)
+        return img.save(
+            filename,
+            fformat="tif",
+            driver=driver,
+            fill_value=fill_value,
+            dtype=dtype,
+            compute=compute,
+            keep_palette=keep_palette,
+            cmap=cmap,
+            tags=tags,
+            include_scale_offset_tags=include_scale_offset,
+            scale_offset_tags=scale_offset_tags,
+            colormap_tag=colormap_tag,
+            overviews=overviews,
+            overviews_resampling=overviews_resampling,
+            overviews_minsize=overviews_minsize,
+            tiled=tiled,
+            **gdal_options,
+        )
 
     def _get_gdal_options(self, kwargs):
         # Update global GDAL options with these specific ones

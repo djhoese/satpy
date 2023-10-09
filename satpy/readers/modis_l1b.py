@@ -85,18 +85,12 @@ logger = logging.getLogger(__name__)
 class HDFEOSBandReader(HDFEOSBaseFileReader):
     """Handler for the regular band channels."""
 
-    res = {"1": 1000,
-           "Q": 250,
-           "H": 500}
+    res = {"1": 1000, "Q": 250, "H": 500}
 
     res_to_possible_variable_names = {
-        1000: ['EV_250_Aggr1km_RefSB',
-               'EV_500_Aggr1km_RefSB',
-               'EV_1KM_RefSB',
-               'EV_1KM_Emissive'],
-        500: ['EV_250_Aggr500_RefSB',
-              'EV_500_RefSB'],
-        250: ['EV_250_RefSB'],
+        1000: ["EV_250_Aggr1km_RefSB", "EV_500_Aggr1km_RefSB", "EV_1KM_RefSB", "EV_1KM_Emissive"],
+        500: ["EV_250_Aggr500_RefSB", "EV_500_RefSB"],
+        250: ["EV_250_RefSB"],
     }
 
     def __init__(self, filename, filename_info, filetype_info, mask_saturated=True, **kwargs):
@@ -104,22 +98,20 @@ class HDFEOSBandReader(HDFEOSBaseFileReader):
         super().__init__(filename, filename_info, filetype_info, **kwargs)
         self._mask_saturated = mask_saturated
 
-        ds = self.metadata['INVENTORYMETADATA'][
-            'COLLECTIONDESCRIPTIONCLASS']['SHORTNAME']['VALUE']
+        ds = self.metadata["INVENTORYMETADATA"]["COLLECTIONDESCRIPTIONCLASS"]["SHORTNAME"]["VALUE"]
         self.resolution = self.res[ds[-3]]
 
     def get_dataset(self, key, info):
         """Read data from file and return the corresponding projectables."""
-        if self.resolution != key['resolution']:
+        if self.resolution != key["resolution"]:
             return
         var_name, band_index = self._get_band_variable_name_and_index(key["name"])
         subdata = self.sd.select(var_name)
         var_attrs = subdata.attributes()
         uncertainty = self.sd.select(var_name + "_Uncert_Indexes")
         chunks = self._chunks_for_variable(subdata)
-        array = xr.DataArray(from_sds(subdata, chunks=chunks)[band_index, :, :],
-                             dims=['y', 'x']).astype(np.float32)
-        valid_range = var_attrs['valid_range']
+        array = xr.DataArray(from_sds(subdata, chunks=chunks)[band_index, :, :], dims=["y", "x"]).astype(np.float32)
+        valid_range = var_attrs["valid_range"]
         valid_min = np.float32(valid_range[0])
         valid_max = np.float32(valid_range[1])
         if not self._mask_saturated:
@@ -219,27 +211,24 @@ class HDFEOSBandReader(HDFEOSBaseFileReader):
         return array
 
     def _calibrate_data(self, key, info, array, var_attrs, index):
-        if key['calibration'] == 'brightness_temperature':
-            projectable = calibrate_bt(array, var_attrs, index, key['name'])
-            info.setdefault('units', 'K')
-            info.setdefault('standard_name', 'toa_brightness_temperature')
-        elif key['calibration'] == 'reflectance':
+        if key["calibration"] == "brightness_temperature":
+            projectable = calibrate_bt(array, var_attrs, index, key["name"])
+            info.setdefault("units", "K")
+            info.setdefault("standard_name", "toa_brightness_temperature")
+        elif key["calibration"] == "reflectance":
             projectable = calibrate_refl(array, var_attrs, index)
-            info.setdefault('units', '%')
-            info.setdefault('standard_name',
-                            'toa_bidirectional_reflectance')
-        elif key['calibration'] == 'radiance':
+            info.setdefault("units", "%")
+            info.setdefault("standard_name", "toa_bidirectional_reflectance")
+        elif key["calibration"] == "radiance":
             projectable = calibrate_radiance(array, var_attrs, index)
-            info.setdefault('units', var_attrs.get('radiance_units'))
-            info.setdefault('standard_name',
-                            'toa_outgoing_radiance_per_unit_wavelength')
-        elif key['calibration'] == 'counts':
+            info.setdefault("units", var_attrs.get("radiance_units"))
+            info.setdefault("standard_name", "toa_outgoing_radiance_per_unit_wavelength")
+        elif key["calibration"] == "counts":
             projectable = calibrate_counts(array, var_attrs, index)
-            info.setdefault('units', 'counts')
-            info.setdefault('standard_name', 'counts')  # made up
+            info.setdefault("units", "counts")
+            info.setdefault("standard_name", "counts")  # made up
         else:
-            raise ValueError("Unknown calibration for "
-                             "key: {}".format(key))
+            raise ValueError("Unknown calibration for key: {}".format(key))
         projectable.attrs = info
         return projectable
 
@@ -254,7 +243,7 @@ class MixedHDFEOSReader(HDFEOSGeoReader, HDFEOSBandReader):
 
     def get_dataset(self, key, info):
         """Get the dataset."""
-        if key['name'] in HDFEOSGeoReader.DATASET_NAMES:
+        if key["name"] in HDFEOSGeoReader.DATASET_NAMES:
             return HDFEOSGeoReader.get_dataset(self, key, info)
         return HDFEOSBandReader.get_dataset(self, key, info)
 
@@ -295,7 +284,7 @@ def calibrate_bt(array, attributes, index, band_name):
     h__ = np.float32(6.6260755e-34)
 
     # Speed of light in vacuum (meters per second)
-    c__ = np.float32(2.9979246e+8)
+    c__ = np.float32(2.9979246e8)
 
     # Boltzmann constant (Joules per Kelvin)
     k__ = np.float32(1.380658e-23)
@@ -305,40 +294,101 @@ def calibrate_bt(array, attributes, index, band_name):
     c_2 = (h__ * c__) / k__
 
     # Effective central wavenumber (inverse centimeters)
-    cwn = np.array([
-        2.641775E+3, 2.505277E+3, 2.518028E+3, 2.465428E+3,
-        2.235815E+3, 2.200346E+3, 1.477967E+3, 1.362737E+3,
-        1.173190E+3, 1.027715E+3, 9.080884E+2, 8.315399E+2,
-        7.483394E+2, 7.308963E+2, 7.188681E+2, 7.045367E+2],
-        dtype=np.float32)
+    cwn = np.array(
+        [
+            2.641775e3,
+            2.505277e3,
+            2.518028e3,
+            2.465428e3,
+            2.235815e3,
+            2.200346e3,
+            1.477967e3,
+            1.362737e3,
+            1.173190e3,
+            1.027715e3,
+            9.080884e2,
+            8.315399e2,
+            7.483394e2,
+            7.308963e2,
+            7.188681e2,
+            7.045367e2,
+        ],
+        dtype=np.float32,
+    )
 
     # Temperature correction slope (no units)
-    tcs = np.array([
-        9.993411E-1, 9.998646E-1, 9.998584E-1, 9.998682E-1,
-        9.998819E-1, 9.998845E-1, 9.994877E-1, 9.994918E-1,
-        9.995495E-1, 9.997398E-1, 9.995608E-1, 9.997256E-1,
-        9.999160E-1, 9.999167E-1, 9.999191E-1, 9.999281E-1],
-        dtype=np.float32)
+    tcs = np.array(
+        [
+            9.993411e-1,
+            9.998646e-1,
+            9.998584e-1,
+            9.998682e-1,
+            9.998819e-1,
+            9.998845e-1,
+            9.994877e-1,
+            9.994918e-1,
+            9.995495e-1,
+            9.997398e-1,
+            9.995608e-1,
+            9.997256e-1,
+            9.999160e-1,
+            9.999167e-1,
+            9.999191e-1,
+            9.999281e-1,
+        ],
+        dtype=np.float32,
+    )
 
     # Temperature correction intercept (Kelvin)
-    tci = np.array([
-        4.770532E-1, 9.262664E-2, 9.757996E-2, 8.929242E-2,
-        7.310901E-2, 7.060415E-2, 2.204921E-1, 2.046087E-1,
-        1.599191E-1, 8.253401E-2, 1.302699E-1, 7.181833E-2,
-        1.972608E-2, 1.913568E-2, 1.817817E-2, 1.583042E-2],
-        dtype=np.float32)
+    tci = np.array(
+        [
+            4.770532e-1,
+            9.262664e-2,
+            9.757996e-2,
+            8.929242e-2,
+            7.310901e-2,
+            7.060415e-2,
+            2.204921e-1,
+            2.046087e-1,
+            1.599191e-1,
+            8.253401e-2,
+            1.302699e-1,
+            7.181833e-2,
+            1.972608e-2,
+            1.913568e-2,
+            1.817817e-2,
+            1.583042e-2,
+        ],
+        dtype=np.float32,
+    )
 
     # Transfer wavenumber [cm^(-1)] to wavelength [m]
-    cwn = 1. / (cwn * 100)
+    cwn = 1.0 / (cwn * 100)
 
     # Some versions of the modis files do not contain all the bands.
-    emmissive_channels = ["20", "21", "22", "23", "24", "25", "27", "28", "29",
-                          "30", "31", "32", "33", "34", "35", "36"]
+    emmissive_channels = [
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "27",
+        "28",
+        "29",
+        "30",
+        "31",
+        "32",
+        "33",
+        "34",
+        "35",
+        "36",
+    ]
     global_index = emmissive_channels.index(band_name)
 
     cwn = cwn[global_index]
     tcs = tcs[global_index]
     tci = tci[global_index]
-    array = c_2 / (cwn * np.log(c_1 / (1000000 * array * cwn ** 5) + 1))
+    array = c_2 / (cwn * np.log(c_1 / (1000000 * array * cwn**5) + 1))
     array = (array - tci) / tcs
     return array

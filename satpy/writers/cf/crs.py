@@ -33,7 +33,8 @@ def _try_to_get_crs(dataarray):
         if not isinstance(dataarray.attrs["area"], SwathDefinition):
             logger.warning(
                 f"Could not tell CRS from area of type {type(dataarray.attrs['area']).__name__:s}. "
-                "Assuming projected CRS.")
+                "Assuming projected CRS."
+            )
     if "crs" in dataarray.coords:
         return dataarray.coords["crs"].item()
 

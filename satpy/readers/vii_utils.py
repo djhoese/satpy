@@ -20,11 +20,11 @@
 
 
 # PLANCK COEFFICIENTS FOR CALIBRATION AS DEFINED BY EUMETSAT
-C1 = 1.191062e+8   # [W/m2·sr-1·µm4]
-C2 = 1.4387863e+4  # [K·µm]
+C1 = 1.191062e8  # [W/m2·sr-1·µm4]
+C2 = 1.4387863e4  # [K·µm]
 
 # CONSTANTS DEFINING THE TIE POINTS
-TIE_POINTS_FACTOR = 8    # Sub-sampling factor of tie points wrt pixel points
+TIE_POINTS_FACTOR = 8  # Sub-sampling factor of tie points wrt pixel points
 SCAN_ALT_TIE_POINTS = 4  # Number of tie points along the satellite track for each scan
 
 # MEAN EARTH RADIUS AS DEFINED BY IUGG

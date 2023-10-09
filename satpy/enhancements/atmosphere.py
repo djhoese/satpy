@@ -87,7 +87,7 @@ def _calc_essl_red(ratio):
 
 def _calc_essl_green(ratio):
     """Calculate values for green based on scaled and clipped ratio."""
-    green = 1 - (8/7) * ratio
+    green = 1 - (8 / 7) * ratio
     green.data = da.clip(green.data, 0, 1)
     return green
 
@@ -95,7 +95,7 @@ def _calc_essl_green(ratio):
 def _calc_essl_blue(ratio):
     """Calculate values for blue based on scaled and clipped ratio."""
     blue_a = 0.75 - 1.5 * ratio
-    blue_b = 0.25 - (ratio - 0.75)**2
+    blue_b = 0.25 - (ratio - 0.75) ** 2
     blue = xr.where(blue_a > blue_b, blue_a, blue_b)
     blue.data = da.clip(blue.data, 0, 1)
     return blue
@@ -103,8 +103,10 @@ def _calc_essl_blue(ratio):
 
 def _is_fci_test_data(data):
     """Check if we are working with FCI test data."""
-    return ("sensor" in data.attrs and
-            "start_time" in data.attrs and
-            data.attrs["sensor"] == "fci" and
-            isinstance(data.attrs["start_time"], datetime.datetime) and
-            data.attrs["start_time"] < datetime.datetime(2022, 11, 30))
+    return (
+        "sensor" in data.attrs
+        and "start_time" in data.attrs
+        and data.attrs["sensor"] == "fci"
+        and isinstance(data.attrs["start_time"], datetime.datetime)
+        and data.attrs["start_time"] < datetime.datetime(2022, 11, 30)
+    )

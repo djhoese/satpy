@@ -40,6 +40,7 @@ except ImportError:  # Remove when dropping Python < 3.8
         """Drop-in replacement for math.prod."""
         return reduce(mul, iterable, 1)
 
+
 # NOTE:
 # The following fixtures are not defined in this file, but are used and injected by Pytest:
 # - tmp_path
@@ -62,13 +63,23 @@ def test_area_tiny_eqc_sphere():
     shp = (10, 20)
     test_area = create_area_def(
         "test-area-eqc-sphere",
-        {"proj": "eqc", "lat_ts": 0., "lat_0": 0., "lon_0": 0.,
-         "x_0": 0., "y_0": 0., "ellps": "sphere", "units": "m",
-         "no_defs": None, "type": "crs"},
+        {
+            "proj": "eqc",
+            "lat_ts": 0.0,
+            "lat_0": 0.0,
+            "lon_0": 0.0,
+            "x_0": 0.0,
+            "y_0": 0.0,
+            "ellps": "sphere",
+            "units": "m",
+            "no_defs": None,
+            "type": "crs",
+        },
         units="m",
         shape=shp,
         resolution=1000,
-        center=(-3330000.0, 4440000.0))
+        center=(-3330000.0, 4440000.0),
+    )
     return test_area
 
 
@@ -77,12 +88,13 @@ def test_area_small_eqc_wgs84():
     """Create 50x100 test equirectangular area centered on (50, 90), wgs84."""
     shp = (50, 100)
     test_area = create_area_def(
-            "test-area-eqc-wgs84",
-            {"proj": "eqc", "lat_0": 2.5, "lon_0": 1., "ellps": "WGS84"},
-            units="m",
-            shape=shp,
-            resolution=1000,
-            center=(10000000.0, 6000000.0))
+        "test-area-eqc-wgs84",
+        {"proj": "eqc", "lat_0": 2.5, "lon_0": 1.0, "ellps": "WGS84"},
+        units="m",
+        shape=shp,
+        resolution=1000,
+        center=(10000000.0, 6000000.0),
+    )
     return test_area
 
 
@@ -92,12 +104,12 @@ def test_area_tiny_stereographic_wgs84():
     shp = (20, 10)
     test_area = create_area_def(
         "test-area-north-stereo",
-        {"proj": "stere", "lat_0": 75.0, "lon_0": 2.0, "lat_ts": 60.0,
-            "ellps": "WGS84", "units": "m", "type": "crs"},
+        {"proj": "stere", "lat_0": 75.0, "lon_0": 2.0, "lat_ts": 60.0, "ellps": "WGS84", "units": "m", "type": "crs"},
         units="m",
         shape=shp,
         resolution=1000,
-        center=(0.0, 1500000.0))
+        center=(0.0, 1500000.0),
+    )
     return test_area
 
 
@@ -107,12 +119,12 @@ def test_area_tiny_antarctic():
     shp = (20, 10)
     test_area = create_area_def(
         "test-area-south-stereo",
-        {"proj": "stere", "lat_0": -75.0, "lon_0": 2.0, "lat_ts": 60.0,
-            "ellps": "WGS84", "units": "m", "type": "crs"},
+        {"proj": "stere", "lat_0": -75.0, "lon_0": 2.0, "lat_ts": 60.0, "ellps": "WGS84", "units": "m", "type": "crs"},
         units="m",
         shape=shp,
         resolution=1000,
-        center=(0.0, -1500000.0))
+        center=(0.0, -1500000.0),
+    )
     return test_area
 
 
@@ -124,11 +136,12 @@ def test_area_northpole():
     """
     shp = (20, 10)
     test_area = create_area_def(
-            "test-area-north-pole",
-            {"proj": "stere", "lat_0": 90, "lat_ts": 60, "ellps": "WGS84"},
-            shape=shp,
-            resolution=1000,
-            center=(0.0, 15000000.0))
+        "test-area-north-pole",
+        {"proj": "stere", "lat_0": 90, "lat_ts": 60, "ellps": "WGS84"},
+        shape=shp,
+        resolution=1000,
+        center=(0.0, 15000000.0),
+    )
     return test_area
 
 
@@ -136,14 +149,11 @@ def test_area_northpole():
 def test_area_merc():
     """Create a mercator area."""
     from pyproj import CRS
+
     shp = (20, 10)
     test_area = create_area_def(
-        "test-area-merc",
-        CRS("+proj=merc"),
-        units="m",
-        shape=shp,
-        resolution=1000,
-        center=(0.0, 0.0))
+        "test-area-merc", CRS("+proj=merc"), units="m", shape=shp, resolution=1000, center=(0.0, 0.0)
+    )
     return test_area
 
 
@@ -151,14 +161,11 @@ def test_area_merc():
 def test_area_weird():
     """Create a weird area (interrupted goode homolosine) to test error handling."""
     from pyproj import CRS
+
     shp = (20, 10)
     test_area = create_area_def(
-        "test-area-north-stereo",
-        CRS("+proj=igh"),
-        units="m",
-        shape=shp,
-        resolution=1000,
-        center=(0.0, 1500000.0))
+        "test-area-north-stereo", CRS("+proj=igh"), units="m", shape=shp, resolution=1000, center=(0.0, 1500000.0)
+    )
     return test_area
 
 
@@ -166,13 +173,9 @@ def test_area_weird():
 def test_area_epsg4326():
     """Test with EPSG4326 (latlong) area, which has no CRS coordinate operation."""
     from pyproj import CRS
+
     shp = (16, 8)
-    euro4326 = create_area_def(
-        "epgs4326europa",
-        CRS.from_epsg(4326),
-        resolution=1/128,
-        shape=shp,
-        center=(0, 0))
+    euro4326 = create_area_def("epgs4326europa", CRS.from_epsg(4326), resolution=1 / 128, shape=shp, center=(0, 0))
     return euro4326
 
 
@@ -185,7 +188,9 @@ def test_image_small_mid_atlantic_L(test_area_tiny_eqc_sphere):
         attrs={
             "name": "test-small-mid-atlantic",
             "start_time": datetime.datetime(1985, 8, 13, 13, 0),
-            "area": test_area_tiny_eqc_sphere})
+            "area": test_area_tiny_eqc_sphere,
+        },
+    )
     return get_enhanced_image(arr)
 
 
@@ -193,13 +198,15 @@ def test_image_small_mid_atlantic_L(test_area_tiny_eqc_sphere):
 def test_image_small_mid_atlantic_K_L(test_area_tiny_eqc_sphere):
     """Get a small test image in units K, mode L, over Atlantic."""
     arr = xr.DataArray(
-        _get_fake_da(-80+273.15, 40+273.15, test_area_tiny_eqc_sphere.shape + (1,)),
+        _get_fake_da(-80 + 273.15, 40 + 273.15, test_area_tiny_eqc_sphere.shape + (1,)),
         dims=("y", "x", "bands"),
         attrs={
             "name": "test-small-mid-atlantic",
             "start_time": datetime.datetime(1985, 8, 13, 13, 0),
             "area": test_area_tiny_eqc_sphere,
-            "units": "K"})
+            "units": "K",
+        },
+    )
     return get_enhanced_image(arr)
 
 
@@ -216,7 +223,9 @@ def test_image_small_mid_atlantic_L_no_quantity(test_area_tiny_eqc_sphere):
             "name": "test-small-mid-atlantic",
             "start_time": datetime.datetime(1985, 8, 13, 13, 0),
             "area": test_area_tiny_eqc_sphere,
-            "units": "N/A"})
+            "units": "N/A",
+        },
+    )
     return get_enhanced_image(arr)
 
 
@@ -231,7 +240,9 @@ def test_image_large_asia_RGB(test_area_small_eqc_wgs84):
             "name": "test-large-asia",
             "start_time": datetime.datetime(2015, 10, 21, 20, 25, 0),
             "area": test_area_small_eqc_wgs84,
-            "mode": "RGB"})
+            "mode": "RGB",
+        },
+    )
     return get_enhanced_image(arr)
 
 
@@ -246,7 +257,9 @@ def test_image_small_arctic_P(test_area_tiny_stereographic_wgs84):
             "name": "test-small-arctic",
             "start_time": datetime.datetime(2027, 8, 2, 8, 20),
             "area": test_area_tiny_stereographic_wgs84,
-            "mode": "P"})
+            "mode": "P",
+        },
+    )
     return to_image(arr)
 
 
@@ -261,7 +274,9 @@ def test_image_northpole(test_area_northpole):
             "name": "test-northpole",
             "start_time": datetime.datetime(1926, 5, 12, 0),
             "area": test_area_northpole,
-            "mode": "L"})
+            "mode": "L",
+        },
+    )
     return get_enhanced_image(arr)
 
 
@@ -276,7 +291,9 @@ def test_image_weird(test_area_weird):
             "name": "interrupted image",
             "start_time": datetime.datetime(1970, 1, 1),
             "area": test_area_weird,
-            "mode": "LA"})
+            "mode": "LA",
+        },
+    )
     return get_enhanced_image(da)
 
 
@@ -291,7 +308,9 @@ def test_image_rgba_merc(test_area_merc):
             "name": "test-rgba",
             "start_time": datetime.datetime(2013, 2, 22, 12, 0),
             "area": test_area_merc,
-            "mode": "RGBA"})
+            "mode": "RGBA",
+        },
+    )
     return get_enhanced_image(arr)
 
 
@@ -306,7 +325,9 @@ def test_image_cmyk_antarctic(test_area_tiny_antarctic):
             "name": "test-cmyk",
             "start_time": datetime.datetime(2065, 11, 22, 11),
             "area": test_area_tiny_antarctic,
-            "mode": "CMYK"})
+            "mode": "CMYK",
+        },
+    )
     return get_enhanced_image(arr)
 
 
@@ -321,7 +342,9 @@ def test_image_latlon(test_area_epsg4326):
             "name": "test-latlon",
             "start_time": datetime.datetime(2001, 1, 1, 0),
             "area": test_area_epsg4326,
-            "mode": "L"})
+            "mode": "L",
+        },
+    )
     return get_enhanced_image(arr)
 
 
@@ -329,138 +352,156 @@ def test_image_latlon(test_area_epsg4326):
 def ntg1(test_image_small_mid_atlantic_L):
     """Create instance of NinJoTagGenerator class."""
     from satpy.writers.ninjogeotiff import NinJoTagGenerator
+
     return NinJoTagGenerator(
-            test_image_small_mid_atlantic_L,
-            255,
-            "quinoa.tif",
-            ChannelID=900015,
-            DataType="GORN",
-            PhysicUnit="C",
-            PhysicValue="Temperature",
-            SatelliteNameID=6400014,
-            DataSource="dowsing rod")
+        test_image_small_mid_atlantic_L,
+        255,
+        "quinoa.tif",
+        ChannelID=900015,
+        DataType="GORN",
+        PhysicUnit="C",
+        PhysicValue="Temperature",
+        SatelliteNameID=6400014,
+        DataSource="dowsing rod",
+    )
 
 
 @pytest.fixture(scope="module")
 def ntg2(test_image_large_asia_RGB):
     """Create instance of NinJoTagGenerator class."""
     from satpy.writers.ninjogeotiff import NinJoTagGenerator
+
     return NinJoTagGenerator(
-            test_image_large_asia_RGB,
-            0,
-            "seitan.tif",
-            ChannelID=1000015,
-            DataType="GORN",
-            PhysicUnit="N/A",
-            PhysicValue="N/A",
-            SatelliteNameID=6400014)
+        test_image_large_asia_RGB,
+        0,
+        "seitan.tif",
+        ChannelID=1000015,
+        DataType="GORN",
+        PhysicUnit="N/A",
+        PhysicValue="N/A",
+        SatelliteNameID=6400014,
+    )
 
 
 @pytest.fixture(scope="module")
 def ntg3(test_image_small_arctic_P):
     """Create instance of NinJoTagGenerator class."""
     from satpy.writers.ninjogeotiff import NinJoTagGenerator
+
     return NinJoTagGenerator(
-            test_image_small_arctic_P,
-            255,
-            "spelt.tif",
-            ChannelID=800012,
-            DataType="PPRN",
-            PhysicUnit="N/A",
-            PhysicValue="N/A",
-            SatelliteNameID=6500014,
-            OverFlightTime=42)
+        test_image_small_arctic_P,
+        255,
+        "spelt.tif",
+        ChannelID=800012,
+        DataType="PPRN",
+        PhysicUnit="N/A",
+        PhysicValue="N/A",
+        SatelliteNameID=6500014,
+        OverFlightTime=42,
+    )
 
 
 @pytest.fixture(scope="module")
 def ntg_northpole(test_image_northpole):
     """Create NinJoTagGenerator with north pole image."""
     from satpy.writers.ninjogeotiff import NinJoTagGenerator
+
     return NinJoTagGenerator(
-            test_image_northpole,
-            255,
-            "lentils.tif",
-            ChannelID=900012,
-            DataType="PORN",
-            PhysicUnit="Temperature",
-            PhysicValue="K",
-            SatelliteNameID=7500014)
+        test_image_northpole,
+        255,
+        "lentils.tif",
+        ChannelID=900012,
+        DataType="PORN",
+        PhysicUnit="Temperature",
+        PhysicValue="K",
+        SatelliteNameID=7500014,
+    )
 
 
 @pytest.fixture(scope="module")
 def ntg_weird(test_image_weird):
     """Create NinJoTagGenerator instance with weird image."""
     from satpy.writers.ninjogeotiff import NinJoTagGenerator
+
     return NinJoTagGenerator(
-            test_image_weird,
-            12,
-            "tempeh.tif",
-            ChannelID=800012,
-            DataType="PPRN",
-            PhysicUnit="N/A",
-            PhysicValue="N/A",
-            SatelliteNameID=6500014)
+        test_image_weird,
+        12,
+        "tempeh.tif",
+        ChannelID=800012,
+        DataType="PPRN",
+        PhysicUnit="N/A",
+        PhysicValue="N/A",
+        SatelliteNameID=6500014,
+    )
 
 
 @pytest.fixture(scope="module")
 def ntg_no_fill_value(test_image_small_mid_atlantic_L):
     """Create instance of NinJoTagGenerator class."""
     from satpy.writers.ninjogeotiff import NinJoTagGenerator
+
     return NinJoTagGenerator(
-            test_image_small_mid_atlantic_L,
-            None,
-            "bulgur.tif",
-            ChannelID=900015,
-            DataType="GORN",
-            PhysicUnit="C",
-            PhysicValue="Temperature",
-            SatelliteNameID=6400014,
-            DataSource="dowsing rod")
+        test_image_small_mid_atlantic_L,
+        None,
+        "bulgur.tif",
+        ChannelID=900015,
+        DataType="GORN",
+        PhysicUnit="C",
+        PhysicValue="Temperature",
+        SatelliteNameID=6400014,
+        DataSource="dowsing rod",
+    )
 
 
 @pytest.fixture(scope="module")
 def ntg_rgba(test_image_rgba_merc):
     """Create NinJoTagGenerator instance with RGBA image."""
     from satpy.writers.ninjogeotiff import NinJoTagGenerator
+
     return NinJoTagGenerator(
-            test_image_rgba_merc,
-            12,
-            "soy.tif",
-            ChannelID=800042,
-            DataType="GORN",
-            PhysicUnit="N/A",
-            PhysicValue="N/A",
-            SatelliteNameID=6500014)
+        test_image_rgba_merc,
+        12,
+        "soy.tif",
+        ChannelID=800042,
+        DataType="GORN",
+        PhysicUnit="N/A",
+        PhysicValue="N/A",
+        SatelliteNameID=6500014,
+    )
 
 
 @pytest.fixture(scope="module")
 def ntg_cmyk(test_image_cmyk_antarctic):
     """Create NinJoTagGenerator instance with CMYK image."""
     from satpy.writers.ninjogeotiff import NinJoTagGenerator
+
     return NinJoTagGenerator(
-            test_image_cmyk_antarctic,
-            0,
-            "tvp.tif",
-            ChannelID=123042,
-            DataType="PPRN",
-            PhysicUnit="N/A",
-            PhysicValue="N/A",
-            SatelliteNameID=6500014)
+        test_image_cmyk_antarctic,
+        0,
+        "tvp.tif",
+        ChannelID=123042,
+        DataType="PPRN",
+        PhysicUnit="N/A",
+        PhysicValue="N/A",
+        SatelliteNameID=6500014,
+    )
 
 
 @pytest.fixture(scope="module")
 def ntg_latlon(test_image_latlon):
     """Create NinJoTagGenerator with latlon-area image."""
     from satpy.writers.ninjogeotiff import NinJoTagGenerator
+
     return NinJoTagGenerator(
-            test_image_latlon,
-            0,
-            "latlon.tif",
-            ChannelID=123456,
-            DataType="GORN",
-            PhysicUnit="%",
-            PhysicValue="Reflectance",
-            SatelliteNameID=654321)
+        test_image_latlon,
+        0,
+        "latlon.tif",
+        ChannelID=123456,
+        DataType="GORN",
+        PhysicUnit="%",
+        PhysicValue="Reflectance",
+        SatelliteNameID=654321,
+    )
 
 
 @pytest.fixture
@@ -474,10 +515,9 @@ def patch_datetime_now(monkeypatch):
         @classmethod
         def now(cls, tz=datetime.timezone.utc):
             """Drop-in replacement for datetime.datetime.now."""
-            return datetime.datetime(2033, 5, 18, 3, 33, 20,
-                                     tzinfo=tz)
+            return datetime.datetime(2033, 5, 18, 3, 33, 20, tzinfo=tz)
 
-    monkeypatch.setattr(datetime, 'datetime', mydatetime)
+    monkeypatch.setattr(datetime, "datetime", mydatetime)
 
 
 def test_write_and_read_file(test_image_small_mid_atlantic_L, tmp_path):
@@ -485,6 +525,7 @@ def test_write_and_read_file(test_image_small_mid_atlantic_L, tmp_path):
     import rasterio
 
     from satpy.writers.ninjogeotiff import NinJoGeoTIFFWriter
+
     fn = os.fspath(tmp_path / "test.tif")
     ngtw = NinJoGeoTIFFWriter()
     ngtw.save_dataset(
@@ -500,15 +541,14 @@ def test_write_and_read_file(test_image_small_mid_atlantic_L, tmp_path):
         SatelliteNameID=6400014,
         ChannelID=900015,
         DataType="GORN",
-        DataSource="dowsing rod")
+        DataSource="dowsing rod",
+    )
     src = rasterio.open(fn)
     tgs = src.tags()
     assert tgs["ninjo_FileName"] == fn
     assert tgs["ninjo_DataSource"] == "dowsing rod"
-    np.testing.assert_allclose(float(tgs["ninjo_Gradient"]),
-                               0.46771654391851947)
-    np.testing.assert_allclose(float(tgs["ninjo_AxisIntercept"]),
-                               -79.86771951938239)
+    np.testing.assert_allclose(float(tgs["ninjo_Gradient"]), 0.46771654391851947)
+    np.testing.assert_allclose(float(tgs["ninjo_AxisIntercept"]), -79.86771951938239)
 
 
 def test_write_and_read_file_RGB(test_image_large_asia_RGB, tmp_path):
@@ -516,6 +556,7 @@ def test_write_and_read_file_RGB(test_image_large_asia_RGB, tmp_path):
     import rasterio
 
     from satpy.writers.ninjogeotiff import NinJoGeoTIFFWriter
+
     fn = os.fspath(tmp_path / "test.tif")
     ngtw = NinJoGeoTIFFWriter()
     ngtw.save_dataset(
@@ -527,7 +568,8 @@ def test_write_and_read_file_RGB(test_image_large_asia_RGB, tmp_path):
         SatelliteNameID=6400014,
         ChannelID=900015,
         DataType="GORN",
-        DataSource="dowsing rod")
+        DataSource="dowsing rod",
+    )
     src = rasterio.open(fn)
     tgs = src.tags()
     assert tgs["ninjo_FileName"] == fn
@@ -542,6 +584,7 @@ def test_write_and_read_file_LA(test_image_latlon, tmp_path):
     import rasterio
 
     from satpy.writers.ninjogeotiff import NinJoGeoTIFFWriter
+
     fn = os.fspath(tmp_path / "test.tif")
     ngtw = NinJoGeoTIFFWriter()
     ngtw.save_dataset(
@@ -553,7 +596,8 @@ def test_write_and_read_file_LA(test_image_latlon, tmp_path):
         SatelliteNameID=6400014,
         ChannelID=900015,
         DataType="GORN",
-        DataSource="dowsing rod")
+        DataSource="dowsing rod",
+    )
     src = rasterio.open(fn)
     assert len(src.indexes) == 2  # mode LA
     tgs = src.tags()
@@ -571,6 +615,7 @@ def test_write_and_read_file_P(test_image_small_arctic_P, tmp_path):
     from trollimage.colormap import Colormap
 
     from satpy.writers.ninjogeotiff import NinJoGeoTIFFWriter
+
     fn = os.fspath(tmp_path / "test.tif")
     ngtw = NinJoGeoTIFFWriter()
     ngtw.save_image(
@@ -584,7 +629,8 @@ def test_write_and_read_file_P(test_image_small_arctic_P, tmp_path):
         DataType="PPRN",
         DataSource="dowsing rod",
         keep_palette=True,
-        cmap=Colormap(*enumerate(zip(*([np.linspace(0, 1, 256)]*3)))))
+        cmap=Colormap(*enumerate(zip(*([np.linspace(0, 1, 256)] * 3)))),
+    )
     src = rasterio.open(fn)
     assert len(src.indexes) == 1  # mode P
     assert src.colorinterp[0] == rasterio.enums.ColorInterp.palette
@@ -595,12 +641,12 @@ def test_write_and_read_file_P(test_image_small_arctic_P, tmp_path):
     assert "ninjo_AxisIntercept" not in tgs
 
 
-def test_write_and_read_file_units(
-        test_image_small_mid_atlantic_K_L, tmp_path, caplog):
+def test_write_and_read_file_units(test_image_small_mid_atlantic_K_L, tmp_path, caplog):
     """Test that it writes a GeoTIFF with the appropriate NinJo-tags and units."""
     import rasterio
 
     from satpy.writers.ninjogeotiff import NinJoGeoTIFFWriter
+
     fn = os.fspath(tmp_path / "test.tif")
     ngtw = NinJoGeoTIFFWriter()
     with caplog.at_level(logging.DEBUG):
@@ -617,7 +663,8 @@ def test_write_and_read_file_units(
             SatelliteNameID=6400014,
             ChannelID=900015,
             DataType="GORN",
-            DataSource="dowsing rod")
+            DataSource="dowsing rod",
+        )
     assert "Adding offset for K → °C conversion" in caplog.text
     # a better test would be to check that the attributes haven't changed at
     # all, but that currently fails due to
@@ -627,10 +674,8 @@ def test_write_and_read_file_units(
     tgs = src.tags()
     assert tgs["ninjo_FileName"] == fn
     assert tgs["ninjo_DataSource"] == "dowsing rod"
-    np.testing.assert_allclose(float(tgs["ninjo_Gradient"]),
-                               0.467717, rtol=1e-5)
-    np.testing.assert_allclose(float(tgs["ninjo_AxisIntercept"]),
-                               -79.86771)
+    np.testing.assert_allclose(float(tgs["ninjo_Gradient"]), 0.467717, rtol=1e-5)
+    np.testing.assert_allclose(float(tgs["ninjo_AxisIntercept"]), -79.86771)
     fn2 = os.fspath(tmp_path / "test2.tif")
     with caplog.at_level(logging.WARNING):
         ngtw.save_dataset(
@@ -646,19 +691,18 @@ def test_write_and_read_file_units(
             SatelliteNameID=6400014,
             ChannelID=900015,
             DataType="GORN",
-            DataSource="dowsing rod")
-    assert ("Writing F to ninjogeotiff headers, but "
-            "data attributes have unit K. "
-            "No conversion applied.") in caplog.text
+            DataSource="dowsing rod",
+        )
+    assert "Writing F to ninjogeotiff headers, but data attributes have unit K. No conversion applied." in caplog.text
 
 
 @pytest.mark.parametrize("unit", ["N/A", "1", ""])
-def test_write_and_read_no_quantity(
-        test_image_small_mid_atlantic_L_no_quantity, tmp_path, unit):
+def test_write_and_read_no_quantity(test_image_small_mid_atlantic_L_no_quantity, tmp_path, unit):
     """Test that no scale/offset written if no valid units present."""
     import rasterio
 
     from satpy.writers.ninjogeotiff import NinJoGeoTIFFWriter
+
     fn = os.fspath(tmp_path / "test.tif")
     ngtw = NinJoGeoTIFFWriter()
     ngtw.save_dataset(
@@ -673,7 +717,8 @@ def test_write_and_read_no_quantity(
         SatelliteNameID=6400014,
         ChannelID=900015,
         DataType="GORN",
-        DataSource="dowsing rod")
+        DataSource="dowsing rod",
+    )
     src = rasterio.open(fn)
     tgs = src.tags()
     assert "ninjo_Gradient" not in tgs.keys()
@@ -688,6 +733,7 @@ def test_write_and_read_via_scene(test_image_small_mid_atlantic_L, tmp_path):
     this way (the regular way).
     """
     import rasterio
+
     sc = Scene()
     fn = os.fspath(tmp_path / "test-{name}.tif")
     sc["montanha-do-pico"] = test_image_small_mid_atlantic_L.data
@@ -700,7 +746,8 @@ def test_write_and_read_via_scene(test_image_small_mid_atlantic_L, tmp_path):
         PhysicValue="Temperature",
         SatelliteNameID=6400014,
         ChannelID=900015,
-        DataType="GORN")
+        DataType="GORN",
+    )
     src = rasterio.open(tmp_path / "test-montanha-do-pico.tif")
     tgs = src.tags()
     assert tgs["ninjo_FileName"] == os.fspath(tmp_path / "test-montanha-do-pico.tif")
@@ -711,24 +758,15 @@ def test_get_all_tags(ntg1, ntg3, ntg_latlon, ntg_northpole, caplog):
     # test that passed, dynamic, and mandatory tags are all included, and
     # nothing more
     t1 = ntg1.get_all_tags()
-    assert set(t1.keys()) == (
-            ntg1.fixed_tags.keys() |
-            ntg1.passed_tags |
-            ntg1.dynamic_tags.keys() |
-            {"DataSource"})
+    assert set(t1.keys()) == (ntg1.fixed_tags.keys() | ntg1.passed_tags | ntg1.dynamic_tags.keys() | {"DataSource"})
     # test that when extra tag is passed this is also included
     t3 = ntg3.get_all_tags()
-    assert t3.keys() == (
-            ntg3.fixed_tags.keys() |
-            ntg3.passed_tags |
-            ntg3.dynamic_tags.keys() |
-            {"OverFlightTime"})
+    assert t3.keys() == (ntg3.fixed_tags.keys() | ntg3.passed_tags | ntg3.dynamic_tags.keys() | {"OverFlightTime"})
     assert t3["OverFlightTime"] == 42
     # test that CentralMeridian skipped and warning logged
     with caplog.at_level(logging.DEBUG):
         t_latlon = ntg_latlon.get_all_tags()
-    assert ("Unable to obtain value for optional NinJo tag CentralMeridian"
-            in caplog.text)
+    assert "Unable to obtain value for optional NinJo tag CentralMeridian" in caplog.text
     assert "CentralMeridian" not in t_latlon.keys()
     t_northpole = ntg_northpole.get_all_tags()
     assert "CentralMeridian" not in t_northpole.keys()
@@ -878,8 +916,7 @@ def test_get_meridian_west(ntg1, ntg2, ntg3):
     np.testing.assert_allclose(ntg3.get_meridian_west(), 81.84837557075694)
 
 
-def test_get_projection(ntg1, ntg2, ntg3, ntg_weird, ntg_rgba, ntg_cmyk,
-                        ntg_latlon):
+def test_get_projection(ntg1, ntg2, ntg3, ntg_weird, ntg_rgba, ntg_cmyk, ntg_latlon):
     """Test getting projection string."""
     assert ntg1.get_projection() == "PLAT"
     assert ntg2.get_projection() == "PLAT"
@@ -945,6 +982,7 @@ def test_get_ymax(ntg1, ntg2, ntg3):
 def test_create_unknown_tags(test_image_small_arctic_P):
     """Test that unknown tags raise ValueError."""
     from satpy.writers.ninjogeotiff import NinJoTagGenerator
+
     with pytest.raises(ValueError):
         NinJoTagGenerator(
             test_image_small_arctic_P,
@@ -955,12 +993,14 @@ def test_create_unknown_tags(test_image_small_arctic_P):
             PhysicUnit="N/A",
             PhysicValue="N/A",
             SatelliteNameID=6500014,
-            Locatie="Hozomeen")
+            Locatie="Hozomeen",
+        )
 
 
 def test_str_ids(test_image_small_arctic_P):
     """Test that channel and satellit IDs can be str."""
     from satpy.writers.ninjogeotiff import NinJoTagGenerator
+
     NinJoTagGenerator(
         test_image_small_arctic_P,
         42,
@@ -969,4 +1009,5 @@ def test_str_ids(test_image_small_arctic_P):
         DataType="GPRN",
         PhysicUnit="N/A",
         PhysicValue="N/A",
-        SatelliteNameID="trollsat")
+        SatelliteNameID="trollsat",
+    )

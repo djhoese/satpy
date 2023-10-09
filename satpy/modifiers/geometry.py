@@ -47,17 +47,18 @@ class SunZenithCorrectorBase(ModifierBase):
 
     def __call__(self, projectables, **info):
         """Generate the composite."""
-        projectables = self.match_data_arrays(list(projectables) + list(info.get('optional_datasets', [])))
+        projectables = self.match_data_arrays(list(projectables) + list(info.get("optional_datasets", [])))
         vis = projectables[0]
         if vis.attrs.get("sunz_corrected"):
             logger.debug("Sun zenith correction already applied")
             return vis
 
         logger.debug("Applying sun zen correction")
-        if not info.get('optional_datasets'):
+        if not info.get("optional_datasets"):
             # we were not given SZA, generate cos(SZA)
             logger.debug("Computing sun zenith angles.")
             from .angles import get_cos_sza
+
             coszen = get_cos_sza(vis)
             if self.max_sza is not None:
                 coszen = coszen.where(coszen >= self.max_sza_cos)
@@ -96,7 +97,7 @@ class SunZenithCorrector(SunZenithCorrectorBase):
 
     """
 
-    def __init__(self, correction_limit=88., **kwargs):
+    def __init__(self, correction_limit=88.0, **kwargs):
         """Collect custom configuration values.
 
         Args:
@@ -142,7 +143,7 @@ class EffectiveSolarPathLengthCorrector(SunZenithCorrectorBase):
 
     """
 
-    def __init__(self, correction_limit=88., **kwargs):
+    def __init__(self, correction_limit=88.0, **kwargs):
         """Collect custom configuration values.
 
         Args:

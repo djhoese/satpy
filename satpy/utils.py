@@ -130,14 +130,14 @@ def logging_on(level=logging.WARNING):
 
     if not _is_logging_on:
         console = logging.StreamHandler()
-        console.setFormatter(logging.Formatter("[%(levelname)s: %(asctime)s :"
-                                               " %(name)s] %(message)s",
-                                               '%Y-%m-%d %H:%M:%S'))
+        console.setFormatter(
+            logging.Formatter("[%(levelname)s: %(asctime)s : %(name)s] %(message)s", "%Y-%m-%d %H:%M:%S")
+        )
         console.setLevel(level)
-        logging.getLogger('').addHandler(console)
+        logging.getLogger("").addHandler(console)
         _is_logging_on = True
 
-    log = logging.getLogger('')
+    log = logging.getLogger("")
     log.setLevel(level)
     for h in log.handlers:
         h.setLevel(level)
@@ -145,13 +145,13 @@ def logging_on(level=logging.WARNING):
 
 def logging_off():
     """Turn logging off."""
-    logging.getLogger('').handlers = [logging.NullHandler()]
+    logging.getLogger("").handlers = [logging.NullHandler()]
 
 
 def get_logger(name):
     """Return logger with null handler added if needed."""
-    if not hasattr(logging.Logger, 'trace'):
-        logging.addLevelName(TRACE_LEVEL, 'TRACE')
+    if not hasattr(logging.Logger, "trace"):
+        logging.addLevelName(TRACE_LEVEL, "TRACE")
 
         def trace(self, message, *args, **kwargs):
             if self.isEnabledFor(TRACE_LEVEL):
@@ -167,7 +167,7 @@ def get_logger(name):
 def in_ipynb():
     """Check if we are in a jupyter notebook."""
     try:
-        return 'ZMQ' in get_ipython().__class__.__name__
+        return "ZMQ" in get_ipython().__class__.__name__
     except NameError:
         return False
 
@@ -216,7 +216,7 @@ def xyz2lonlat(x, y, z, asin=False):
     if asin:
         lat = np.rad2deg(np.arcsin(z))
     else:
-        lat = np.rad2deg(np.arctan2(z, np.sqrt(x ** 2 + y ** 2)))
+        lat = np.rad2deg(np.arctan2(z, np.sqrt(x**2 + y**2)))
     return lon, lat
 
 
@@ -236,7 +236,7 @@ def xyz2angle(x, y, z, acos=False):
     if acos:
         zen = np.rad2deg(np.arccos(z))
     else:
-        zen = 90 - np.rad2deg(np.arctan2(z, np.sqrt(x ** 2 + y ** 2)))
+        zen = 90 - np.rad2deg(np.arctan2(z, np.sqrt(x**2 + y**2)))
     return azi, zen
 
 
@@ -245,27 +245,27 @@ def proj_units_to_meters(proj_str):
     proj_parts = proj_str.split()
     new_parts = []
     for itm in proj_parts:
-        key, val = itm.split('=')
-        key = key.strip('+')
-        if key in ['a', 'b', 'h']:
+        key, val = itm.split("=")
+        key = key.strip("+")
+        if key in ["a", "b", "h"]:
             val = float(val)
             if val < 6e6:
-                val *= 1000.
-                val = '%.3f' % val
+                val *= 1000.0
+                val = "%.3f" % val
 
-        if key == 'units' and val == 'km':
+        if key == "units" and val == "km":
             continue
 
-        new_parts.append('+%s=%s' % (key, val))
+        new_parts.append("+%s=%s" % (key, val))
 
-    return ' '.join(new_parts)
+    return " ".join(new_parts)
 
 
 def _get_sunz_corr_li_and_shibata(cos_zen):
-    return 24.35 / (2. * cos_zen + np.sqrt(498.5225 * cos_zen**2 + 1))
+    return 24.35 / (2.0 * cos_zen + np.sqrt(498.5225 * cos_zen**2 + 1))
 
 
-def atmospheric_path_length_correction(data, cos_zen, limit=88., max_sza=95.):
+def atmospheric_path_length_correction(data, cos_zen, limit=88.0, max_sza=95.0):
     """Perform Sun zenith angle correction.
 
     This function uses the correction method proposed by
@@ -293,12 +293,12 @@ def atmospheric_path_length_correction(data, cos_zen, limit=88., max_sza=95.):
         # gradually fall off for larger zenith angle
         grad_factor = (np.arccos(cos_zen) - limit_rad) / (max_sza_rad - limit_rad)
         # invert the factor so maximum correction is done at `limit` and falls off later
-        grad_factor = 1. - np.log(grad_factor + 1) / np.log(2)
+        grad_factor = 1.0 - np.log(grad_factor + 1) / np.log(2)
         # make sure we don't make anything negative
-        grad_factor = grad_factor.clip(0.)
+        grad_factor = grad_factor.clip(0.0)
     else:
         # Use constant value (the limit) for larger zenith angles
-        grad_factor = 1.
+        grad_factor = 1.0
     corr = corr.where(cos_zen > limit_cos, grad_factor * corr_lim)
     # Force "night" pixels to 0 (where SZA is invalid)
     corr = corr.where(cos_zen.notnull(), 0)
@@ -307,9 +307,7 @@ def atmospheric_path_length_correction(data, cos_zen, limit=88., max_sza=95.):
 
 
 def get_satpos(
-        data_arr: xr.DataArray,
-        preference: Optional[str] = None,
-        use_tle: bool = False
+    data_arr: xr.DataArray, preference: Optional[str] = None, use_tle: bool = False
 ) -> tuple[float, float, float]:
     """Get satellite position from dataset attributes.
 
@@ -349,12 +347,14 @@ def get_satpos(
     except KeyError:
         if use_tle:
             logger.warning(
-                    "Orbital parameters missing from metadata.  "
-                    "Calculating from TLE using skyfield and astropy.")
+                "Orbital parameters missing from metadata.  Calculating from TLE using skyfield and astropy."
+            )
             return _get_satpos_from_platform_name(data_arr)
-        raise KeyError("Unable to determine satellite position. Either the "
-                       "reader doesn't provide that information or "
-                       "geolocation datasets were not available.")
+        raise KeyError(
+            "Unable to determine satellite position. Either the "
+            "reader doesn't provide that information or "
+            "geolocation datasets were not available."
+        )
     return lon, lat, alt
 
 
@@ -373,11 +373,8 @@ def _get_sat_altitude(data_arr, key_prefixes):
     try:
         alt = _get_first_available_item(orb_params, alt_keys)
     except KeyError:
-        alt = orb_params['projection_altitude']
-        warnings.warn(
-            'Actual satellite altitude not available, using projection altitude instead.',
-            stacklevel=3
-        )
+        alt = orb_params["projection_altitude"]
+        warnings.warn("Actual satellite altitude not available, using projection altitude instead.", stacklevel=3)
     return alt
 
 
@@ -389,12 +386,9 @@ def _get_sat_lonlat(data_arr, key_prefixes):
         lon = _get_first_available_item(orb_params, lon_keys)
         lat = _get_first_available_item(orb_params, lat_keys)
     except KeyError:
-        lon = orb_params['projection_longitude']
-        lat = orb_params['projection_latitude']
-        warnings.warn(
-            'Actual satellite lon/lat not available, using projection center instead.',
-            stacklevel=3
-        )
+        lon = orb_params["projection_longitude"]
+        lat = orb_params["projection_latitude"]
+        warnings.warn("Actual satellite lon/lat not available, using projection center instead.", stacklevel=3)
     return lon, lat
 
 
@@ -415,8 +409,7 @@ def _get_satpos_from_platform_name(cth_dataset):
     tle = tlefile.read(name)
     es = EarthSatellite(tle.line1, tle.line2, name)
     ts = load.timescale()
-    gc = es.at(ts.from_datetime(
-        cth_dataset.attrs["start_time"].replace(tzinfo=datetime.timezone.utc)))
+    gc = es.at(ts.from_datetime(cth_dataset.attrs["start_time"].replace(tzinfo=datetime.timezone.utc)))
     (lat, lon) = wgs84.latlon_of(gc)
     height = wgs84.height_of(gc).to("km")
     return (lon.degrees, lat.degrees, height.value)
@@ -456,21 +449,21 @@ def _check_yaml_configs(configs, key):
     diagnostic = {}
     for i in configs:
         for fname in i:
-            msg = 'ok'
+            msg = "ok"
             res = None
-            with open(fname, 'r', encoding='utf-8') as stream:
+            with open(fname, "r", encoding="utf-8") as stream:
                 try:
                     res = yaml.load(stream, Loader=UnsafeLoader)
                 except yaml.YAMLError as err:
                     stream.seek(0)
                     res = yaml.load(stream, Loader=BaseLoader)
-                    if err.context == 'while constructing a Python object':
+                    if err.context == "while constructing a Python object":
                         msg = err.problem
                     else:
-                        msg = 'error'
+                        msg = "error"
                 finally:
                     try:
-                        diagnostic[res[key]['name']] = msg
+                        diagnostic[res[key]["name"]] = msg
                     except (KeyError, TypeError):
                         # this object doesn't have a 'name'
                         pass
@@ -483,7 +476,7 @@ def _check_import(module_names):
     for module_name in module_names:
         try:
             __import__(module_name)
-            res = 'ok'
+            res = "ok"
         except ImportError as err:
             res = str(err)
         diagnostics[module_name] = res
@@ -505,23 +498,23 @@ def check_satpy(readers=None, writers=None, extras=None):
     from satpy.readers import configs_for_reader
     from satpy.writers import configs_for_writer
 
-    print('Readers')
-    print('=======')
-    for reader, res in sorted(_check_yaml_configs(configs_for_reader(reader=readers), 'reader').items()):
-        print(reader + ': ', res)
+    print("Readers")
+    print("=======")
+    for reader, res in sorted(_check_yaml_configs(configs_for_reader(reader=readers), "reader").items()):
+        print(reader + ": ", res)
     print()
 
-    print('Writers')
-    print('=======')
-    for writer, res in sorted(_check_yaml_configs(configs_for_writer(writer=writers), 'writer').items()):
-        print(writer + ': ', res)
+    print("Writers")
+    print("=======")
+    for writer, res in sorted(_check_yaml_configs(configs_for_writer(writer=writers), "writer").items()):
+        print(writer + ": ", res)
     print()
 
-    print('Extras')
-    print('======')
-    module_names = extras if extras is not None else ('cartopy', 'geoviews')
+    print("Extras")
+    print("======")
+    module_names = extras if extras is not None else ("cartopy", "geoviews")
     for module_name, res in sorted(_check_import(module_names).items()):
-        print(module_name + ': ', res)
+        print(module_name + ": ", res)
     print()
 
 
@@ -600,7 +593,7 @@ def _get_chunk_pixel_size():
     """Compute the maximum chunk size from PYTROLL_CHUNK_SIZE."""
     legacy_chunk_size = _get_pytroll_chunk_size()
     if legacy_chunk_size is not None:
-        return legacy_chunk_size ** 2
+        return legacy_chunk_size**2
 
 
 def get_legacy_chunk_size():
@@ -621,12 +614,12 @@ def get_legacy_chunk_size():
 
 def _get_pytroll_chunk_size():
     try:
-        chunk_size = int(os.environ['PYTROLL_CHUNK_SIZE'])
+        chunk_size = int(os.environ["PYTROLL_CHUNK_SIZE"])
         warnings.warn(
             "The PYTROLL_CHUNK_SIZE environment variable is pending deprecation. "
             "You can use the dask config setting `array.chunk-size` (or the DASK_ARRAY__CHUNK_SIZE environment"
             " variable) and set it to the square of the PYTROLL_CHUNK_SIZE instead.",
-            stacklevel=2
+            stacklevel=2,
         )
         return chunk_size
     except KeyError:
@@ -634,11 +627,11 @@ def _get_pytroll_chunk_size():
 
 
 def normalize_low_res_chunks(
-        chunks: tuple[int | Literal["auto"], ...],
-        input_shape: tuple[int, ...],
-        previous_chunks: tuple[int, ...],
-        low_res_multipliers: tuple[int, ...],
-        input_dtype: DTypeLike,
+    chunks: tuple[int | Literal["auto"], ...],
+    input_shape: tuple[int, ...],
+    previous_chunks: tuple[int, ...],
+    low_res_multipliers: tuple[int, ...],
+    input_dtype: DTypeLike,
 ) -> tuple[int, ...]:
     """Compute dask chunk sizes based on data resolution.
 
@@ -699,9 +692,7 @@ def normalize_low_res_chunks(
     )
     low_res_chunks: list[int] = []
     for req_chunks, hr_chunks, prev_chunks, lr_mult in zip(
-            chunks,
-            chunks_for_high_res,
-            previous_chunks, low_res_multipliers
+        chunks, chunks_for_high_res, previous_chunks, low_res_multipliers
     ):
         if req_chunks != "auto":
             low_res_chunks.append(req_chunks)
@@ -747,7 +738,7 @@ def _sort_files_to_local_remote_and_fsfiles(filenames):
             fs_files.append(f)
         elif isinstance(f, pathlib.Path):
             local_files.append(f)
-        elif urlparse(f).scheme in ('', 'file') or "\\" in f:
+        elif urlparse(f).scheme in ("", "file") or "\\" in f:
             local_files.append(f)
         else:
             remote_files.append(f)
@@ -788,7 +779,7 @@ def _get_storage_dictionary_options(reader_kwargs):
             # set base storage options if there are any
             storage_opt_dict[reader_name] = shared_storage_options.copy()
         if isinstance(rkwargs, dict) and "storage_options" in rkwargs:
-            storage_opt_dict.setdefault(reader_name, {}).update(rkwargs.pop('storage_options'))
+            storage_opt_dict.setdefault(reader_name, {}).update(rkwargs.pop("storage_options"))
     return storage_opt_dict
 
 
@@ -814,11 +805,12 @@ def find_in_ancillary(data, dataset):
     cnt = len(matches)
     if cnt < 1:
         raise ValueError(
-            f"Could not find dataset named {dataset:s} in ancillary "
-            f"variables for dataset {data.attrs.get('name')!r}")
+            f"Could not find dataset named {dataset:s} in ancillary variables for dataset {data.attrs.get('name')!r}"
+        )
     if cnt > 1:
         raise ValueError(
             f"Expected exactly one dataset named {dataset:s} in ancillary "
             f"variables for dataset {data.attrs.get('name')!r}, "
-            f"found {cnt:d}")
+            f"found {cnt:d}"
+        )
     return matches[0]

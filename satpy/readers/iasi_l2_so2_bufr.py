@@ -96,14 +96,16 @@ try:
 except ImportError as e:
     raise ImportError(
         """Missing eccodes-python and/or eccodes C-library installation. Use conda to install eccodes.
-           Error: """, e)
+           Error: """,
+        e,
+    )
 
 from satpy.readers.file_handlers import BaseFileHandler
 from satpy.utils import get_legacy_chunk_size
 
-logger = logging.getLogger('IASIL2SO2BUFR')
+logger = logging.getLogger("IASIL2SO2BUFR")
 CHUNK_SIZE = get_legacy_chunk_size()
-data_center_dict = {3: 'METOP-1', 4: 'METOP-2', 5: 'METOP-3'}
+data_center_dict = {3: "METOP-1", 4: "METOP-2", 5: "METOP-3"}
 
 
 class IASIL2SO2BUFR(BaseFileHandler):
@@ -115,27 +117,27 @@ class IASIL2SO2BUFR(BaseFileHandler):
 
         start_time, end_time = self.get_start_end_date()
 
-        sc_id = self.get_attribute('satelliteIdentifier')
+        sc_id = self.get_attribute("satelliteIdentifier")
 
         self.metadata = {}
-        self.metadata['start_time'] = start_time
-        self.metadata['end_time'] = end_time
-        self.metadata['SpacecraftName'] = data_center_dict[sc_id]
+        self.metadata["start_time"] = start_time
+        self.metadata["end_time"] = end_time
+        self.metadata["SpacecraftName"] = data_center_dict[sc_id]
 
     @property
     def start_time(self):
         """Return the start time of data acqusition."""
-        return self.metadata['start_time']
+        return self.metadata["start_time"]
 
     @property
     def end_time(self):
         """Return the end time of data acquisition."""
-        return self.metadata['end_time']
+        return self.metadata["end_time"]
 
     @property
     def platform_name(self):
         """Return spacecraft name."""
-        return '{}'.format(self.metadata['SpacecraftName'])
+        return "{}".format(self.metadata["SpacecraftName"])
 
     def get_start_end_date(self):
         """Get the first and last date from the bufr file."""
@@ -146,13 +148,13 @@ class IASIL2SO2BUFR(BaseFileHandler):
             bufr = ec.codes_bufr_new_from_file(fh)
             if bufr is None:
                 break
-            ec.codes_set(bufr, 'unpack', 1)
-            year = ec.codes_get(bufr, 'year')
-            month = ec.codes_get(bufr, 'month')
-            day = ec.codes_get(bufr, 'day')
-            hour = ec.codes_get(bufr, 'hour')
-            minute = ec.codes_get(bufr, 'minute')
-            second = ec.codes_get(bufr, 'second')
+            ec.codes_set(bufr, "unpack", 1)
+            year = ec.codes_get(bufr, "year")
+            month = ec.codes_get(bufr, "month")
+            day = ec.codes_get(bufr, "day")
+            hour = ec.codes_get(bufr, "hour")
+            minute = ec.codes_get(bufr, "minute")
+            second = ec.codes_get(bufr, "second")
 
             obs_time = datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=second)
 
@@ -181,7 +183,7 @@ class IASIL2SO2BUFR(BaseFileHandler):
             bufr = ec.codes_bufr_new_from_file(fh)
             if bufr is None:
                 break
-            ec.codes_set(bufr, 'unpack', 1)
+            ec.codes_set(bufr, "unpack", 1)
             attr = ec.codes_get(bufr, key)
             ec.codes_release(bufr)
 
@@ -193,29 +195,26 @@ class IASIL2SO2BUFR(BaseFileHandler):
         with open(self.filename, "rb") as fh:
             msgCount = 0
             while True:
-
                 bufr = ec.codes_bufr_new_from_file(fh)
                 if bufr is None:
                     break
 
-                ec.codes_set(bufr, 'unpack', 1)
+                ec.codes_set(bufr, "unpack", 1)
 
-                values = ec.codes_get_array(
-                        bufr, key, float)
+                values = ec.codes_get_array(bufr, key, float)
 
                 if len(values) == 1:
                     values = np.repeat(values, 120)
 
                 # if is the first message initialise our final array
-                if (msgCount == 0):
-
+                if msgCount == 0:
                     arr = da.from_array([values], chunks=CHUNK_SIZE)
                 else:
                     tmpArr = da.from_array([values], chunks=CHUNK_SIZE)
 
                     arr = da.concatenate((arr, tmpArr), axis=0)
 
-                msgCount = msgCount+1
+                msgCount = msgCount + 1
                 ec.codes_release(bufr)
 
         if arr.size == 1:
@@ -225,12 +224,12 @@ class IASIL2SO2BUFR(BaseFileHandler):
 
     def get_dataset(self, dataset_id, dataset_info):
         """Get dataset using the BUFR key in dataset_info."""
-        arr = self.get_array(dataset_info['key'])
-        arr[arr == dataset_info['fill_value']] = np.nan
+        arr = self.get_array(dataset_info["key"])
+        arr[arr == dataset_info["fill_value"]] = np.nan
 
-        xarr = xr.DataArray(arr, dims=["y", "x"], name=dataset_info['name'])
-        xarr.attrs['sensor'] = 'IASI'
-        xarr.attrs['platform_name'] = self.platform_name
+        xarr = xr.DataArray(arr, dims=["y", "x"], name=dataset_info["name"])
+        xarr.attrs["sensor"] = "IASI"
+        xarr.attrs["platform_name"] = self.platform_name
         xarr.attrs.update(dataset_info)
 
         return xarr

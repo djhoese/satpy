@@ -68,24 +68,25 @@ def _generate_filename(filename, component_type):
         return None
     path = filename
     if component_type:
-        path = '/'.join([component_type, path])
+        path = "/".join([component_type, path])
     return path
 
 
 def _retrieve_offline(data_dir, cache_key):
-    logger.debug('Downloading auxiliary files is turned off, will check '
-                 'local files.')
-    local_file = os.path.join(data_dir, *cache_key.split('/'))
+    logger.debug("Downloading auxiliary files is turned off, will check local files.")
+    local_file = os.path.join(data_dir, *cache_key.split("/"))
     if not os.path.isfile(local_file):
-        raise RuntimeError("Satpy 'download_aux' setting is False meaning "
-                           "no new files will be downloaded and the local "
-                           "file '{}' does not exist.".format(local_file))
+        raise RuntimeError(
+            "Satpy 'download_aux' setting is False meaning "
+            "no new files will be downloaded and the local "
+            "file '{}' does not exist.".format(local_file)
+        )
     return local_file
 
 
 def _should_download(cache_key):
     """Check if we're running tests and can download this file."""
-    return not RUNNING_TESTS or 'README' in cache_key
+    return not RUNNING_TESTS or "README" in cache_key
 
 
 def retrieve(cache_key, pooch_kwargs=None):
@@ -107,32 +108,31 @@ def retrieve(cache_key, pooch_kwargs=None):
     """
     pooch_kwargs = pooch_kwargs or {}
 
-    path = satpy.config.get('data_dir')
-    if not satpy.config.get('download_aux'):
+    path = satpy.config.get("data_dir")
+    if not satpy.config.get("download_aux"):
         return _retrieve_offline(path, cache_key)
     if not _should_download(cache_key):
-        raise RuntimeError("Auxiliary data download is not allowed during "
-                           "tests. Mock the appropriate components of your "
-                           "tests to not need the 'retrieve' function.")
+        raise RuntimeError(
+            "Auxiliary data download is not allowed during "
+            "tests. Mock the appropriate components of your "
+            "tests to not need the 'retrieve' function."
+        )
     # reuse data directory as the default URL where files can be downloaded from
-    pooch_obj = pooch.create(path, path, registry=_FILE_REGISTRY,
-                             urls=_FILE_URLS)
+    pooch_obj = pooch.create(path, path, registry=_FILE_REGISTRY, urls=_FILE_URLS)
     return pooch_obj.fetch(cache_key, **pooch_kwargs)
 
 
 def _retrieve_all_with_pooch(pooch_kwargs):
     if pooch_kwargs is None:
         pooch_kwargs = {}
-    path = satpy.config.get('data_dir')
-    pooch_obj = pooch.create(path, path, registry=_FILE_REGISTRY,
-                             urls=_FILE_URLS)
+    path = satpy.config.get("data_dir")
+    pooch_obj = pooch.create(path, path, registry=_FILE_REGISTRY, urls=_FILE_URLS)
     for fname in _FILE_REGISTRY:
         logger.info("Downloading extra data file '%s'...", fname)
         pooch_obj.fetch(fname, **pooch_kwargs)
 
 
-def retrieve_all(readers=None, writers=None, composite_sensors=None,
-                 pooch_kwargs=None):
+def retrieve_all(readers=None, writers=None, composite_sensors=None, pooch_kwargs=None):
     """Find cache-able data files for Satpy and download them.
 
     The typical use case for this function is to download all ancillary files
@@ -153,19 +153,15 @@ def retrieve_all(readers=None, writers=None, composite_sensors=None,
             ``fetch``.
 
     """
-    if not satpy.config.get('download_aux'):
-        raise RuntimeError("Satpy 'download_aux' setting is False so no files "
-                           "will be downloaded.")
+    if not satpy.config.get("download_aux"):
+        raise RuntimeError("Satpy 'download_aux' setting is False so no files will be downloaded.")
 
-    find_registerable_files(readers=readers,
-                            writers=writers,
-                            composite_sensors=composite_sensors)
+    find_registerable_files(readers=readers, writers=writers, composite_sensors=composite_sensors)
     _retrieve_all_with_pooch(pooch_kwargs)
     logger.info("Done downloading all extra files.")
 
 
-def find_registerable_files(readers=None, writers=None,
-                            composite_sensors=None):
+def find_registerable_files(readers=None, writers=None, composite_sensors=None):
     """Load all Satpy components so they can be downloaded.
 
     Args:
@@ -194,6 +190,7 @@ def _find_registerable_files_compositors(sensors=None):
 
     """
     from satpy.composites.config_loader import all_composite_sensors, load_compositor_configs_for_sensors
+
     if sensors is None:
         sensors = all_composite_sensors()
     if sensors:
@@ -207,8 +204,7 @@ def _register_modifier_files(modifiers):
             try:
                 mod_cls(**mod_props)
             except (ValueError, RuntimeError):
-                logger.error("Could not initialize modifier '%s' for "
-                             "auxiliary download registration.", mod_name)
+                logger.error("Could not initialize modifier '%s' for auxiliary download registration.", mod_name)
 
 
 def _find_registerable_files_readers(readers=None):
@@ -216,6 +212,7 @@ def _find_registerable_files_readers(readers=None):
     import yaml
 
     from satpy.readers import configs_for_reader, load_reader
+
     for reader_configs in configs_for_reader(reader=readers):
         try:
             load_reader(reader_configs)
@@ -226,6 +223,7 @@ def _find_registerable_files_readers(readers=None):
 def _find_registerable_files_writers(writers=None):
     """Load all writers so that files are registered."""
     from satpy.writers import configs_for_writer, load_writer_configs
+
     for writer_configs in configs_for_writer(writer=writers):
         try:
             load_writer_configs(writer_configs)
@@ -305,11 +303,11 @@ class DataDownloadMixin:
     """
 
     DATA_FILE_COMPONENTS = {
-        'reader': 'readers',
-        'writer': 'writers',
-        'composit': 'composites',
-        'modifi': 'modifiers',
-        'corr': 'modifiers',
+        "reader": "readers",
+        "writer": "writers",
+        "composit": "composites",
+        "modifi": "modifiers",
+        "corr": "modifiers",
     }
 
     @property
@@ -318,7 +316,7 @@ class DataDownloadMixin:
         for cls_name_sub, comp_type in self.DATA_FILE_COMPONENTS.items():
             if cls_name_sub in cls_name:
                 return comp_type
-        return 'other'
+        return "other"
 
     def register_data_files(self, data_files=None):
         """Register a series of files that may be downloaded later.
@@ -330,8 +328,8 @@ class DataDownloadMixin:
         """
         comp_type = self._data_file_component_type
         if data_files is None:
-            df_parent = getattr(self, 'info', self.config)
-            data_files = df_parent.get('data_files', [])
+            df_parent = getattr(self, "info", self.config)
+            data_files = df_parent.get("data_files", [])
         cache_keys = []
         for data_file_entry in data_files:
             cache_key = self._register_data_file(data_file_entry, comp_type)
@@ -340,41 +338,51 @@ class DataDownloadMixin:
 
     @staticmethod
     def _register_data_file(data_file_entry, comp_type):
-        url = data_file_entry['url']
-        filename = data_file_entry.get('filename', os.path.basename(url))
-        known_hash = data_file_entry.get('known_hash')
-        return register_file(url, filename, component_type=comp_type,
-                             known_hash=known_hash)
+        url = data_file_entry["url"]
+        filename = data_file_entry.get("filename", os.path.basename(url))
+        known_hash = data_file_entry.get("known_hash")
+        return register_file(url, filename, component_type=comp_type, known_hash=known_hash)
 
 
 def retrieve_all_cmd(argv=None):
     """Call 'retrieve_all' function from console script 'satpy_retrieve_all'."""
     import argparse
+
     parser = argparse.ArgumentParser(description="Download auxiliary data files used by Satpy.")
-    parser.add_argument('--data-dir',
-                        help="Override 'SATPY_DATA_DIR' for destination of "
-                             "downloaded files. This does NOT change the "
-                             "directory Satpy will look at when searching "
-                             "for files outside of this script.")
-    parser.add_argument('--composite-sensors', nargs="*",
-                        help="Limit loaded composites for the specified "
-                             "sensors. If specified with no arguments, "
-                             "no composite files will be downloaded.")
-    parser.add_argument('--readers', nargs="*",
-                        help="Limit searching to these readers. If specified "
-                             "with no arguments, no reader files will be "
-                             "downloaded.")
-    parser.add_argument('--writers', nargs="*",
-                        help="Limit searching to these writers. If specified "
-                             "with no arguments, no writer files will be "
-                             "downloaded.")
+    parser.add_argument(
+        "--data-dir",
+        help=(
+            "Override 'SATPY_DATA_DIR' for destination of "
+            "downloaded files. This does NOT change the "
+            "directory Satpy will look at when searching "
+            "for files outside of this script."
+        ),
+    )
+    parser.add_argument(
+        "--composite-sensors",
+        nargs="*",
+        help=(
+            "Limit loaded composites for the specified "
+            "sensors. If specified with no arguments, "
+            "no composite files will be downloaded."
+        ),
+    )
+    parser.add_argument(
+        "--readers",
+        nargs="*",
+        help="Limit searching to these readers. If specified with no arguments, no reader files will be downloaded.",
+    )
+    parser.add_argument(
+        "--writers",
+        nargs="*",
+        help="Limit searching to these writers. If specified with no arguments, no writer files will be downloaded.",
+    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO)
 
     if args.data_dir is None:
-        args.data_dir = satpy.config.get('data_dir')
+        args.data_dir = satpy.config.get("data_dir")
 
     with satpy.config.set(data_dir=args.data_dir):
-        retrieve_all(readers=args.readers, writers=args.writers,
-                     composite_sensors=args.composite_sensors)
+        retrieve_all(readers=args.readers, writers=args.writers, composite_sensors=args.composite_sensors)

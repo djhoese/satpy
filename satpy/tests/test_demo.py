@@ -58,7 +58,7 @@ class _GlobHelper(object):
         except IndexError:
             num_results = self.num_results[-1]
         self.current_call += 1
-        return [pattern + '.{:03d}'.format(idx) for idx in range(num_results)]
+        return [pattern + ".{:03d}".format(idx) for idx in range(num_results)]
 
 
 class TestDemo(unittest.TestCase):
@@ -67,6 +67,7 @@ class TestDemo(unittest.TestCase):
     def setUp(self):
         """Create temporary directory to save files to."""
         import tempfile
+
         self.base_dir = tempfile.mkdtemp()
         self.prev_dir = os.getcwd()
         os.chdir(self.base_dir)
@@ -76,33 +77,36 @@ class TestDemo(unittest.TestCase):
         os.chdir(self.prev_dir)
         try:
             import shutil
+
             shutil.rmtree(self.base_dir, ignore_errors=True)
         except OSError:
             pass
 
-    @mock.patch('satpy.demo._google_cloud_platform.gcsfs')
+    @mock.patch("satpy.demo._google_cloud_platform.gcsfs")
     def test_get_us_midlatitude_cyclone_abi(self, gcsfs_mod):
         """Test data download function."""
         from satpy.demo import get_us_midlatitude_cyclone_abi
+
         gcsfs_mod.GCSFileSystem = mock.MagicMock()
         gcsfs_inst = mock.MagicMock()
         gcsfs_mod.GCSFileSystem.return_value = gcsfs_inst
-        gcsfs_inst.glob.return_value = ['a.nc', 'b.nc']
+        gcsfs_inst.glob.return_value = ["a.nc", "b.nc"]
         # expected 16 files, got 2
         self.assertRaises(AssertionError, get_us_midlatitude_cyclone_abi)
         # unknown access method
-        self.assertRaises(NotImplementedError, get_us_midlatitude_cyclone_abi, method='unknown')
+        self.assertRaises(NotImplementedError, get_us_midlatitude_cyclone_abi, method="unknown")
 
-        gcsfs_inst.glob.return_value = ['a.nc'] * 16
+        gcsfs_inst.glob.return_value = ["a.nc"] * 16
         filenames = get_us_midlatitude_cyclone_abi()
-        expected = os.path.join('.', 'abi_l1b', '20190314_us_midlatitude_cyclone', 'a.nc')
+        expected = os.path.join(".", "abi_l1b", "20190314_us_midlatitude_cyclone", "a.nc")
         for fn in filenames:
             self.assertEqual(expected, fn)
 
-    @mock.patch('satpy.demo._google_cloud_platform.gcsfs')
+    @mock.patch("satpy.demo._google_cloud_platform.gcsfs")
     def test_get_hurricane_florence_abi(self, gcsfs_mod):
         """Test data download function."""
         from satpy.demo import get_hurricane_florence_abi
+
         gcsfs_mod.GCSFileSystem = mock.MagicMock()
         gcsfs_inst = mock.MagicMock()
         gcsfs_mod.GCSFileSystem.return_value = gcsfs_inst
@@ -110,7 +114,7 @@ class TestDemo(unittest.TestCase):
         gcsfs_inst.glob.side_effect = _GlobHelper([5, 0])
         # expected 16 files * 10 frames, got 16 * 5
         self.assertRaises(AssertionError, get_hurricane_florence_abi)
-        self.assertRaises(NotImplementedError, get_hurricane_florence_abi, method='unknown')
+        self.assertRaises(NotImplementedError, get_hurricane_florence_abi, method="unknown")
 
         gcsfs_inst.glob.side_effect = _GlobHelper([int(240 / 16), 0, 0, 0] * 16)
         filenames = get_hurricane_florence_abi()
@@ -132,77 +136,82 @@ class TestDemo(unittest.TestCase):
 class TestGCPUtils(unittest.TestCase):
     """Test Google Cloud Platform utilities."""
 
-    @mock.patch('satpy.demo._google_cloud_platform.urlopen')
+    @mock.patch("satpy.demo._google_cloud_platform.urlopen")
     def test_is_gcp_instance(self, uo):
         """Test is_google_cloud_instance."""
         from satpy.demo._google_cloud_platform import URLError, is_google_cloud_instance
+
         uo.side_effect = URLError("Test Environment")
         self.assertFalse(is_google_cloud_instance())
 
-    @mock.patch('satpy.demo._google_cloud_platform.gcsfs')
+    @mock.patch("satpy.demo._google_cloud_platform.gcsfs")
     def test_get_bucket_files(self, gcsfs_mod):
         """Test get_bucket_files basic cases."""
         from satpy.demo._google_cloud_platform import get_bucket_files
+
         gcsfs_mod.GCSFileSystem = mock.MagicMock()
         gcsfs_inst = mock.MagicMock()
         gcsfs_mod.GCSFileSystem.return_value = gcsfs_inst
-        gcsfs_inst.glob.return_value = ['a.nc', 'b.nc']
-        filenames = get_bucket_files('*.nc', '.')
-        expected = [os.path.join('.', 'a.nc'), os.path.join('.', 'b.nc')]
+        gcsfs_inst.glob.return_value = ["a.nc", "b.nc"]
+        filenames = get_bucket_files("*.nc", ".")
+        expected = [os.path.join(".", "a.nc"), os.path.join(".", "b.nc")]
         self.assertEqual(expected, filenames)
 
         gcsfs_inst.glob.side_effect = _GlobHelper(10)
-        filenames = get_bucket_files(['*.nc', '*.txt'], '.', pattern_slice=slice(2, 5))
+        filenames = get_bucket_files(["*.nc", "*.txt"], ".", pattern_slice=slice(2, 5))
         self.assertEqual(len(filenames), 3 * 2)
         gcsfs_inst.glob.side_effect = None  # reset mock side effect
 
-        gcsfs_inst.glob.return_value = ['a.nc', 'b.nc']
-        self.assertRaises(OSError, get_bucket_files, '*.nc', 'does_not_exist')
+        gcsfs_inst.glob.return_value = ["a.nc", "b.nc"]
+        self.assertRaises(OSError, get_bucket_files, "*.nc", "does_not_exist")
 
-        open('a.nc', 'w').close()  # touch the file
+        open("a.nc", "w").close()  # touch the file
         gcsfs_inst.get.reset_mock()
-        gcsfs_inst.glob.return_value = ['a.nc']
-        filenames = get_bucket_files('*.nc', '.')
-        self.assertEqual([os.path.join('.', 'a.nc')], filenames)
+        gcsfs_inst.glob.return_value = ["a.nc"]
+        filenames = get_bucket_files("*.nc", ".")
+        self.assertEqual([os.path.join(".", "a.nc")], filenames)
         gcsfs_inst.get.assert_not_called()
 
         # force redownload
         gcsfs_inst.get.reset_mock()
-        gcsfs_inst.glob.return_value = ['a.nc']
-        filenames = get_bucket_files('*.nc', '.', force=True)
-        self.assertEqual([os.path.join('.', 'a.nc')], filenames)
+        gcsfs_inst.glob.return_value = ["a.nc"]
+        filenames = get_bucket_files("*.nc", ".", force=True)
+        self.assertEqual([os.path.join(".", "a.nc")], filenames)
         gcsfs_inst.get.assert_called_once()
 
         # if we don't get any results then we expect an exception
         gcsfs_inst.get.reset_mock()
         gcsfs_inst.glob.return_value = []
-        self.assertRaises(OSError, get_bucket_files, '*.nc', '.')
+        self.assertRaises(OSError, get_bucket_files, "*.nc", ".")
 
-    @mock.patch('satpy.demo._google_cloud_platform.gcsfs', None)
+    @mock.patch("satpy.demo._google_cloud_platform.gcsfs", None)
     def test_no_gcsfs(self):
         """Test that 'gcsfs' is required."""
         from satpy.demo._google_cloud_platform import get_bucket_files
-        self.assertRaises(RuntimeError, get_bucket_files, '*.nc', '.')
+
+        self.assertRaises(RuntimeError, get_bucket_files, "*.nc", ".")
 
 
 class TestAHIDemoDownload:
     """Test the AHI demo data download."""
 
-    @mock.patch.dict(sys.modules, {'s3fs': mock.MagicMock()})
+    @mock.patch.dict(sys.modules, {"s3fs": mock.MagicMock()})
     def test_ahi_full_download(self):
         """Test that the himawari download works as expected."""
         from tempfile import gettempdir
 
         from satpy.demo import download_typhoon_surigae_ahi
+
         files = download_typhoon_surigae_ahi(base_dir=gettempdir())
         assert len(files) == 160
 
-    @mock.patch.dict(sys.modules, {'s3fs': mock.MagicMock()})
+    @mock.patch.dict(sys.modules, {"s3fs": mock.MagicMock()})
     def test_ahi_partial_download(self):
         """Test that the himawari download works as expected."""
         from tempfile import gettempdir
 
         from satpy.demo import download_typhoon_surigae_ahi
+
         files = download_typhoon_surigae_ahi(base_dir=gettempdir(), segments=[4, 9], channels=[1, 2, 3])
         assert len(files) == 6
 
@@ -220,6 +229,7 @@ def _create_and_populate_dummy_tarfile(fn):
 def test_fci_download(tmp_path, monkeypatch):
     """Test download of FCI test data."""
     from satpy.demo import download_fci_test_data
+
     monkeypatch.chdir(tmp_path)
 
     def fake_download_url(url, nm):
@@ -274,19 +284,40 @@ class _FakeRequest:
             x = bytes_io.read(chunk_size)
 
 
-@mock.patch('satpy.demo.utils.requests')
+@mock.patch("satpy.demo.utils.requests")
 class TestVIIRSSDRDemoDownload:
     """Test VIIRS SDR downloading."""
 
-    ALL_BAND_PREFIXES = ("SVI01", "SVI02", "SVI03", "SVI04", "SVI05",
-                         "SVM01", "SVM02", "SVM03", "SVM04", "SVM05", "SVM06", "SVM07", "SVM08", "SVM09", "SVM10",
-                         "SVM11", "SVM12", "SVM13", "SVM14", "SVM15", "SVM16",
-                         "SVDNB")
+    ALL_BAND_PREFIXES = (
+        "SVI01",
+        "SVI02",
+        "SVI03",
+        "SVI04",
+        "SVI05",
+        "SVM01",
+        "SVM02",
+        "SVM03",
+        "SVM04",
+        "SVM05",
+        "SVM06",
+        "SVM07",
+        "SVM08",
+        "SVM09",
+        "SVM10",
+        "SVM11",
+        "SVM12",
+        "SVM13",
+        "SVM14",
+        "SVM15",
+        "SVM16",
+        "SVDNB",
+    )
     ALL_GEO_PREFIXES = ("GITCO", "GMTCO", "GDNBO")
 
     def test_download(self, _requests, tmpdir):
         """Test downloading VIIRS SDR data."""
         from satpy.demo import get_viirs_sdr_20170128_1229
+
         _requests.get.side_effect = _FakeRequest
         with mock_filesystem():
             files = get_viirs_sdr_20170128_1229(base_dir=str(tmpdir))
@@ -296,6 +327,7 @@ class TestVIIRSSDRDemoDownload:
     def test_do_not_download_the_files_twice(self, _requests, tmpdir):
         """Test re-downloading VIIRS SDR data."""
         from satpy.demo import get_viirs_sdr_20170128_1229
+
         get_mock = mock.MagicMock()
         _requests.get.return_value.__enter__ = get_mock
         with mock_filesystem():
@@ -310,38 +342,35 @@ class TestVIIRSSDRDemoDownload:
     def test_download_channels_num_granules_im(self, _requests, tmpdir):
         """Test downloading VIIRS SDR I/M data with select granules."""
         from satpy.demo import get_viirs_sdr_20170128_1229
+
         _requests.get.side_effect = _FakeRequest
         with mock_filesystem():
-            files = get_viirs_sdr_20170128_1229(base_dir=str(tmpdir),
-                                                channels=("I01", "M01"))
+            files = get_viirs_sdr_20170128_1229(base_dir=str(tmpdir), channels=("I01", "M01"))
             assert len(files) == 10 * (1 + 1 + 2)  # 10 granules * (1 I band + 1 M band + 2 geolocation)
             self._assert_bands_in_filenames_and_contents(("SVI01", "SVM01", "GITCO", "GMTCO"), files, 10)
 
     def test_download_channels_num_granules_im_twice(self, _requests, tmpdir):
         """Test re-downloading VIIRS SDR I/M data with select granules."""
         from satpy.demo import get_viirs_sdr_20170128_1229
+
         get_mock = mock.MagicMock()
         _requests.get.return_value.__enter__ = get_mock
         with mock_filesystem():
-            files = get_viirs_sdr_20170128_1229(base_dir=str(tmpdir),
-                                                channels=("I01", "M01"))
+            files = get_viirs_sdr_20170128_1229(base_dir=str(tmpdir), channels=("I01", "M01"))
             num_first_batch = 10 * (1 + 1 + 2)  # 10 granules * (1 I band + 1 M band + 2 geolocation)
             assert len(files) == num_first_batch
 
-            files = get_viirs_sdr_20170128_1229(base_dir=str(tmpdir),
-                                                channels=("I01", "M01"),
-                                                granules=(2, 3))
+            files = get_viirs_sdr_20170128_1229(base_dir=str(tmpdir), channels=("I01", "M01"), granules=(2, 3))
             assert len(files) == 2 * (1 + 1 + 2)  # 2 granules * (1 I band + 1 M band + 2 geolocation)
             assert get_mock.call_count == num_first_batch
 
     def test_download_channels_num_granules_dnb(self, _requests, tmpdir):
         """Test downloading and re-downloading VIIRS SDR DNB data with select granules."""
         from satpy.demo import get_viirs_sdr_20170128_1229
+
         _requests.get.side_effect = _FakeRequest
         with mock_filesystem():
-            files = get_viirs_sdr_20170128_1229(base_dir=str(tmpdir),
-                                                channels=("DNB",),
-                                                granules=(5, 6, 7, 8, 9))
+            files = get_viirs_sdr_20170128_1229(base_dir=str(tmpdir), channels=("DNB",), granules=(5, 6, 7, 8, 9))
             assert len(files) == 5 * (1 + 1)  # 5 granules * (1 DNB + 1 geolocation)
             self._assert_bands_in_filenames_and_contents(("SVDNB", "GDNBO"), files, 5)
 
@@ -366,6 +395,7 @@ class TestVIIRSSDRDemoDownload:
 @contextlib.contextmanager
 def mock_filesystem():
     """Create a mock filesystem, patching `open` and `os.path.isfile`."""
+
     class FakeFile:
         """Fake file based on BytesIO."""
 
@@ -387,7 +417,7 @@ def mock_filesystem():
     mo.side_effect = fun
     with mock.patch("builtins.open", mo):
         with mock.patch("os.path.isfile") as isfile:
-            isfile.side_effect = (lambda target: target in fake_fs)
+            isfile.side_effect = lambda target: target in fake_fs
             yield
 
 
@@ -412,10 +442,11 @@ class TestSEVIRIHRITDemoDownload(unittest.TestCase):
     def setUp(self):
         """Set up the test case."""
         from satpy.demo.seviri_hrit import generate_subset_of_filenames
+
         self.subdir = os.path.join(".", "seviri_hrit", "20180228_1500")
         self.files = generate_subset_of_filenames(base_dir=self.subdir)
 
-        self.patcher = mock.patch('satpy.demo.utils.requests.get', autospec=True)
+        self.patcher = mock.patch("satpy.demo.utils.requests.get", autospec=True)
         self.get_mock = self.patcher.start()
 
         _FakeRequest.requests_log = []
@@ -427,6 +458,7 @@ class TestSEVIRIHRITDemoDownload(unittest.TestCase):
     def test_download_gets_files_with_contents(self):
         """Test downloading SEVIRI HRIT data with content."""
         from satpy.demo import download_seviri_hrit_20180228_1500
+
         self.get_mock.side_effect = _FakeRequest
         with mock_filesystem():
             files = download_seviri_hrit_20180228_1500()
@@ -439,6 +471,7 @@ class TestSEVIRIHRITDemoDownload(unittest.TestCase):
     def test_download_from_zenodo(self):
         """Test downloading SEVIRI HRIT data from zenodo."""
         from satpy.demo import download_seviri_hrit_20180228_1500
+
         self.get_mock.side_effect = _FakeRequest
         with mock_filesystem():
             download_seviri_hrit_20180228_1500()
@@ -447,20 +480,25 @@ class TestSEVIRIHRITDemoDownload(unittest.TestCase):
     def test_download_a_subset_of_files(self):
         """Test downloading a subset of files."""
         from satpy.demo import download_seviri_hrit_20180228_1500
+
         with mock_filesystem():
             files = download_seviri_hrit_20180228_1500(subset={"HRV": [1, 2, 3], "IR_108": [1, 2], "EPI": None})
-            assert set(files) == set(os.path.join(self.subdir, filename) for filename in [
-                'H-000-MSG4__-MSG4________-_________-EPI______-201802281500-__',
-                'H-000-MSG4__-MSG4________-HRV______-000001___-201802281500-__',
-                'H-000-MSG4__-MSG4________-HRV______-000002___-201802281500-__',
-                'H-000-MSG4__-MSG4________-HRV______-000003___-201802281500-__',
-                'H-000-MSG4__-MSG4________-IR_108___-000001___-201802281500-__',
-                'H-000-MSG4__-MSG4________-IR_108___-000002___-201802281500-__',
-            ])
+            assert set(files) == set(
+                os.path.join(self.subdir, filename)
+                for filename in [
+                    "H-000-MSG4__-MSG4________-_________-EPI______-201802281500-__",
+                    "H-000-MSG4__-MSG4________-HRV______-000001___-201802281500-__",
+                    "H-000-MSG4__-MSG4________-HRV______-000002___-201802281500-__",
+                    "H-000-MSG4__-MSG4________-HRV______-000003___-201802281500-__",
+                    "H-000-MSG4__-MSG4________-IR_108___-000001___-201802281500-__",
+                    "H-000-MSG4__-MSG4________-IR_108___-000002___-201802281500-__",
+                ]
+            )
 
     def test_do_not_download_same_file_twice(self):
         """Test that files are not downloaded twice."""
         from satpy.demo import download_seviri_hrit_20180228_1500
+
         get_mock = mock.MagicMock()
         self.get_mock.return_value.__enter__ = get_mock
         with mock_filesystem():
@@ -474,6 +512,7 @@ class TestSEVIRIHRITDemoDownload(unittest.TestCase):
         from tempfile import gettempdir
 
         from satpy.demo import download_seviri_hrit_20180228_1500
+
         with mock_filesystem():
             base_dir = gettempdir()
             files = download_seviri_hrit_20180228_1500(base_dir=base_dir)

@@ -40,8 +40,8 @@ def _cimss_true_color_contrast(img_data):
     acont = (255.0 / 10.0) / 255.0
     amax = (255.0 + 4.0) / 255.0
     amid = 1.0 / 2.0
-    afact = (amax * (acont + max_value) / (max_value * (amax - acont)))
-    aband = (afact * (img_data - amid) + amid)
+    afact = amax * (acont + max_value) / (max_value * (amax - acont))
+    aband = afact * (img_data - amid) + amid
     aband[aband <= 10 / 255.0] = 0
     aband[aband >= 1.0] = 1.0
     return aband

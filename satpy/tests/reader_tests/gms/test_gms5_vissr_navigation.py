@@ -19,9 +19,9 @@ except ImportError as err:
 IR_NAVIGATION_REFERENCE = [
     {
         "pixel": nav.Pixel(line=686, pixel=1680),
-        'lon': 139.990380,
-        'lat': 35.047056,
-        'nav_params': nav.PixelNavigationParameters(
+        "lon": 139.990380,
+        "lat": 35.047056,
+        "nav_params": nav.PixelNavigationParameters(
             attitude=nav.Attitude(
                 angle_between_earth_and_sun=3.997397917902958,
                 angle_between_sat_spin_and_z_axis=3.149118633034304,
@@ -39,9 +39,11 @@ IR_NAVIGATION_REFERENCE = [
                     z=-228134.860026293463307,
                 ),
                 nutation_precession=np.array(
-                    [[0.999936381496146, -0.010344758016410, -0.004496547784299],
-                     [0.010344942303489, 0.999946489495557, 0.000017727054455],
-                     [0.004496123789670, -0.000064242454080, 0.999989890320785]]
+                    [
+                        [0.999936381496146, -0.010344758016410, -0.004496547784299],
+                        [0.010344942303489, 0.999946489495557, 0.000017727054455],
+                        [0.004496123789670, -0.000064242454080, 0.999989890320785],
+                    ]
                 ),
             ),
             proj_params=nav.ProjectionParameters(
@@ -53,23 +55,22 @@ IR_NAVIGATION_REFERENCE = [
                     stepping_angle=0.000140000047395,
                     sampling_angle=0.000095719995443,
                     misalignment=np.array(
-                        [[0.999999165534973, 0.000510364072397, 0.001214201096445],
-                         [-0.000511951977387, 0.999999046325684, 0.001307720085606],
-                         [-0.001213532872498, -0.001308340579271, 0.999998450279236]]
-                    )
+                        [
+                            [0.999999165534973, 0.000510364072397, 0.001214201096445],
+                            [-0.000511951977387, 0.999999046325684, 0.001307720085606],
+                            [-0.001213532872498, -0.001308340579271, 0.999998450279236],
+                        ]
+                    ),
                 ),
-                earth_ellipsoid=nav.EarthEllipsoid(
-                    flattening=0.003352813177897,
-                    equatorial_radius=6378136.0
-                )
+                earth_ellipsoid=nav.EarthEllipsoid(flattening=0.003352813177897, equatorial_radius=6378136.0),
             ),
-        )
+        ),
     },
     {
         "pixel": nav.Pixel(line=2089, pixel=1793),
-        'lon': 144.996967,
-        'lat': -34.959853,
-        'nav_params': nav.PixelNavigationParameters(
+        "lon": 144.996967,
+        "lat": -34.959853,
+        "nav_params": nav.PixelNavigationParameters(
             attitude=nav.Attitude(
                 angle_between_earth_and_sun=3.935707944355762,
                 angle_between_sat_spin_and_z_axis=3.149118633034304,
@@ -87,9 +88,11 @@ IR_NAVIGATION_REFERENCE = [
                     z=-210800.087589388160268,
                 ),
                 nutation_precession=np.array(
-                    [[0.999936381432029, -0.010344763228876, -0.004496550050695],
-                     [0.010344947502662, 0.999946489441823, 0.000017724053657],
-                     [0.004496126086653, -0.000064239500295, 0.999989890310647]]
+                    [
+                        [0.999936381432029, -0.010344763228876, -0.004496550050695],
+                        [0.010344947502662, 0.999946489441823, 0.000017724053657],
+                        [0.004496126086653, -0.000064239500295, 0.999989890310647],
+                    ]
                 ),
             ),
             proj_params=nav.ProjectionParameters(
@@ -101,27 +104,26 @@ IR_NAVIGATION_REFERENCE = [
                     stepping_angle=0.000140000047395,
                     sampling_angle=0.000095719995443,
                     misalignment=np.array(
-                        [[0.999999165534973, 0.000510364072397, 0.001214201096445],
-                         [-0.000511951977387, 0.999999046325684, 0.001307720085606],
-                         [-0.001213532872498, -0.001308340579271, 0.999998450279236]]
+                        [
+                            [0.999999165534973, 0.000510364072397, 0.001214201096445],
+                            [-0.000511951977387, 0.999999046325684, 0.001307720085606],
+                            [-0.001213532872498, -0.001308340579271, 0.999998450279236],
+                        ]
                     ),
                 ),
-                earth_ellipsoid=nav.EarthEllipsoid(
-                    flattening=0.003352813177897,
-                    equatorial_radius=6378136
-                )
+                earth_ellipsoid=nav.EarthEllipsoid(flattening=0.003352813177897, equatorial_radius=6378136),
             ),
-        )
-    }
+        ),
+    },
 ]
 
 
 VIS_NAVIGATION_REFERENCE = [
     {
         "pixel": nav.Pixel(line=2744, pixel=6720),
-        'lon': 139.975527,
-        'lat': 35.078028,
-        'nav_params': nav.PixelNavigationParameters(
+        "lon": 139.975527,
+        "lat": 35.078028,
+        "nav_params": nav.PixelNavigationParameters(
             attitude=nav.Attitude(
                 angle_between_earth_and_sun=3.997397918405798,
                 angle_between_sat_spin_and_z_axis=3.149118633034304,
@@ -139,9 +141,11 @@ VIS_NAVIGATION_REFERENCE = [
                     z=-228134.860164520738181,
                 ),
                 nutation_precession=np.array(
-                    [[0.999936381496146, -0.010344758016410, -0.004496547784299],
-                     [0.010344942303489, 0.999946489495557, 0.000017727054455],
-                     [0.004496123789670, -0.000064242454080, 0.999989890320785]]
+                    [
+                        [0.999936381496146, -0.010344758016410, -0.004496547784299],
+                        [0.010344942303489, 0.999946489495557, 0.000017727054455],
+                        [0.004496123789670, -0.000064242454080, 0.999989890320785],
+                    ]
                 ),
             ),
             proj_params=nav.ProjectionParameters(
@@ -153,23 +157,22 @@ VIS_NAVIGATION_REFERENCE = [
                     stepping_angle=0.000035000004573,
                     sampling_angle=0.000023929998861,
                     misalignment=np.array(
-                        [[0.999999165534973, 0.000510364072397, 0.001214201096445],
-                         [-0.000511951977387, 0.999999046325684, 0.001307720085606],
-                         [-0.001213532872498, -0.001308340579271, 0.999998450279236]]
+                        [
+                            [0.999999165534973, 0.000510364072397, 0.001214201096445],
+                            [-0.000511951977387, 0.999999046325684, 0.001307720085606],
+                            [-0.001213532872498, -0.001308340579271, 0.999998450279236],
+                        ]
                     ),
                 ),
-                earth_ellipsoid=nav.EarthEllipsoid(
-                    flattening=0.003352813177897,
-                    equatorial_radius=6378136
-                )
+                earth_ellipsoid=nav.EarthEllipsoid(flattening=0.003352813177897, equatorial_radius=6378136),
             ),
-        )
+        ),
     },
     {
         "pixel": nav.Pixel(line=8356, pixel=7172),
-        'lon': 144.980104,
-        'lat': -34.929123,
-        'nav_params': nav.PixelNavigationParameters(
+        "lon": 144.980104,
+        "lat": -34.929123,
+        "nav_params": nav.PixelNavigationParameters(
             attitude=nav.Attitude(
                 angle_between_earth_and_sun=3.935707944858620,
                 angle_between_sat_spin_and_z_axis=3.149118633034304,
@@ -187,9 +190,11 @@ VIS_NAVIGATION_REFERENCE = [
                     z=-210800.087734811415430,
                 ),
                 nutation_precession=np.array(
-                    [[0.999936381432029, -0.010344763228876, -0.004496550050695],
-                     [0.010344947502662, 0.999946489441823, 0.000017724053657],
-                     [0.004496126086653, -0.000064239500295, 0.999989890310647]]
+                    [
+                        [0.999936381432029, -0.010344763228876, -0.004496550050695],
+                        [0.010344947502662, 0.999946489441823, 0.000017724053657],
+                        [0.004496126086653, -0.000064239500295, 0.999989890310647],
+                    ]
                 ),
             ),
             proj_params=nav.ProjectionParameters(
@@ -201,17 +206,16 @@ VIS_NAVIGATION_REFERENCE = [
                     stepping_angle=0.000035000004573,
                     sampling_angle=0.000023929998861,
                     misalignment=np.array(
-                        [[0.999999165534973, 0.000510364072397, 0.001214201096445],
-                         [-0.000511951977387, 0.999999046325684, 0.001307720085606],
-                         [-0.001213532872498, -0.001308340579271, 0.999998450279236]]
+                        [
+                            [0.999999165534973, 0.000510364072397, 0.001214201096445],
+                            [-0.000511951977387, 0.999999046325684, 0.001307720085606],
+                            [-0.001213532872498, -0.001308340579271, 0.999998450279236],
+                        ]
                     ),
                 ),
-                earth_ellipsoid=nav.EarthEllipsoid(
-                    flattening=0.003352813177897,
-                    equatorial_radius=6378136
-                )
+                earth_ellipsoid=nav.EarthEllipsoid(flattening=0.003352813177897, equatorial_radius=6378136),
             ),
-        )
+        ),
     },
 ]
 
@@ -235,10 +239,7 @@ class TestSinglePixelNavigation:
 
     @pytest.mark.parametrize(
         "point,nav_params,expected",
-        [
-            (ref["pixel"], ref["nav_params"], (ref["lon"], ref["lat"]))
-            for ref in NAVIGATION_REFERENCE
-        ],
+        [(ref["pixel"], ref["nav_params"], (ref["lon"], ref["lat"])) for ref in NAVIGATION_REFERENCE],
     )
     def test_get_lon_lat(self, point, nav_params, expected):
         """Test getting lon/lat coordinates for a given pixel."""
@@ -248,9 +249,7 @@ class TestSinglePixelNavigation:
     def test_transform_image_coords_to_scanning_angles(self):
         """Test transformation from image coordinates to scanning angles."""
         offset = nav.ImageOffset(line_offset=100, pixel_offset=200)
-        scanning_angles = nav.ScanningAngles(
-            stepping_angle=0.01, sampling_angle=0.02, misalignment=-999
-        )
+        scanning_angles = nav.ScanningAngles(stepping_angle=0.01, sampling_angle=0.02, misalignment=-999)
         angles = nav.transform_image_coords_to_scanning_angles(
             point=nav.Pixel(199, 99),
             image_offset=offset,
@@ -262,9 +261,7 @@ class TestSinglePixelNavigation:
         """Test transformation from scanning angles to satellite coordinates."""
         scanning_angles = nav.Vector2D(np.pi, np.pi / 2)
         misalignment = np.diag([1, 2, 3]).astype(float)
-        point_sat = nav.transform_scanning_angles_to_satellite_coords(
-            scanning_angles, misalignment
-        )
+        point_sat = nav.transform_scanning_angles_to_satellite_coords(scanning_angles, misalignment)
         np.testing.assert_allclose(point_sat, [0, 0, 3], atol=1e-12)
 
     def test_transform_satellite_to_earth_fixed_coords(self):
@@ -306,14 +303,9 @@ class TestSinglePixelNavigation:
             ([1, 1, 1], [45, 35.426852]),
         ],
     )
-    def test_transform_earth_fixed_to_geodetic_coords(
-        self, point_earth_fixed, point_geodetic_exp
-    ):
+    def test_transform_earth_fixed_to_geodetic_coords(self, point_earth_fixed, point_geodetic_exp):
         """Test transformation from earth-fixed to geodetic coordinates."""
-        point_geodetic = nav.transform_earth_fixed_to_geodetic_coords(
-            nav.Vector3D(*point_earth_fixed),
-            0.003
-        )
+        point_geodetic = nav.transform_earth_fixed_to_geodetic_coords(nav.Vector3D(*point_earth_fixed), 0.003)
         np.testing.assert_allclose(point_geodetic, point_geodetic_exp)
 
     def test_normalize_vector(self):
@@ -332,12 +324,16 @@ class TestImageNavigation:
     def expected(self):
         """Get expected coordinates."""
         exp = {
-            "lon": [[-114.56923, -112.096837, -109.559702],
-                    [8.33221, 8.793893, 9.22339],
-                    [15.918476, 16.268354, 16.6332]],
-            "lat": [[-23.078721, -24.629845, -26.133314],
-                    [-42.513409, -39.790231, -37.06392],
-                    [3.342834, 6.07043, 8.795932]]
+            "lon": [
+                [-114.56923, -112.096837, -109.559702],
+                [8.33221, 8.793893, 9.22339],
+                [15.918476, 16.268354, 16.6332],
+            ],
+            "lat": [
+                [-23.078721, -24.629845, -26.133314],
+                [-42.513409, -39.790231, -37.06392],
+                [3.342834, 6.07043, 8.795932],
+            ],
         }
         return exp
 
@@ -355,9 +351,7 @@ class TestImageNavigation:
 class TestPredictionInterpolation:
     """Test interpolation of orbit and attitude predictions."""
 
-    @pytest.mark.parametrize(
-        "obs_time,expected", [(-1, np.nan), (1.5, 2.5), (5, np.nan)]
-    )
+    @pytest.mark.parametrize("obs_time,expected", [(-1, np.nan), (1.5, 2.5), (5, np.nan)])
     def test_interpolate_continuous(self, obs_time, expected):
         """Test interpolation of continuous variables."""
         prediction_times = np.array([0, 1, 2, 3])
@@ -378,9 +372,7 @@ class TestPredictionInterpolation:
     def test_interpolate_angles(self, obs_time, expected):
         """Test interpolation of periodic angles."""
         prediction_times = np.array([0, 1, 2, 3, 4])
-        predicted_angles = np.array(
-            [0, 0.5 * np.pi, np.pi, 1.5 * np.pi, 2 * np.pi]
-        )  # already unwrapped
+        predicted_angles = np.array([0, 0.5 * np.pi, np.pi, 1.5 * np.pi, 2 * np.pi])  # already unwrapped
         res = nav.interpolate_angles(obs_time, prediction_times, predicted_angles)
         np.testing.assert_allclose(res, expected)
 
@@ -395,23 +387,17 @@ class TestPredictionInterpolation:
     def test_interpolate_nearest(self, obs_time, expected):
         """Test nearest neighbour interpolation."""
         prediction_times = np.array([0, 1, 2])
-        predicted_angles = np.array(
-            [np.zeros((2, 2)), np.diag((1, 2)), np.zeros((2, 2))]
-        )
+        predicted_angles = np.array([np.zeros((2, 2)), np.diag((1, 2)), np.zeros((2, 2))])
         res = nav.interpolate_nearest(obs_time, prediction_times, predicted_angles)
         np.testing.assert_allclose(res, expected)
 
-    def test_interpolate_orbit_prediction(
-        self, obs_time, orbit_prediction, orbit_expected
-    ):
+    def test_interpolate_orbit_prediction(self, obs_time, orbit_prediction, orbit_expected):
         """Test interpolating orbit prediction."""
         orbit_prediction = orbit_prediction.to_numba()
         orbit = nav.interpolate_orbit_prediction(orbit_prediction, obs_time)
         _assert_namedtuple_close(orbit, orbit_expected)
 
-    def test_interpolate_attitude_prediction(
-        self, obs_time, attitude_prediction, attitude_expected
-    ):
+    def test_interpolate_attitude_prediction(self, obs_time, attitude_prediction, attitude_expected):
         """Test interpolating attitude prediction."""
         attitude_prediction = attitude_prediction.to_numba()
         attitude = nav.interpolate_attitude_prediction(attitude_prediction, obs_time)
@@ -564,9 +550,7 @@ def _assert_namedtuple_close(a, b):
         b_attr = getattr(b, attr)
         if _is_namedtuple(b_attr):
             _assert_namedtuple_close(a_attr, b_attr)
-        np.testing.assert_allclose(
-            a_attr, b_attr, err_msg=f"{cls_name} attribute {attr} differs"
-        )
+        np.testing.assert_allclose(a_attr, b_attr, err_msg=f"{cls_name} attribute {attr} differs")
 
 
 def _is_namedtuple(obj):

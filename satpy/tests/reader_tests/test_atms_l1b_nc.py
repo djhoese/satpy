@@ -51,9 +51,9 @@ def atms_fake_dataset():
     atrack = 2
     xtrack = 3
     channel = 22
-    lon = np.full((atrack, xtrack), 1.)
-    lat = np.full((atrack, xtrack), 2.)
-    sat_azi = np.full((atrack, xtrack), 3.)
+    lon = np.full((atrack, xtrack), 1.0)
+    lat = np.full((atrack, xtrack), 2.0)
+    sat_azi = np.full((atrack, xtrack), 3.0)
     antenna_temp = np.zeros((atrack, xtrack, channel))
     for idx in range(channel):
         antenna_temp[:, :, idx] = 100 + float(idx)
@@ -99,20 +99,26 @@ class TestAtsmsL1bNCFileHandler:
             atms_fake_dataset.antenna_temp.values,
         )
 
-    @pytest.mark.parametrize("param,expect", (
-        ("start_time", datetime(2000, 1, 2, 3, 4, 5)),
-        ("end_time", datetime(2000, 1, 2, 4, 5, 6)),
-        ("platform_name", "JPSS-1"),
-        ("sensor", "ATMS"),
-    ))
+    @pytest.mark.parametrize(
+        "param,expect",
+        (
+            ("start_time", datetime(2000, 1, 2, 3, 4, 5)),
+            ("end_time", datetime(2000, 1, 2, 4, 5, 6)),
+            ("platform_name", "JPSS-1"),
+            ("sensor", "ATMS"),
+        ),
+    )
     def test_attrs(self, reader, param, expect):
         """Test attributes."""
         assert reader.attrs[param] == expect
 
-    @pytest.mark.parametrize("dims", (
-        ("xtrack", "atrack"),
-        ("x", "y"),
-    ))
+    @pytest.mark.parametrize(
+        "dims",
+        (
+            ("xtrack", "atrack"),
+            ("x", "y"),
+        ),
+    )
     def test_standardize_dims(self, reader, dims):
         """Test standardize dims."""
         data = xr.DataArray(
@@ -127,37 +133,43 @@ class TestAtsmsL1bNCFileHandler:
         coords = "dummy"
         data = xr.DataArray(
             np.ones(10),
-            dims=("y"),
+            dims="y",
             coords={coords: 0},
         )
         assert coords in data.coords
         data = reader._drop_coords(data)
         assert coords not in data.coords
 
-    @pytest.mark.parametrize("param,expect", (
-        ("start_time", datetime(2000, 1, 2, 3, 4, 5)),
-        ("end_time", datetime(2000, 1, 2, 4, 5, 6)),
-        ("platform_name", "JPSS-1"),
-        ("sensor", "ATMS"),
-        ("creation_time", datetime(2020, 1, 2, 3, 4, 5)),
-        ("type", "test_data"),
-        ("name", "test"),
-    ))
+    @pytest.mark.parametrize(
+        "param,expect",
+        (
+            ("start_time", datetime(2000, 1, 2, 3, 4, 5)),
+            ("end_time", datetime(2000, 1, 2, 4, 5, 6)),
+            ("platform_name", "JPSS-1"),
+            ("sensor", "ATMS"),
+            ("creation_time", datetime(2020, 1, 2, 3, 4, 5)),
+            ("type", "test_data"),
+            ("name", "test"),
+        ),
+    )
     def test_merge_attributes(self, reader, param, expect):
         """Test merge attributes."""
         data = xr.DataArray(
             np.ones(10),
-            dims=("y"),
+            dims="y",
             attrs={"type": "test_data"},
         )
         dataset_info = {"name": "test"}
         data = reader._merge_attributes(data, dataset_info)
         assert data.attrs[param] == expect
 
-    @pytest.mark.parametrize("param,expect", (
-        ("1", 100.),
-        ("sat_azi", 3.),
-    ))
+    @pytest.mark.parametrize(
+        "param,expect",
+        (
+            ("1", 100.0),
+            ("sat_azi", 3.0),
+        ),
+    )
     def test_select_dataset(self, reader, param, expect):
         """Test select dataset."""
         np.testing.assert_array_equal(
@@ -171,7 +183,7 @@ class TestAtsmsL1bNCFileHandler:
         dataset = reader.get_dataset(dataset_id, {})
         np.testing.assert_array_equal(
             dataset,
-            np.full((2, 3), 100.),
+            np.full((2, 3), 100.0),
         )
         assert dataset.dims == ("y", "x")
         assert dataset.attrs["sensor"] == "ATMS"

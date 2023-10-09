@@ -111,15 +111,12 @@ def get_parallax_corrected_lonlats(sat_lon, sat_lat, sat_alt, lon, lat, height):
     """
     elevation = _get_satellite_elevation(sat_lon, sat_lat, sat_alt, lon, lat)
     parallax_distance = _calculate_slant_cloud_distance(height, elevation)
-    shifted_xyz = _get_parallax_shift_xyz(
-            sat_lon, sat_lat, sat_alt, lon, lat, parallax_distance)
+    shifted_xyz = _get_parallax_shift_xyz(sat_lon, sat_lat, sat_alt, lon, lat, parallax_distance)
 
-    return xyz2lonlat(
-        shifted_xyz[..., 0], shifted_xyz[..., 1], shifted_xyz[..., 2])
+    return xyz2lonlat(shifted_xyz[..., 0], shifted_xyz[..., 1], shifted_xyz[..., 2])
 
 
-def get_surface_parallax_displacement(
-        sat_lon, sat_lat, sat_alt, lon, lat, height):
+def get_surface_parallax_displacement(sat_lon, sat_lat, sat_alt, lon, lat, height):
     """Calculate surface parallax displacement.
 
     Calculate the displacement due to parallax error.  Input parameters are
@@ -156,11 +153,11 @@ def _get_parallax_shift_xyz(sat_lon, sat_lat, sat_alt, lon, lat, parallax_distan
         Parallax shift in cartesian coordinates in meter.
     """
     sat_xyz = np.hstack(lonlat2xyz(sat_lon, sat_lat)) * sat_alt
-    cth_xyz = np.stack(lonlat2xyz(lon, lat), axis=-1) * EARTH_RADIUS*1e3  # km → m
+    cth_xyz = np.stack(lonlat2xyz(lon, lat), axis=-1) * EARTH_RADIUS * 1e3  # km → m
     delta_xyz = cth_xyz - sat_xyz
-    sat_distance = np.sqrt((delta_xyz*delta_xyz).sum(axis=-1))
+    sat_distance = np.sqrt((delta_xyz * delta_xyz).sum(axis=-1))
     dist_shape = delta_xyz.shape[:-1] + (1,)  # force correct array broadcasting
-    return cth_xyz - delta_xyz*(parallax_distance/sat_distance).reshape(dist_shape)
+    return cth_xyz - delta_xyz * (parallax_distance / sat_distance).reshape(dist_shape)
 
 
 def _get_satellite_elevation(sat_lon, sat_lat, sat_alt, lon, lat):
@@ -171,8 +168,8 @@ def _get_satellite_elevation(sat_lon, sat_lat, sat_alt, lon, lat):
     """
     placeholder_date = datetime.datetime(2000, 1, 1)  # no impact on get_observer_look?
     (_, elevation) = get_observer_look(
-            sat_lon, sat_lat, sat_alt/1e3,  # m → km (wanted by get_observer_look)
-            placeholder_date, lon, lat, 0)
+        sat_lon, sat_lat, sat_alt / 1e3, placeholder_date, lon, lat, 0  # m → km (wanted by get_observer_look)
+    )
     return elevation
 
 
@@ -183,13 +180,9 @@ def _calculate_slant_cloud_distance(height, elevation):
     slant cloud-to-ground distance along the line of sight of the satellite.
     """
     if np.isscalar(elevation) and elevation == 0:
-        raise NotImplementedError(
-                "Parallax correction not implemented for "
-                "satellite elevation 0")
+        raise NotImplementedError("Parallax correction not implemented for satellite elevation 0")
     if np.isscalar(elevation) and elevation < 0:
-        raise ValueError(
-                "Satellite is below the horizon.  Cannot calculate parallax "
-                "correction.")
+        raise ValueError("Satellite is below the horizon.  Cannot calculate parallax correction.")
     return height / np.sin(np.deg2rad(elevation))
 
 
@@ -250,8 +243,7 @@ class ParallaxCorrection:
 
     """
 
-    def __init__(self, base_area,
-                 debug_mode=False):
+    def __init__(self, base_area, debug_mode=False):
         """Initialise parallax correction class.
 
         Args:
@@ -279,10 +271,7 @@ class ParallaxCorrection:
         self.diagnostics.clear()
         return self.corrected_area(cth_dataset, **kwargs)
 
-    def corrected_area(self, cth_dataset,
-                       cth_resampler="nearest",
-                       cth_radius_of_influence=50000,
-                       lonlat_chunks=1024):
+    def corrected_area(self, cth_dataset, cth_resampler="nearest", cth_radius_of_influence=50000, lonlat_chunks=1024):
         """Return the parallax corrected SwathDefinition.
 
         Using the cloud top heights provided in ``cth_dataset``, calculate the
@@ -312,22 +301,26 @@ class ParallaxCorrection:
             :class:`~pyresample.geometry.SwathDefinition` describing parallax
             corrected geolocation.
         """
-        logger.debug("Calculating parallax correction using heights from "
-                     f"{cth_dataset.attrs.get('name', cth_dataset.name)!s}, "
-                     f"with base area {self.base_area.name!s}.")
+        logger.debug(
+            "Calculating parallax correction using heights from "
+            f"{cth_dataset.attrs.get('name', cth_dataset.name)!s}, "
+            f"with base area {self.base_area.name!s}."
+        )
         (sat_lon, sat_lat, sat_alt_m) = _get_satpos_from_cth(cth_dataset)
         self._check_overlap(cth_dataset)
 
         cth_dataset = self._prepare_cth_dataset(
-                cth_dataset, resampler=cth_resampler,
-                radius_of_influence=cth_radius_of_influence,
-                lonlat_chunks=lonlat_chunks)
+            cth_dataset,
+            resampler=cth_resampler,
+            radius_of_influence=cth_radius_of_influence,
+            lonlat_chunks=lonlat_chunks,
+        )
 
         (base_lon, base_lat) = self.base_area.get_lonlats(chunks=lonlat_chunks)
         # calculate the shift/error due to the parallax effect
         (corrected_lon, corrected_lat) = get_parallax_corrected_lonlats(
-                sat_lon, sat_lat, sat_alt_m,
-                base_lon, base_lat, cth_dataset.data)
+            sat_lon, sat_lat, sat_alt_m, base_lon, base_lat, cth_dataset.data
+        )
 
         shifted_area = self._get_swathdef_from_lon_lat(corrected_lon, corrected_lat)
 
@@ -335,8 +328,7 @@ class ParallaxCorrection:
         # coordinate transformation. With this transformation we approximately
         # invert the pixel coordinate transformation, giving the lon and lat
         # where we should retrieve a value for a given pixel.
-        (proj_lon, proj_lat) = self._get_corrected_lon_lat(
-                base_lon, base_lat, shifted_area)
+        (proj_lon, proj_lat) = self._get_corrected_lon_lat(base_lon, base_lat, shifted_area)
 
         return self._get_swathdef_from_lon_lat(proj_lon, proj_lat)
 
@@ -350,13 +342,9 @@ class ParallaxCorrection:
         # lons and lats passed to SwathDefinition must be data-arrays with
         # dimensions,  see https://github.com/pytroll/satpy/issues/1434
         # and https://github.com/pytroll/satpy/issues/1997
-        return SwathDefinition(
-            xr.DataArray(lon, dims=("y", "x")),
-            xr.DataArray(lat, dims=("y", "x")))
+        return SwathDefinition(xr.DataArray(lon, dims=("y", "x")), xr.DataArray(lat, dims=("y", "x")))
 
-    def _prepare_cth_dataset(
-            self, cth_dataset, resampler="nearest", radius_of_influence=50000,
-            lonlat_chunks=1024):
+    def _prepare_cth_dataset(self, cth_dataset, resampler="nearest", radius_of_influence=50000, lonlat_chunks=1024):
         """Prepare CTH dataset.
 
         Set cloud top height to zero wherever lat/lon are valid but CTH is
@@ -368,14 +356,11 @@ class ParallaxCorrection:
         # resolution imagery in mountainous or high elevation terrain
         # NB: how tolerant of xarray & dask is this?
         resampled_cth_dataset = resample_dataset(
-                cth_dataset, self.base_area, resampler=resampler,
-                radius_of_influence=radius_of_influence)
-        (pixel_lon, pixel_lat) = resampled_cth_dataset.attrs["area"].get_lonlats(
-                chunks=lonlat_chunks)
-        masked_resampled_cth_dataset = resampled_cth_dataset.where(
-                np.isfinite(pixel_lon) & np.isfinite(pixel_lat))
-        masked_resampled_cth_dataset = masked_resampled_cth_dataset.where(
-                masked_resampled_cth_dataset.notnull(), 0)
+            cth_dataset, self.base_area, resampler=resampler, radius_of_influence=radius_of_influence
+        )
+        (pixel_lon, pixel_lat) = resampled_cth_dataset.attrs["area"].get_lonlats(chunks=lonlat_chunks)
+        masked_resampled_cth_dataset = resampled_cth_dataset.where(np.isfinite(pixel_lon) & np.isfinite(pixel_lat))
+        masked_resampled_cth_dataset = masked_resampled_cth_dataset.where(masked_resampled_cth_dataset.notnull(), 0)
         return masked_resampled_cth_dataset
 
     def _check_overlap(self, cth_dataset):
@@ -388,9 +373,8 @@ class ParallaxCorrection:
         by ``cth_dataset``, raise a `MissingHeightError`.
         """
         warnings.warn(
-            "Overlap checking not implemented. Waiting for "
-            "fix for https://github.com/pytroll/pyresample/issues/329",
-            stacklevel=3
+            "Overlap checking not implemented. Waiting for fix for https://github.com/pytroll/pyresample/issues/329",
+            stacklevel=3,
         )
 
     def _get_corrected_lon_lat(self, base_lon, base_lat, shifted_area):
@@ -419,8 +403,7 @@ class ParallaxCorrection:
         # - the x-shift is a function of y and the y-shift is a function of x,
         #   so a cloud that was rectangular at the start may no longer be
         #   rectangular at the end
-        bur = BucketResampler(self.base_area,
-                              da.array(corrected_lon), da.array(corrected_lat))
+        bur = BucketResampler(self.base_area, da.array(corrected_lon), da.array(corrected_lat))
         inv_lat_diff = bur.get_abs_max(lat_diff)
         inv_lon_diff = bur.get_abs_max(lon_diff)
 
@@ -438,8 +421,7 @@ class ParallaxCorrection:
             self.diagnostics["lon_diff"] = lon_diff
             self.diagnostics["lat_diff"] = lat_diff
             self.diagnostics["shifted_area"] = shifted_area
-            self.diagnostics["count"] = xr.DataArray(
-                bur.get_count(), dims=("y", "x"), attrs={"area": self.base_area})
+            self.diagnostics["count"] = xr.DataArray(bur.get_count(), dims=("y", "x"), attrs={"area": self.base_area})
         return (inv_lon, inv_lat)
 
 
@@ -516,15 +498,17 @@ class ParallaxCorrectionModifier(ModifierBase):
         base_area = to_be_corrected.attrs["area"]
         corrector = self._get_corrector(base_area)
         plax_corr_area = corrector(
-                cth,
-                cth_resampler=self.attrs.get("cth_resampler", "nearest"),
-                cth_radius_of_influence=self.attrs.get("cth_radius_of_influence", 50_000),
-                lonlat_chunks=self.attrs.get("lonlat_chunks", 1024),
-                )
+            cth,
+            cth_resampler=self.attrs.get("cth_resampler", "nearest"),
+            cth_radius_of_influence=self.attrs.get("cth_radius_of_influence", 50_000),
+            lonlat_chunks=self.attrs.get("lonlat_chunks", 1024),
+        )
         res = resample_dataset(
-                to_be_corrected, plax_corr_area,
-                radius_of_influence=self.attrs.get("dataset_radius_of_influence", 50_000),
-                fill_value=np.nan)
+            to_be_corrected,
+            plax_corr_area,
+            radius_of_influence=self.attrs.get("dataset_radius_of_influence", 50_000),
+            fill_value=np.nan,
+        )
         res.attrs["area"] = to_be_corrected.attrs["area"]
         self.apply_modifier_info(to_be_corrected, res)
 
@@ -548,6 +532,5 @@ def _get_satpos_from_cth(cth_dataset):
     either directly from orbital parameters, or, when missing, from the
     platform name using pyorbital and skyfield.
     """
-    (sat_lon, sat_lat, sat_alt_km) = get_satpos(
-            cth_dataset, use_tle=True)
+    (sat_lon, sat_lat, sat_alt_km) = get_satpos(cth_dataset, use_tle=True)
     return (sat_lon, sat_lat, sat_alt_km * 1000)

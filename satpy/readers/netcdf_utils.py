@@ -90,20 +90,25 @@ class NetCDF4FileHandler(BaseFileHandler):
 
     file_handle = None
 
-    def __init__(self, filename, filename_info, filetype_info,
-                 auto_maskandscale=False, xarray_kwargs=None,
-                 cache_var_size=0, cache_handle=False):
+    def __init__(
+        self,
+        filename,
+        filename_info,
+        filetype_info,
+        auto_maskandscale=False,
+        xarray_kwargs=None,
+        cache_var_size=0,
+        cache_handle=False,
+    ):
         """Initialize object."""
-        super(NetCDF4FileHandler, self).__init__(
-            filename, filename_info, filetype_info)
+        super(NetCDF4FileHandler, self).__init__(filename, filename_info, filetype_info)
         self.file_content = {}
         self.cached_file_content = {}
         self._use_h5netcdf = False
         try:
             file_handle = self._get_file_handle()
         except IOError:
-            LOG.exception(
-                'Failed reading file %s. Possibly corrupted file', self.filename)
+            LOG.exception("Failed reading file %s. Possibly corrupted file", self.filename)
             raise
 
         self._set_file_handle_auto_maskandscale(file_handle, auto_maskandscale)
@@ -123,7 +128,7 @@ class NetCDF4FileHandler(BaseFileHandler):
             file_handle.close()
 
     def _get_file_handle(self):
-        return netCDF4.Dataset(self.filename, 'r')
+        return netCDF4.Dataset(self.filename, "r")
 
     @staticmethod
     def _set_file_handle_auto_maskandscale(file_handle, auto_maskandscale):
@@ -132,8 +137,8 @@ class NetCDF4FileHandler(BaseFileHandler):
 
     def _set_xarray_kwargs(self, xarray_kwargs, auto_maskandscale):
         self._xarray_kwargs = xarray_kwargs or {}
-        self._xarray_kwargs.setdefault('chunks', CHUNK_SIZE)
-        self._xarray_kwargs.setdefault('mask_and_scale', auto_maskandscale)
+        self._xarray_kwargs.setdefault("chunks", CHUNK_SIZE)
+        self._xarray_kwargs.setdefault("mask_and_scale", auto_maskandscale)
 
     def collect_metadata(self, name, obj):
         """Collect all file variables and attributes for the provided file object.
@@ -171,11 +176,11 @@ class NetCDF4FileHandler(BaseFileHandler):
     def _collect_listed_variables(self, file_handle, listed_variables):
         variable_name_replacements = self.filetype_info.get("variable_name_replacements")
         for itm in self._get_required_variable_names(listed_variables, variable_name_replacements):
-            parts = itm.split('/')
+            parts = itm.split("/")
             grp = file_handle
             for p in parts[:-1]:
                 if p == "attr":
-                    n = '/'.join(parts)
+                    n = "/".join(parts)
                     self.file_content[n] = self._get_attr_value(grp, parts[-1])
                     break
                 grp = grp[p]
@@ -188,7 +193,7 @@ class NetCDF4FileHandler(BaseFileHandler):
     def _get_required_variable_names(listed_variables, variable_name_replacements):
         variable_names = []
         for var in listed_variables:
-            if variable_name_replacements and '{' in var:
+            if variable_name_replacements and "{" in var:
                 _compose_replacement_names(variable_name_replacements, var, variable_names)
             else:
                 variable_names.append(var)
@@ -259,20 +264,20 @@ class NetCDF4FileHandler(BaseFileHandler):
         for var_name in cache_vars:
             v = self.file_content[var_name]
             try:
-                arr = xr.DataArray(
-                    v[:], dims=v.dimensions, attrs=v.__dict__, name=v.name)
+                arr = xr.DataArray(v[:], dims=v.dimensions, attrs=v.__dict__, name=v.name)
             except ValueError:
                 # Handle scalars for h5netcdf backend
-                arr = xr.DataArray(
-                    v.__array__(), dims=v.dimensions, attrs=v.__dict__, name=v.name)
+                arr = xr.DataArray(v.__array__(), dims=v.dimensions, attrs=v.__dict__, name=v.name)
             self.cached_file_content[var_name] = arr
 
     def _collect_cache_var_names(self, cache_var_size):
-        return [varname for (varname, var)
-                in self.file_content.items()
-                if isinstance(var, netCDF4.Variable)
-                and isinstance(var.dtype, np.dtype)  # vlen may be str
-                and var.size * var.dtype.itemsize < cache_var_size]
+        return [
+            varname
+            for (varname, var) in self.file_content.items()
+            if isinstance(var, netCDF4.Variable)
+            and isinstance(var.dtype, np.dtype)  # vlen may be str
+            and var.size * var.dtype.itemsize < cache_var_size
+        ]
 
     def __getitem__(self, key):
         """Get item for given key."""
@@ -290,7 +295,7 @@ class NetCDF4FileHandler(BaseFileHandler):
         # these datasets are closed and inaccessible when the file is
         # closed, need to reopen
         # TODO: Handle HDF4 versus NetCDF3 versus NetCDF4
-        parts = key.rsplit('/', 1)
+        parts = key.rsplit("/", 1)
         if len(parts) == 2:
             group, key = parts
         else:
@@ -304,14 +309,12 @@ class NetCDF4FileHandler(BaseFileHandler):
     def _get_group(self, key, val):
         """Get a group from the netcdf file."""
         # Full groups are conveniently read with xr even if file_handle is available
-        with xr.open_dataset(self.filename, group=key,
-                             **self._xarray_kwargs) as nc:
+        with xr.open_dataset(self.filename, group=key, **self._xarray_kwargs) as nc:
             val = nc
         return val
 
     def _get_var_from_xr(self, group, key):
-        with xr.open_dataset(self.filename, group=group,
-                             **self._xarray_kwargs) as nc:
+        with xr.open_dataset(self.filename, group=group, **self._xarray_kwargs) as nc:
             val = nc[key]
             # Even though `chunks` is specified in the kwargs, xarray
             # uses dask.arrays only for data variables that have at least
@@ -334,9 +337,7 @@ class NetCDF4FileHandler(BaseFileHandler):
             g = self.file_handle[group]
         v = g[key]
         attrs = self._get_object_attrs(v)
-        x = xr.DataArray(
-                da.from_array(v), dims=v.dimensions, attrs=attrs,
-                name=v.name)
+        x = xr.DataArray(da.from_array(v), dims=v.dimensions, attrs=attrs, name=v.name)
         return x
 
     def __contains__(self, item):
@@ -390,9 +391,10 @@ class NetCDF4FsspecFileHandler(NetCDF4FileHandler):
         except OSError:
             # The netCDF4 lib raises either FileNotFoundError or OSError for remote files. OSError catches both.
             import h5netcdf
+
             f_obj = open_file_or_filename(self.filename)
             self._use_h5netcdf = True
-            return h5netcdf.File(f_obj, 'r')
+            return h5netcdf.File(f_obj, "r")
 
     def __getitem__(self, key):
         """Get item for given key."""
@@ -402,6 +404,7 @@ class NetCDF4FsspecFileHandler(NetCDF4FileHandler):
 
     def _getitem_h5netcdf(self, key):
         from h5netcdf import Group, Variable
+
         val = self.file_content[key]
         if isinstance(val, Variable):
             return self._get_variable(key, val)
@@ -416,11 +419,14 @@ class NetCDF4FsspecFileHandler(NetCDF4FileHandler):
 
     def _collect_cache_var_names_h5netcdf(self, cache_var_size):
         from h5netcdf import Variable
-        return [varname for (varname, var)
-                in self.file_content.items()
-                if isinstance(var, Variable)
-                and isinstance(var.dtype, np.dtype)  # vlen may be str
-                and np.prod(var.shape) * var.dtype.itemsize < cache_var_size]
+
+        return [
+            varname
+            for (varname, var) in self.file_content.items()
+            if isinstance(var, Variable)
+            and isinstance(var.dtype, np.dtype)  # vlen may be str
+            and np.prod(var.shape) * var.dtype.itemsize < cache_var_size
+        ]
 
     def _get_object_attrs(self, obj):
         if self._use_h5netcdf:

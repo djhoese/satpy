@@ -126,8 +126,8 @@ def convert_units(dataset, in_unit, out_unit):
     # non-working implementation based on pint here.
 
     raise NotImplementedError(
-            "NinJoTIFF unit conversion only implemented between K and C, not "
-            f"between {in_unit!s} and {out_unit!s}")
+        f"NinJoTIFF unit conversion only implemented between K and C, not between {in_unit!s} and {out_unit!s}"
+    )
 
 
 class NinjoTIFFWriter(ImageWriter):
@@ -135,9 +135,7 @@ class NinjoTIFFWriter(ImageWriter):
 
     def __init__(self, tags=None, **kwargs):
         """Inititalize the writer."""
-        ImageWriter.__init__(
-            self, default_config_filename="writers/ninjotiff.yaml", **kwargs
-        )
+        ImageWriter.__init__(self, default_config_filename="writers/ninjotiff.yaml", **kwargs)
 
         self.tags = self.info.get("tags", None) if tags is None else tags
         if self.tags is None:
@@ -153,8 +151,7 @@ class NinjoTIFFWriter(ImageWriter):
         """
         filename = filename or self.get_filename(**img.data.attrs)
         if img.mode.startswith("L") and (
-            "ch_min_measurement_unit" not in kwargs
-            or "ch_max_measurement_unit" not in kwargs
+            "ch_min_measurement_unit" not in kwargs or "ch_max_measurement_unit" not in kwargs
         ):
             try:
                 scale, offset = img.get_scaling_from_history()
@@ -170,16 +167,13 @@ class NinjoTIFFWriter(ImageWriter):
                     kwargs["ch_min_measurement_unit"] = ch_min_measurement_unit
                     kwargs["ch_max_measurement_unit"] = ch_max_measurement_unit
                 except KeyError:
-                    raise NotImplementedError(
-                        "Don't know how to handle non-scale/offset-based enhancements yet."
-                    )
+                    raise NotImplementedError("Don't know how to handle non-scale/offset-based enhancements yet.")
         if img.mode.startswith("P"):
             img.data = img.data.astype(np.uint8)
         return nt.save(img, filename, data_is_scaled_01=True, compute=compute, **kwargs)
 
     def save_dataset(
-        self, dataset, filename=None, fill_value=None, compute=True,
-        convert_temperature_units=True, **kwargs
+        self, dataset, filename=None, fill_value=None, compute=True, convert_temperature_units=True, **kwargs
     ):
         """Save a dataset to ninjotiff format.
 
@@ -190,9 +184,7 @@ class NinjoTIFFWriter(ImageWriter):
         nunits = kwargs.get("physic_unit", None)
         if nunits is None:
             try:
-                options = nt.get_product_config(
-                    kwargs["ninjo_product_name"], True, kwargs["ninjo_product_file"]
-                )
+                options = nt.get_product_config(kwargs["ninjo_product_name"], True, kwargs["ninjo_product_file"])
                 nunits = options["physic_unit"]
             except KeyError:
                 pass
@@ -200,9 +192,7 @@ class NinjoTIFFWriter(ImageWriter):
             try:
                 units = dataset.attrs["units"]
             except KeyError:
-                logger.warning(
-                    "Saving to physical ninjo file without units defined in dataset!"
-                )
+                logger.warning("Saving to physical ninjo file without units defined in dataset!")
             else:
                 if convert_temperature_units:
                     dataset = convert_units(dataset, units, nunits)

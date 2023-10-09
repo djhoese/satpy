@@ -130,8 +130,7 @@ class FrequencyQuadrupleSideBand(FrequencyBandBaseArithmetics, FrequencyQuadrupl
         central_right_left = self.central + self.side - self.sideside
         central_right_right = self.central + self.side + self.sideside
 
-        four_centrals = [central_left_left, central_left_right,
-                         central_right_left, central_right_right]
+        four_centrals = [central_left_left, central_left_right, central_right_left, central_right_right]
         if isinstance(other, numbers.Number):
             for central in four_centrals:
                 if _is_inside_interval(other, central, self.bandwidth):
@@ -286,8 +285,9 @@ class FrequencyDoubleSideBand(FrequencyBandBaseArithmetics, FrequencyDoubleSideB
         central1, width1 = band
         central_other, width_other = other_band
 
-        if ((central1 - width1/2. <= central_other - width_other/2.) and
-                (central1 + width1/2. >= central_other + width_other/2.)):
+        if (central1 - width1 / 2.0 <= central_other - width_other / 2.0) and (
+            central1 + width1 / 2.0 >= central_other + width_other / 2.0
+        ):
             return True
         return False
 
@@ -381,13 +381,15 @@ class FrequencyRange(FrequencyBandBaseArithmetics, FrequencyRangeBase):
         if other is None:
             return False
         if isinstance(other, numbers.Number):
-            return self.central - self.bandwidth/2. <= other <= self.central + self.bandwidth/2.
+            return self.central - self.bandwidth / 2.0 <= other <= self.central + self.bandwidth / 2.0
 
         with suppress(AttributeError):
             if self.unit != other.unit:
                 raise NotImplementedError("Can't compare frequency ranges with different units.")
-            return (self.central - self.bandwidth/2. <= other.central - other.bandwidth/2. and
-                    self.central + self.bandwidth/2. >= other.central + other.bandwidth/2.)
+            return (
+                self.central - self.bandwidth / 2.0 <= other.central - other.bandwidth / 2.0
+                and self.central + self.bandwidth / 2.0 >= other.central + other.bandwidth / 2.0
+            )
         return False
 
     def distance(self, value):
@@ -404,4 +406,4 @@ class FrequencyRange(FrequencyBandBaseArithmetics, FrequencyRangeBase):
 
 
 def _is_inside_interval(value, central, width):
-    return central - width/2 <= value <= central + width/2
+    return central - width / 2 <= value <= central + width / 2

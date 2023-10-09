@@ -44,12 +44,7 @@ class TestEarthMask:
         first_earth_pixels = np.array([-1, 1, 0, -1])
         last_earth_pixels = np.array([-1, 3, 2, -1])
         edges = first_earth_pixels, last_earth_pixels
-        mask_exp = np.array(
-            [[0, 0, 0, 0],
-             [0, 1, 1, 1],
-             [1, 1, 1, 0],
-             [0, 0, 0, 0]]
-        )
+        mask_exp = np.array([[0, 0, 0, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 0, 0, 0]])
         mask = vissr.get_earth_mask(mask_exp.shape, edges)
         np.testing.assert_equal(mask, mask_exp)
 
@@ -85,20 +80,14 @@ class TestFileHandler:
                 "dtype": IMAGE_DATA_BLOCK_IR,
             },
         }
-        monkeypatch.setattr(
-            "satpy.readers.gms.gms5_vissr_format.IMAGE_DATA_BLOCK_IR", IMAGE_DATA_BLOCK_IR
-        )
-        monkeypatch.setattr(
-            "satpy.readers.gms.gms5_vissr_format.IMAGE_DATA_BLOCK_VIS", IMAGE_DATA_BLOCK_VIS
-        )
+        monkeypatch.setattr("satpy.readers.gms.gms5_vissr_format.IMAGE_DATA_BLOCK_IR", IMAGE_DATA_BLOCK_IR)
+        monkeypatch.setattr("satpy.readers.gms.gms5_vissr_format.IMAGE_DATA_BLOCK_VIS", IMAGE_DATA_BLOCK_VIS)
         monkeypatch.setattr("satpy.readers.gms.gms5_vissr_format.IMAGE_DATA", IMAGE_DATA)
 
     @pytest.fixture(
         params=[
             make_dataid(name="VIS", calibration="reflectance", resolution=1250),
-            make_dataid(
-                name="IR1", calibration="brightness_temperature", resolution=5000
-            ),
+            make_dataid(name="IR1", calibration="brightness_temperature", resolution=5000),
             make_dataid(name="IR1", calibration="counts", resolution=5000),
         ]
     )
@@ -204,10 +193,7 @@ class TestFileHandler:
     @pytest.fixture
     def coordinate_conversion(self, coord_conv, simple_coord_conv_table):
         """Get all coordinate conversion parameters."""
-        return {
-            "coordinate_conversion": coord_conv,
-            "simple_coordinate_conversion_table": simple_coord_conv_table
-        }
+        return {"coordinate_conversion": coord_conv, "simple_coordinate_conversion_table": simple_coord_conv_table}
 
     @pytest.fixture
     def coord_conv(self):
@@ -227,7 +213,7 @@ class TestFileHandler:
         cpix["IR1"] = 0.5  # instead of 1672.5
         cpix["VIS"] = 0.5  # instead of 6688.5
 
-        conv['scheduled_observation_time'] = 50130.979089568464
+        conv["scheduled_observation_time"] = 50130.979089568464
 
         nsensors = conv["number_of_sensor_elements"]
         nsensors["IR1"] = 1
@@ -242,10 +228,12 @@ class TestFileHandler:
         stepping_angle["VIS"] = 3.5000005e-05
 
         conv["matrix_of_misalignment"] = np.array(
-            [[9.9999917e-01, -5.1195198e-04, -1.2135329e-03],
-             [5.1036407e-04, 9.9999905e-01, -1.3083406e-03],
-             [1.2142011e-03, 1.3077201e-03, 9.9999845e-01]],
-            dtype=np.float32
+            [
+                [9.9999917e-01, -5.1195198e-04, -1.2135329e-03],
+                [5.1036407e-04, 9.9999905e-01, -1.3083406e-03],
+                [1.2142011e-03, 1.3077201e-03, 9.9999845e-01],
+            ],
+            dtype=np.float32,
         )
 
         conv["parameters"]["equatorial_radius"] = 6377397.0
@@ -265,10 +253,7 @@ class TestFileHandler:
     @pytest.fixture
     def orbit_prediction(self, orbit_prediction_1, orbit_prediction_2):
         """Get predictions of orbital parameters."""
-        return {
-            "orbit_prediction_1": orbit_prediction_1,
-            "orbit_prediction_2": orbit_prediction_2
-        }
+        return {"orbit_prediction_1": orbit_prediction_1, "orbit_prediction_2": orbit_prediction_2}
 
     @pytest.fixture
     def orbit_prediction_1(self):
@@ -358,9 +343,7 @@ class TestFileHandler:
     @pytest.fixture
     def file_handler(self, vissr_file_like, mask_space):
         """Get file handler to be tested."""
-        return vissr.GMS5VISSRFileHandler(
-            vissr_file_like, {}, {}, mask_space=mask_space
-        )
+        return vissr.GMS5VISSRFileHandler(vissr_file_like, {}, {}, mask_space=mask_space)
 
     @pytest.fixture
     def vis_refl_exp(self, mask_space, lons_lats_exp):
@@ -439,17 +422,13 @@ class TestFileHandler:
         """
         expectations = {
             "IR1": {
-                "lons": [[139.680120, 139.718902],
-                         [140.307367, 140.346062]],
-                "lats": [[35.045132, 35.045361],
-                         [-34.971012, -34.970738]]
+                "lons": [[139.680120, 139.718902], [140.307367, 140.346062]],
+                "lats": [[35.045132, 35.045361], [-34.971012, -34.970738]],
             },
             "VIS": {
-                "lons": [[139.665133, 139.674833],
-                         [140.292579, 140.302249]],
-                "lats": [[35.076113, 35.076170],
-                         [-34.940439, -34.940370]]
-            }
+                "lons": [[139.665133, 139.674833], [140.292579, 140.302249]],
+                "lats": [[35.076113, 35.076170], [-34.940439, -34.940370]],
+            },
         }
         exp = expectations[dataset_id["name"]]
         lons = xr.DataArray(exp["lons"], dims=("y", "x"))
@@ -460,12 +439,8 @@ class TestFileHandler:
     def dataset_exp(self, dataset_id, ir1_counts_exp, ir1_bt_exp, vis_refl_exp):
         """Get expected dataset."""
         ir1_counts_id = make_dataid(name="IR1", calibration="counts", resolution=5000)
-        ir1_bt_id = make_dataid(
-            name="IR1", calibration="brightness_temperature", resolution=5000
-        )
-        vis_refl_id = make_dataid(
-            name="VIS", calibration="reflectance", resolution=1250
-        )
+        ir1_bt_id = make_dataid(name="IR1", calibration="brightness_temperature", resolution=5000)
+        vis_refl_id = make_dataid(name="VIS", calibration="reflectance", resolution=1250)
         expectations = {
             ir1_counts_id: ir1_counts_exp,
             ir1_bt_id: ir1_bt_exp,

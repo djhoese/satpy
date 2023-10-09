@@ -57,17 +57,15 @@ def exclude_alpha(func):
 
     @wraps(func)
     def wrapper(data, **kwargs):
-        bands = data.coords['bands'].values
-        exclude = ['A'] if 'A' in bands else []
-        band_data = data.sel(bands=[b for b in bands
-                                    if b not in exclude])
+        bands = data.coords["bands"].values
+        exclude = ["A"] if "A" in bands else []
+        band_data = data.sel(bands=[b for b in bands if b not in exclude])
         band_data = func(band_data, **kwargs)
 
         attrs = data.attrs
         attrs.update(band_data.attrs)
         # combine the new data with the excluded data
-        new_data = xr.concat([band_data, data.sel(bands=exclude)],
-                             dim='bands')
+        new_data = xr.concat([band_data, data.sel(bands=exclude)], dim="bands")
         data.data = new_data.sel(bands=bands).data
         data.attrs = attrs
         return data
@@ -92,12 +90,12 @@ def on_separate_bands(func):
     def wrapper(data, **kwargs):
         attrs = data.attrs
         data_arrs = []
-        for idx, band in enumerate(data.coords['bands'].values):
+        for idx, band in enumerate(data.coords["bands"].values):
             band_data = func(data.sel(bands=[band]), index=idx, **kwargs)
             data_arrs.append(band_data)
             # we assume that the func can add attrs
             attrs.update(band_data.attrs)
-        data.data = xr.concat(data_arrs, dim='bands').data
+        data.data = xr.concat(data_arrs, dim="bands").data
         data.attrs = attrs
         return data
 
@@ -126,18 +124,16 @@ def using_map_blocks(func):
 
     @wraps(func)
     def wrapper(data, **kwargs):
-        return da.map_blocks(func, data, meta=np.array((), dtype=data.dtype), dtype=data.dtype, chunks=data.chunks,
-                             **kwargs)
+        return da.map_blocks(
+            func, data, meta=np.array((), dtype=data.dtype), dtype=data.dtype, chunks=data.chunks, **kwargs
+        )
 
     return on_dask_array(wrapper)
 
 
 def piecewise_linear_stretch(
-        img: XRImage,
-        xp: ArrayLike,
-        fp: ArrayLike,
-        reference_scale_factor: Optional[Number] = None,
-        **kwargs) -> xr.DataArray:
+    img: XRImage, xp: ArrayLike, fp: ArrayLike, reference_scale_factor: Optional[Number] = None, **kwargs
+) -> xr.DataArray:
     """Apply 1D linear interpolation.
 
     This uses :func:`numpy.interp` mapped over the provided dask array chunks.
@@ -248,16 +244,16 @@ def reinhard_to_srgb(img, saturation=1.25, white=100, **kwargs):
         white /= 100
 
         # extract color components
-        r = rgb.sel(bands='R').data
-        g = rgb.sel(bands='G').data
-        b = rgb.sel(bands='B').data
+        r = rgb.sel(bands="R").data
+        g = rgb.sel(bands="G").data
+        b = rgb.sel(bands="B").data
 
         # saturate
         luma = _compute_luminance_from_rgb(r, g, b)
         rgb = (luma + (rgb - luma) * saturation).clip(0)
 
         # reinhard
-        reinhard_luma = (luma / (1 + luma)) * (1 + luma / (white ** 2))
+        reinhard_luma = (luma / (1 + luma)) * (1 + luma / (white**2))
         coef = reinhard_luma / luma
         rgb = rgb * coef
 
@@ -275,12 +271,12 @@ def _compute_luminance_from_rgb(r, g, b):
 
 def _srgb_gamma(arr):
     """Apply the srgb gamma."""
-    return da.where(arr < 0.0031308, arr * 12.92, 1.055 * arr ** 0.41666 - 0.055)
+    return da.where(arr < 0.0031308, arr * 12.92, 1.055 * arr**0.41666 - 0.055)
 
 
 def lookup(img, **kwargs):
     """Assign values to channels based on a table."""
-    luts = np.array(kwargs['luts'], dtype=np.float32) / 255.0
+    luts = np.array(kwargs["luts"], dtype=np.float32) / 255.0
     return _lookup_table(img.data, luts=luts)
 
 
@@ -350,9 +346,10 @@ def palettize(img, **kwargs):
 def _merge_colormaps(kwargs, img=None):
     """Merge colormaps listed in kwargs."""
     from trollimage.colormap import Colormap
+
     full_cmap = None
 
-    palette = kwargs['palettes']
+    palette = kwargs["palettes"]
     if isinstance(palette, Colormap):
         full_cmap = palette
     else:
@@ -457,11 +454,11 @@ def create_colormap(palette, img=None):
     information.
 
     """
-    fname = palette.get('filename', None)
-    colors = palette.get('colors', None)
+    fname = palette.get("filename", None)
+    colors = palette.get("colors", None)
     dataset = palette.get("dataset", None)
     # are colors between 0-255 or 0-1
-    color_scale = palette.get('color_scale', 255)
+    color_scale = palette.get("color_scale", 255)
     if fname:
         if not os.path.exists(fname):
             fname = get_config_path(fname)
@@ -477,9 +474,9 @@ def create_colormap(palette, img=None):
 
     if palette.get("reverse", False):
         cmap.reverse()
-    if 'min_value' in palette and 'max_value' in palette:
+    if "min_value" in palette and "max_value" in palette:
         cmap.set_range(palette["min_value"], palette["max_value"])
-    elif 'min_value' in palette or 'max_value' in palette:
+    elif "min_value" in palette or "max_value" in palette:
         raise ValueError("Both 'min_value' and 'max_value' must be specified (or neither)")
 
     return cmap
@@ -489,21 +486,22 @@ def _create_colormap_from_dataset(img, dataset, color_scale):
     """Create a colormap from an auxiliary variable in a source file."""
     match = find_in_ancillary(img.data, dataset)
     return Colormap.from_array_with_metadata(
-        match, img.data.dtype, color_scale,
+        match,
+        img.data.dtype,
+        color_scale,
         valid_range=img.data.attrs.get("valid_range"),
         scale_factor=img.data.attrs.get("scale_factor", 1),
         add_offset=img.data.attrs.get("add_offset", 0),
-        remove_last=False)
+        remove_last=False,
+    )
 
 
 def three_d_effect(img, **kwargs):
     """Create 3D effect using convolution."""
-    w = kwargs.get('weight', 1)
+    w = kwargs.get("weight", 1)
     LOG.debug("Applying 3D effect with weight %.2f", w)
-    kernel = np.array([[-w, 0, w],
-                       [-w, 1, w],
-                       [-w, 0, w]])
-    mode = kwargs.get('convolve_mode', 'same')
+    kernel = np.array([[-w, 0, w], [-w, 1, w], [-w, 0, w]])
+    mode = kwargs.get("convolve_mode", "same")
     return _three_d_effect(img.data, kernel=kernel, mode=mode)
 
 
@@ -521,6 +519,7 @@ def _three_d_effect(band_data, kernel=None, mode=None, index=None):
 def _three_d_effect_delayed(band_data, kernel, mode):
     """Kernel for running delayed 3D effect creation."""
     from scipy.signal import convolve2d
+
     band_data = band_data.reshape(band_data.shape[1:])
     new_data = convolve2d(band_data, kernel, mode=mode)
     return new_data.reshape((1, band_data.shape[0], band_data.shape[1]))
@@ -547,8 +546,8 @@ def btemp_threshold(img, min_in, max_in, threshold, threshold_out=None, **kwargs
 
     """
     threshold_out = threshold_out if threshold_out is not None else (176 / 255.0)
-    low_factor = (threshold_out - 1.) / (min_in - threshold)
-    low_offset = 1. + (low_factor * min_in)
+    low_factor = (threshold_out - 1.0) / (min_in - threshold)
+    low_offset = 1.0 + (low_factor * min_in)
     high_factor = threshold_out / (max_in - threshold)
     high_offset = high_factor * max_in
 
@@ -556,19 +555,18 @@ def btemp_threshold(img, min_in, max_in, threshold, threshold_out=None, **kwargs
     high = Coeffs(high_factor, high_offset)
     low = Coeffs(low_factor, low_offset)
 
-    return _bt_threshold(img.data,
-                         threshold=threshold,
-                         high_coeffs=high,
-                         low_coeffs=low)
+    return _bt_threshold(img.data, threshold=threshold, high_coeffs=high, low_coeffs=low)
 
 
 @exclude_alpha
 @using_map_blocks
 def _bt_threshold(band_data, threshold, high_coeffs, low_coeffs):
     # expects dask array to be passed
-    return np.where(band_data >= threshold,
-                    high_coeffs.offset - high_coeffs.factor * band_data,
-                    low_coeffs.offset - low_coeffs.factor * band_data)
+    return np.where(
+        band_data >= threshold,
+        high_coeffs.offset - high_coeffs.factor * band_data,
+        low_coeffs.offset - low_coeffs.factor * band_data,
+    )
 
 
 def jma_true_color_reproduction(img):
@@ -581,8 +579,7 @@ def jma_true_color_reproduction(img):
     Colorado State University—CIRA
     https://www.jma.go.jp/jma/jma-eng/satellite/introduction/TCR.html
     """
-    _jma_true_color_reproduction(img.data,
-                                 platform=img.data.attrs['platform_name'])
+    _jma_true_color_reproduction(img.data, platform=img.data.attrs["platform_name"])
 
 
 @exclude_alpha
@@ -597,32 +594,15 @@ def _jma_true_color_reproduction(img_data, platform=None):
 
     """
     # Conversion matrix dictionaries specifying sensor and platform.
-    ccm_dict = {'himawari-8': np.array([[1.1629, 0.1539, -0.2175],
-                                        [-0.0252, 0.8725, 0.1300],
-                                        [-0.0204, -0.1100, 1.0633]]),
-
-                'himawari-9': np.array([[1.1619, 0.1542, -0.2168],
-                                        [-0.0271, 0.8749, 0.1295],
-                                        [-0.0202, -0.1103, 1.0634]]),
-
-                'goes-16': np.array([[1.1425, 0.1819, -0.2250],
-                                     [-0.0951, 0.9363, 0.1360],
-                                     [-0.0113, -0.1179, 1.0621]]),
-                'goes-17': np.array([[1.1437, 0.1818, -0.2262],
-                                     [-0.0952, 0.9354, 0.1371],
-                                     [-0.0113, -0.1178, 1.0620]]),
-                'goes-18': np.array([[1.1629, 0.1539, -0.2175],
-                                     [-0.0252, 0.8725, 0.1300],
-                                     [-0.0204, -0.1100, 1.0633]]),
-
-                'mtg-i1': np.array([[0.9007, 0.2086, -0.0100],
-                                    [-0.0475, 1.0662, -0.0414],
-                                    [-0.0123, -0.1342, 1.0794]]),
-
-                'geo-kompsat-2a': np.array([[1.1661, 0.1489, -0.2157],
-                                            [-0.0255, 0.8745, 0.1282],
-                                            [-0.0205, -0.1103, 1.0637]]),
-                }
+    ccm_dict = {
+        "himawari-8": np.array([[1.1629, 0.1539, -0.2175], [-0.0252, 0.8725, 0.1300], [-0.0204, -0.1100, 1.0633]]),
+        "himawari-9": np.array([[1.1619, 0.1542, -0.2168], [-0.0271, 0.8749, 0.1295], [-0.0202, -0.1103, 1.0634]]),
+        "goes-16": np.array([[1.1425, 0.1819, -0.2250], [-0.0951, 0.9363, 0.1360], [-0.0113, -0.1179, 1.0621]]),
+        "goes-17": np.array([[1.1437, 0.1818, -0.2262], [-0.0952, 0.9354, 0.1371], [-0.0113, -0.1178, 1.0620]]),
+        "goes-18": np.array([[1.1629, 0.1539, -0.2175], [-0.0252, 0.8725, 0.1300], [-0.0204, -0.1100, 1.0633]]),
+        "mtg-i1": np.array([[0.9007, 0.2086, -0.0100], [-0.0475, 1.0662, -0.0414], [-0.0123, -0.1342, 1.0794]]),
+        "geo-kompsat-2a": np.array([[1.1661, 0.1489, -0.2157], [-0.0255, 0.8745, 0.1282], [-0.0205, -0.1103, 1.0637]]),
+    }
 
     # A conversion matrix, sensor name and platform name is required
     if platform is None:

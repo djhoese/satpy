@@ -197,9 +197,7 @@ class GMS5VISSRFileHandler(BaseFileHandler):
             filetype_info: Information about file type
             mask_space: Mask space pixels.
         """
-        super(GMS5VISSRFileHandler, self).__init__(
-            filename, filename_info, filetype_info
-        )
+        super(GMS5VISSRFileHandler, self).__init__(filename, filename_info, filetype_info)
         self._filename = filename
         self._filename_info = filename_info
         self._header, self._channel_type = self._read_header(filename)
@@ -210,9 +208,7 @@ class GMS5VISSRFileHandler(BaseFileHandler):
         header = {}
         with generic_open(filename, mode="rb") as file_obj:
             header["control_block"] = self._read_control_block(file_obj)
-            channel_type = self._get_channel_type(
-                header["control_block"]["parameter_block_size"]
-            )
+            channel_type = self._get_channel_type(header["control_block"]["parameter_block_size"])
             header["image_parameters"] = self._read_image_params(file_obj, channel_type)
         return header, channel_type
 
@@ -223,7 +219,7 @@ class GMS5VISSRFileHandler(BaseFileHandler):
         elif parameter_block_size == 16:
             return fmt.IR_CHANNEL
         raise ValueError(
-            f"Cannot determine channel type, possibly corrupt file "
+            "Cannot determine channel type, possibly corrupt file "
             f"(unknown parameter block size: {parameter_block_size})"
         )
 
@@ -270,16 +266,12 @@ class GMS5VISSRFileHandler(BaseFileHandler):
         return "ir_frame_parameters"
 
     def _get_actual_shape(self):
-        actual_num_lines = self._header["control_block"][
-            "available_block_size_of_image_data"
-        ]
+        actual_num_lines = self._header["control_block"]["available_block_size_of_image_data"]
         _, nominal_num_pixels = self._get_nominal_shape()
         return actual_num_lines, nominal_num_pixels
 
     def _get_nominal_shape(self):
-        frame_params = self._header["image_parameters"]["mode"][
-            self._get_frame_parameters_key()
-        ]
+        frame_params = self._header["image_parameters"]["mode"][self._get_frame_parameters_key()]
         return frame_params["number_of_lines"], frame_params["number_of_pixels"]
 
     def _get_mda(self):
@@ -309,9 +301,7 @@ class GMS5VISSRFileHandler(BaseFileHandler):
     def _get_time_parameters(self):
         start_time = mjd2datetime64(self._mode_block["observation_time_mjd"])
         start_time = start_time.astype(dt.datetime).replace(second=0, microsecond=0)
-        end_time = start_time + dt.timedelta(
-            minutes=25
-        )  # Source: GMS User Guide, section 3.3.1
+        end_time = start_time + dt.timedelta(minutes=25)  # Source: GMS User Guide, section 3.3.1
         return {
             "nominal_start_time": start_time,
             "nominal_end_time": end_time,
@@ -336,9 +326,7 @@ class GMS5VISSRFileHandler(BaseFileHandler):
         num_lines, _ = self._get_actual_shape()
         specs = self._get_image_data_type_specs()
         with generic_open(self._filename, "rb") as file_obj:
-            return read_from_file_obj(
-                file_obj, dtype=specs["dtype"], count=num_lines, offset=specs["offset"]
-            )
+            return read_from_file_obj(file_obj, dtype=specs["dtype"], count=num_lines, offset=specs["offset"])
 
     def _get_image_data_type_specs(self):
         return fmt.IMAGE_DATA[self._channel_type]
@@ -370,9 +358,9 @@ class GMS5VISSRFileHandler(BaseFileHandler):
 
     def _get_calibration_table(self, dataset_id):
         tables = {
-            "VIS": self._header["image_parameters"]["vis_calibration"][
-                "vis1_calibration_table"
-            ]["brightness_albedo_conversion_table"],
+            "VIS": self._header["image_parameters"]["vis_calibration"]["vis1_calibration_table"][
+                "brightness_albedo_conversion_table"
+            ],
             "IR1": self._header["image_parameters"]["ir1_calibration"][
                 "conversion_table_of_equivalent_black_body_temperature"
             ],
@@ -415,8 +403,7 @@ class GMS5VISSRFileHandler(BaseFileHandler):
 
     def _get_navigation_parameters(self, dataset_id):
         return nav.ImageNavigationParameters(
-            static=self._get_static_navigation_params(dataset_id),
-            predicted=self._get_predicted_navigation_params()
+            static=self._get_static_navigation_params(dataset_id), predicted=self._get_predicted_navigation_params()
         )
 
     def _get_static_navigation_params(self, dataset_id):
@@ -438,16 +425,13 @@ class GMS5VISSRFileHandler(BaseFileHandler):
             sampling_angle=self._coord_conv["sampling_angle_along_pixel"][alt_ch_name],
         )
         proj_params = self._get_proj_params(dataset_id)
-        return nav.StaticNavigationParameters(
-            proj_params=proj_params,
-            scan_params=scan_params
-        )
+        return nav.StaticNavigationParameters(proj_params=proj_params, scan_params=scan_params)
 
     def _get_proj_params(self, dataset_id):
         proj_params = nav.ProjectionParameters(
             image_offset=self._get_image_offset(dataset_id),
             scanning_angles=self._get_scanning_angles(dataset_id),
-            earth_ellipsoid=self._get_earth_ellipsoid()
+            earth_ellipsoid=self._get_earth_ellipsoid(),
         )
         return proj_params
 
@@ -462,27 +446,18 @@ class GMS5VISSRFileHandler(BaseFileHandler):
 
     def _get_scanning_angles(self, dataset_id):
         alt_ch_name = _get_alternative_channel_name(dataset_id)
-        misalignment = np.ascontiguousarray(
-            self._coord_conv["matrix_of_misalignment"].transpose().astype(np.float64)
-        )
+        misalignment = np.ascontiguousarray(self._coord_conv["matrix_of_misalignment"].transpose().astype(np.float64))
         return nav.ScanningAngles(
             stepping_angle=self._coord_conv["stepping_angle_along_line"][alt_ch_name],
-            sampling_angle=self._coord_conv["sampling_angle_along_pixel"][
-                alt_ch_name],
-            misalignment=misalignment
+            sampling_angle=self._coord_conv["sampling_angle_along_pixel"][alt_ch_name],
+            misalignment=misalignment,
         )
 
     def _get_image_offset(self, dataset_id):
         alt_ch_name = _get_alternative_channel_name(dataset_id)
-        center_line_vissr_frame = self._coord_conv["central_line_number_of_vissr_frame"][
-            alt_ch_name
-        ]
-        center_pixel_vissr_frame = self._coord_conv["central_pixel_number_of_vissr_frame"][
-            alt_ch_name
-        ]
-        pixel_offset = self._coord_conv[
-            "pixel_difference_of_vissr_center_from_normal_position"
-        ][alt_ch_name]
+        center_line_vissr_frame = self._coord_conv["central_line_number_of_vissr_frame"][alt_ch_name]
+        center_pixel_vissr_frame = self._coord_conv["central_pixel_number_of_vissr_frame"][alt_ch_name]
+        pixel_offset = self._coord_conv["pixel_difference_of_vissr_center_from_normal_position"][alt_ch_name]
         return nav.ImageOffset(
             line_offset=center_line_vissr_frame,
             pixel_offset=center_pixel_vissr_frame + pixel_offset,
@@ -492,35 +467,24 @@ class GMS5VISSRFileHandler(BaseFileHandler):
         """Get predictions of time-dependent navigation parameters."""
         attitude_prediction = self._get_attitude_prediction()
         orbit_prediction = self._get_orbit_prediction()
-        return nav.PredictedNavigationParameters(
-            attitude=attitude_prediction,
-            orbit=orbit_prediction
-        )
+        return nav.PredictedNavigationParameters(attitude=attitude_prediction, orbit=orbit_prediction)
 
     def _get_attitude_prediction(self):
         att_pred = self._header["image_parameters"]["attitude_prediction"]["data"]
         attitudes = nav.Attitude(
-            angle_between_earth_and_sun=att_pred["sun_earth_angle"].astype(
-                np.float64),
-            angle_between_sat_spin_and_z_axis=att_pred[
-                "right_ascension_of_attitude"
-            ].astype(np.float64),
-            angle_between_sat_spin_and_yz_plane=att_pred[
-                "declination_of_attitude"
-            ].astype(np.float64),
+            angle_between_earth_and_sun=att_pred["sun_earth_angle"].astype(np.float64),
+            angle_between_sat_spin_and_z_axis=att_pred["right_ascension_of_attitude"].astype(np.float64),
+            angle_between_sat_spin_and_yz_plane=att_pred["declination_of_attitude"].astype(np.float64),
         )
         attitude_prediction = nav.AttitudePrediction(
-            prediction_times=att_pred["prediction_time_mjd"].astype(np.float64),
-            attitude=attitudes
+            prediction_times=att_pred["prediction_time_mjd"].astype(np.float64), attitude=attitudes
         )
         return attitude_prediction
 
     def _get_orbit_prediction(self):
         orb_pred = self._header["image_parameters"]["orbit_prediction"]["data"]
         orbit_angles = nav.OrbitAngles(
-            greenwich_sidereal_time=np.deg2rad(
-                orb_pred["greenwich_sidereal_time"].astype(np.float64)
-            ),
+            greenwich_sidereal_time=np.deg2rad(orb_pred["greenwich_sidereal_time"].astype(np.float64)),
             declination_from_sat_to_sun=np.deg2rad(
                 orb_pred["sat_sun_vector_earth_fixed"]["elevation"].astype(np.float64)
             ),
@@ -559,9 +523,7 @@ class GMS5VISSRFileHandler(BaseFileHandler):
     def _update_attrs(self, dataset, dataset_id, ds_info):
         dataset.attrs.update(ds_info)
         dataset.attrs.update(self._mda)
-        dataset.attrs[
-            "area_def_uniform_sampling"
-        ] = self._get_area_def_uniform_sampling(dataset_id)
+        dataset.attrs["area_def_uniform_sampling"] = self._get_area_def_uniform_sampling(dataset_id)
 
     @property
     def start_time(self):
@@ -710,7 +672,7 @@ def get_earth_mask(shape, earth_edges, fill_value=-1):
         last = last_earth_pixels[line]
         if first == fill_value or last == fill_value:
             continue
-        mask[line, first:last+1] = 1
+        mask[line, first : last + 1] = 1
     return mask
 
 
@@ -775,9 +737,7 @@ class AreaDefEstimator:
     ):
         # Use nominal parameters to make the area def as constant as possible
         return {
-            "ssp_lon": self.metadata["orbital_parameters"][
-                "satellite_nominal_longitude"
-            ],
+            "ssp_lon": self.metadata["orbital_parameters"]["satellite_nominal_longitude"],
             "a": nav.EARTH_EQUATORIAL_RADIUS,
             "b": nav.EARTH_POLAR_RADIUS,
             "h": self.metadata["orbital_parameters"]["satellite_nominal_altitude"],
